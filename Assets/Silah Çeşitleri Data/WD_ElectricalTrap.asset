@@ -1,0 +1,50 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f8ac7992ba8bdf4190dd14f61214f75, type: 3}
+  m_Name: WD_ElectricalTrap
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponData
+  weaponName: Electrical Trap
+  description: "F\u0131rlat\u0131ld\u0131ktan belli bir s\xFCre sonra patlayan elektrik
+    bombalar\u0131."
+  icon: {fileID: 0}
+  behaviorType: 5
+  baseDamage: 10
+  cooldown: 1
+  critChance: 5
+  critMultiplier: 2
+  projectilePrefab: {fileID: 0}
+  projectileSpeed: 20
+  projectileCount: 1
+  spreadAngle: 0
+  projectileScale: 1
+  projectileLifetime: 5
+  timeBetweenProjectiles: 0.05
+  attackRange: 1.5
+  attackWidthOrAngle: 90
+  attackDuration: 0.3
+  effectRadius: 3
+  damagePerSecond: 5
+  tickRate: 0.5
+  areaEffectPrefab: {fileID: 0}
+  explosionPrefab: {fileID: 0}
+  explosionRadius: 2
+  explosionCount: 1
+  wavePrefab: {fileID: 0}
+  waveSpeed: 15
+  waveWidth: 1
+  waveLifetime: 3
+  wavePierceCount: 1
+  minePrefab: {fileID: 4500036534616414119, guid: ba7628374ed3e7f4cb26a99b48a8b1de, type: 3}
+  mineCount: 3
+  mineLifetime: 3
+  mineExplosionRadius: 2.5
+  mineDropRadius: 5

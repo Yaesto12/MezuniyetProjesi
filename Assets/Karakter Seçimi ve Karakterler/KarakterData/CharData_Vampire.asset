@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 196ae742ff319f143969d1c09c529eac, type: 3}
+  m_Name: CharData_Vampire
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterData
+  characterName: Vampire
+  description: "Karakter a\xE7\u0131klamas\u0131..."
+  icon: {fileID: 0}
+  characterPrefab: {fileID: 3112197805499184612, guid: eff2d18cfc268cb4593229575bd64088, type: 3}
+  startingWeaponData: {fileID: 11400000, guid: 21c94d6de4817234c9cd2a9a6e355f32, type: 2}

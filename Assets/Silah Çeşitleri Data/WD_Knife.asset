@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f8ac7992ba8bdf4190dd14f61214f75, type: 3}
+  m_Name: WD_Knife
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponData
+  weaponName: "B\u0131\xE7ak"
+  description: "D\xFC\u015Fmanlar\u0131n\u0131z\u0131 h\u0131zl\u0131ca do\u011Fray\u0131n"
+  icon: {fileID: 0}
+  behaviorType: 1
+  baseDamage: 10
+  cooldown: 0.5
+  critChance: 5
+  critMultiplier: 2
+  projectilePrefab: {fileID: 0}
+  projectileSpeed: 20
+  projectileCount: 1
+  spreadAngle: 0
+  projectileScale: 1
+  projectileLifetime: 5
+  timeBetweenProjectiles: 0.05
+  attackRange: 1.5
+  attackWidthOrAngle: 90
+  attackDuration: 0.1
+  effectRadius: 3
+  damagePerSecond: 5
+  tickRate: 0.5
+  areaEffectPrefab: {fileID: 0}
+  explosionPrefab: {fileID: 0}
+  explosionRadius: 2
+  explosionCount: 1
+  wavePrefab: {fileID: 0}
+  waveSpeed: 15
+  waveWidth: 1
+  waveLifetime: 3
+  wavePierceCount: 1
+  minePrefab: {fileID: 0}
+  mineCount: 1
+  mineLifetime: 3
+  mineExplosionRadius: 2.5
+  mineDropRadius: 1

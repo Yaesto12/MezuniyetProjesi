@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 196ae742ff319f143969d1c09c529eac, type: 3}
+  m_Name: CharData_Drunkard
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterData
+  characterName: Drunkard
+  description: "Karakter a\xE7\u0131klamas\u0131..."
+  icon: {fileID: 0}
+  characterPrefab: {fileID: 1785601477646369214, guid: 011da77d2d3f5ac48a855518bb03423a, type: 3}
+  startingWeaponData: {fileID: 11400000, guid: 1d51e99174da5664d8475de7f74a445a, type: 2}
