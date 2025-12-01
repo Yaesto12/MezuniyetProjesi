@@ -100,6 +100,7 @@ public class EnemyStats : MonoBehaviour
             if (orbScript != null) orbScript.Setup(xpValue);
         }
 
+
         // 2. Altýn Ver (Otomatik Cüzdana)
         int goldAmount = Random.Range(minGoldDrop, maxGoldDrop + 1);
         PlayerWallet wallet = FindFirstObjectByType<PlayerWallet>(); // PlayerWallet'ý bul
@@ -122,5 +123,11 @@ public class EnemyStats : MonoBehaviour
 
 
         Destroy(gameObject);
+    }
+
+    public float GetHealthPercentage()
+    {
+        if (maxHealth <= 0) return 0;
+        return (float)currentHealth / maxHealth;
     }
 }

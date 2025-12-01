@@ -16,10 +16,14 @@ public enum PassiveStatType
     Bleed,
     CritBleed,
     Pierce, ProjectileBounce,
-
-    // --- EKSÝK OLAN BU ---
     CritHeal, // Kritik vuruþta gelen iyileþme
-    // --------------------
+
+    // --- YENÝ EKLENENLER (Eksik Olanlar) ---
+    DamageToMobs,       // Normal düþmanlara hasar çarpaný
+    DamageToElites,     // Elitlere hasar çarpaný
+    DamageToMiniBosses, // Mini Bosslara hasar çarpaný
+    DamageToBosses,     // Bosslara hasar çarpaný
+    // ---------------------------------------
 
     // Hareket
     MoveSpeed, JumpHeight,

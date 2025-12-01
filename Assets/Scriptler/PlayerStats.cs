@@ -92,6 +92,10 @@ public class PlayerStats : MonoBehaviour
     [field: SerializeField] public float CurrentGoldBonus { get; private set; }
     [field: SerializeField] public float CurrentDropChanceBonus { get; private set; }
     [field: SerializeField] public float CurrentEliteSpawnChanceBonus { get; private set; }
+    [field: SerializeField] public float CurrentDamageToMobs { get; private set; }
+    [field: SerializeField] public float CurrentDamageToElites { get; private set; }
+    [field: SerializeField] public float CurrentDamageToMiniBosses { get; private set; }
+    [field: SerializeField] public float CurrentDamageToBosses { get; private set; }
 
     [field: SerializeField] public float CurrentSkillCooldownReduction { get; private set; }
     [field: SerializeField] public int CurrentRevivals { get; private set; }
@@ -102,9 +106,8 @@ public class PlayerStats : MonoBehaviour
 
     private PlayerInventory playerInventory;
 
-    // --- YENÝ: Geçici Bonuslar ---
+    // --- Geçici Bonuslar ---
     private float temporaryDamageBonus = 0f;
-    // -----------------------------
 
     void Awake()
     {
@@ -151,6 +154,10 @@ public class PlayerStats : MonoBehaviour
         CurrentRerolls = baseRerolls;
         CurrentSkips = baseSkips;
         CurrentBanishes = baseBanishes;
+        CurrentDamageToMobs = baseDamageToMobs;
+        CurrentDamageToElites = baseDamageToElites;
+        CurrentDamageToMiniBosses = baseDamageToMiniBosses;
+        CurrentDamageToBosses = baseDamageToBosses;
 
         // 2. Item Bonuslarýný Uygula
         if (playerInventory != null && playerInventory.ownedItems != null)
@@ -172,11 +179,10 @@ public class PlayerStats : MonoBehaviour
             }
         }
 
-        // --- 3. GEÇÝCÝ BONUSLARI EKLE (YENÝ) ---
+        // 3. Geçici Bonuslar
         CurrentDamageMultiplier += temporaryDamageBonus;
-        // ---------------------------------------
 
-        // 4. Limitler ve Mantýk
+        // 4. Limitler
         if (CurrentCritChance > 100f) { float excess = CurrentCritChance - 100f; CurrentCritDamage += excess; CurrentCritChance = 100f; }
         CurrentCritChance = Mathf.Clamp(CurrentCritChance, 0f, 100f);
         CurrentEvasion = Mathf.Clamp(CurrentEvasion, 0f, 90f);
@@ -225,6 +231,12 @@ public class PlayerStats : MonoBehaviour
             case PassiveStatType.Pierce: CurrentPierce += value; break;
             case PassiveStatType.Duration: CurrentDurationMultiplier += value; break;
             case PassiveStatType.Revival: CurrentRevivals += (int)value; break;
+
+            case PassiveStatType.DamageToMobs: CurrentDamageToMobs += value; break;
+            case PassiveStatType.DamageToElites: CurrentDamageToElites += value; break;
+            case PassiveStatType.DamageToMiniBosses: CurrentDamageToMiniBosses += value; break;
+            case PassiveStatType.DamageToBosses: CurrentDamageToBosses += value; break;
+
             case PassiveStatType.None: break;
         }
     }
@@ -238,23 +250,24 @@ public class PlayerStats : MonoBehaviour
         if (collector != null) collector.UpdateMagnetRadius();
     }
 
-    // --- GEÇÝCÝ STAT YÖNETÝMÝ (YENÝ) ---
-    public void AddTemporaryDamage(float amount)
-    {
-        temporaryDamageBonus += amount;
-        RecalculateStats();
-    }
-    public void RemoveTemporaryDamage(float amount)
-    {
-        temporaryDamageBonus -= amount;
-        RecalculateStats();
-    }
-    // ----------------------------------
+    // --- GEÇÝCÝ STAT YÖNETÝMÝ ---
+    public void AddTemporaryDamage(float amount) { temporaryDamageBonus += amount; RecalculateStats(); }
+    public void RemoveTemporaryDamage(float amount) { temporaryDamageBonus -= amount; RecalculateStats(); }
 
-    // --- TEMEL STATLARI ARTIRAN METOTLAR ---
+    // --- TEMEL STATLARI ARTIRAN METOTLAR (Hepsini ekledim) ---
     public void IncreaseBaseMaxHealth(float amount) { baseMaxHealth += amount; RecalculateStats(); }
+    public void IncreaseBaseHpRegen(float amount) { baseHpRegen += amount; RecalculateStats(); }
+    public void IncreaseBaseArmor(float amount) { baseArmor += amount; RecalculateStats(); }
+    public void IncreaseBaseMoveSpeed(float amount) { baseMoveSpeed += amount; RecalculateStats(); }
+    public void IncreaseBaseLuck(float amount) { baseLuck += amount; RecalculateStats(); }
+    public void IncreaseBaseMagnetRange(float amount) { baseMagnetRange += amount; RecalculateStats(); }
+    public void IncreaseBaseXpBonus(float amount) { baseXpBonus += amount; RecalculateStats(); } // <<<--- EKSÝK OLAN BU ---<<<
+    public void IncreaseBaseGoldBonus(float amount) { baseGoldBonus += amount; RecalculateStats(); }
     public void IncreaseBaseRevivals(int amount) { baseRevivals += amount; RecalculateStats(); }
     public void IncreaseBaseRerolls(int amount) { baseRerolls += amount; RecalculateStats(); }
+    public void IncreaseBaseSkips(int amount) { baseSkips += amount; RecalculateStats(); }
+    public void IncreaseBaseBanishes(int amount) { baseBanishes += amount; RecalculateStats(); }
+    // Ýhtiyaca göre diðerlerini de buraya ekleyebilirsiniz (IncreaseBaseCurse, IncreaseBaseDamageMultiplier vb.)
 
     // --- HARCANABÝLÝR STATLAR ---
     public bool UseRevival() { if (CurrentRevivals > 0) { baseRevivals--; RecalculateStats(); return true; } return false; }
