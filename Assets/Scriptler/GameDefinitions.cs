@@ -1,78 +1,59 @@
 using UnityEngine;
-using System.Collections.Generic; // List için
+using System.Collections.Generic;
 
-// --- BU DOSYA TÜM GLOBAL TANIMLAMALARI ÝÇERÝR ---
-
-// Item ve Yükseltmelerin nadirlik seviyesi
 public enum RarityLevel { Common, Rare, Epic, Legendary }
 
-// Pasif stat türleri (PlayerStats, ItemData ve UpgradeData kullanýr)
 public enum PassiveStatType
 {
     None,
-    MaxHealth,
-    HpRegen,
-    Armor,
-    Evasion,
-    Damage, // Genel Hasar Çarpaný
-    CritChance,
-    CritDamage,
-    AttackSpeed, // Genel Saldýrý Hýzý Çarpaný
-    ProjectileCount, // Genel Ekstra Mermi
-    Size, // Genel Alan Çarpaný
-    MoveSpeed,
-    Luck,
-    MagnetRange,
-    XpBonus,
-    GoldBonus,
-    Duration, // Genel Süre Çarpaný
-    Revival,
-    LifeSteal,
-    Thorns,
-    // --- EKSÝK STATLAR BURAYA EKLENDÝ ---
-    ProjectileBounce, // Mermi Sekmesi
-    Pierce // Mermi Delmesi
-    // ---------------------------------
+    // Temel
+    MaxHealth, HpRegen, Armor, Evasion,
+    // Saldýrý
+    Damage, CritChance, CritDamage, AttackSpeed,
+    ProjectileCount, Size, ProjectileSpeed, // <-- ProjectileSpeed EKLENDÝ
+    Bleed, // <-- Bleed EKLENDÝ
+    CritBleed,
+    Pierce, ProjectileBounce,
+    // Hareket
+    MoveSpeed, JumpHeight, // <-- JumpHeight EKLENDÝ
+    // Genel
+    Luck, Curse, // <-- Curse EKLENDÝ
+    MagnetRange, // (Pickup Range yerine bunu kullanabiliriz veya ayrý yapabiliriz)
+    XpBonus, GoldBonus,
+    DropChance, // <-- DropChance EKLENDÝ
+    // Yetenek
+    SkillCooldown, // <-- SkillCooldown EKLENDÝ
+    Duration,
+    Revival, LifeSteal, Thorns
 }
 
-// Silah stat türleri (WeaponData ve PlayerExperience kullanýr)
 public enum WeaponStatType
 {
-    Damage,
-    Cooldown,
-    Speed,
-    Range,
-    ProjectileCount,
-    Size,
-    Duration,
-    Pierce,
-    ProjectileBounce
-    // Ýhtiyaca göre ekleyin...
+    Damage, Cooldown, Speed, Range, ProjectileCount, Size, Duration, Pierce, ProjectileBounce
 }
 
-// Silahýn temel çalýþma þekli
 public enum WeaponBehaviorType { Projectile, Melee, AreaOfEffect, TargetedExplosion, Wave, ProximityMine }
 
-// Yükseltmenin kategorisi
-public enum UpgradeCategory { WeaponUnlock, WeaponUpgrade, PassiveStat } // PlayerExperience.cs bunu kullanmayý býraktý ama ileride pasifler için lazým olabilir
+public enum UpgradeCategory { WeaponUnlock, WeaponUpgrade, PassiveStat }
 
-// --- DÝNAMÝK YÜKSELTME SEÇENEÐÝ ÝÇÝN YARDIMCI SINIFLAR ---
+[System.Serializable]
+public struct ItemStatModifier
+{
+    public PassiveStatType statType;
+    public float baseAmount;
+    public float amountPerLevel;
+    public bool isPercentage;
+}
 
-/// <summary>
-/// Bir stat deðiþikliðini tanýmlayan yapý.
-/// </summary>
 public struct StatModification
 {
     public WeaponStatType WeaponStat;
-    public PassiveStatType PassiveStat; // Artýk bu da kullanýlýyor
+    public PassiveStatType PassiveStat;
     public float Value;
     public bool IsPercentage;
     public string Description;
 }
 
-/// <summary>
-/// PlayerExperience tarafýndan dinamik olarak oluþturulup LevelUpUI'a gönderilecek seçenek verisi.
-/// </summary>
 public class GeneratedUpgradeOption
 {
     public string Name;

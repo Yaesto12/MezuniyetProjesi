@@ -18,7 +18,7 @@ public class ProjectileWeaponHandler : MonoBehaviour
     private float currentProjectileSpeedMultiplier = 1f;
     private int extraBounce = 0;
     private float extraPierce = 0f;
-    private float extraDuration = 0f; // Lifetime için
+    private float extraDuration = 0f;
     private float extraCritChance = 0f;
     private float extraCritDamage = 0f;
 
@@ -33,6 +33,7 @@ public class ProjectileWeaponHandler : MonoBehaviour
         targetingSystem = targetingSys;
         playerStats = pStats;
         cooldownTimer = 0f;
+
         // Yükseltmeleri sýfýrla
         currentDamageMultiplier = 1f;
         extraProjectiles = 0;
@@ -50,6 +51,8 @@ public class ProjectileWeaponHandler : MonoBehaviour
         if (weaponData == null) Debug.LogError("PWH Initialize: WeaponData null!", this);
         if (firePoint == null) Debug.LogError("PWH Initialize: FirePoint null!", this);
         if (targetingSystem == null) Debug.LogError("PWH Initialize: TargetingSystem null!", this);
+
+        Debug.Log($"ProjectileWeaponHandler baþlatýldý: {weaponData?.weaponName ?? "DATA YOK"}");
     }
 
     void Update()
@@ -61,9 +64,12 @@ public class ProjectileWeaponHandler : MonoBehaviour
         if (cooldownTimer <= 0f && !isFiring && targetingSystem.CurrentTarget != null)
         {
             StartCoroutine(FireBurstCoroutine());
+
+            // Cooldown Hesaplamasý
             float baseCooldown = weaponData.cooldown;
             float playerAttackSpeedFactor = (playerStats.CurrentAttackSpeedMultiplier > 0) ? 100f / playerStats.CurrentAttackSpeedMultiplier : 1f;
             float finalCooldown = baseCooldown * playerAttackSpeedFactor * currentCooldownMultiplier;
+
             cooldownTimer = Mathf.Max(0.05f, finalCooldown);
         }
     }
@@ -76,6 +82,7 @@ public class ProjectileWeaponHandler : MonoBehaviour
         isFiring = true;
         firePoint.LookAt(targetingSystem.CurrentTarget);
 
+        // Mermi Sayýsý
         int totalProjectiles = weaponData.projectileCount + extraProjectiles + playerStats.CurrentProjectileCountBonus;
         totalProjectiles = Mathf.Max(1, totalProjectiles);
 
@@ -91,19 +98,46 @@ public class ProjectileWeaponHandler : MonoBehaviour
 
             if (projectileScript != null)
             {
+                // --- STAT HESAPLAMALARI ---
+
+                // 1. Hasar
                 float finalBaseDamage = weaponData.baseDamage * (playerStats.CurrentDamageMultiplier / 100f);
                 int calculatedDamage = Mathf.RoundToInt(finalBaseDamage * currentDamageMultiplier);
-                float calculatedSpeed = weaponData.projectileSpeed * currentProjectileSpeedMultiplier;
+
+                // 2. Hýz (Global mermi hýzý çarpaný eklendi)
+                float calculatedSpeed = weaponData.projectileSpeed * currentProjectileSpeedMultiplier * (playerStats.CurrentProjectileSpeedMultiplier / 100f);
+
+                // 3. Boyut
                 float calculatedScaleValue = weaponData.projectileScale * (playerStats.CurrentSizeMultiplier / 100f) * currentProjectileScaleMultiplier;
                 Vector3 calculatedScale = Vector3.one * calculatedScaleValue;
+
+                // 4. Süre
                 float calculatedLifetime = (weaponData.projectileLifetime + extraDuration) * (playerStats.CurrentDurationMultiplier / 100f);
+
+                // 5. Kritik
                 float finalCritChance = playerStats.CurrentCritChance + extraCritChance;
                 float finalCritDamageMult = (playerStats.CurrentCritDamage + extraCritDamage) / 100f;
-                int bounceCount = playerStats.CurrentProjectileBounce + extraBounce;
-                float pierceValue = playerStats.CurrentPierce + extraPierce;
 
-                // TODO: Projectile.cs'in Setup'ýnýn bounce ve pierce alacak þekilde güncellenmesi GEREKÝR
-                projectileScript.Setup(calculatedDamage, finalCritChance, finalCritDamageMult, calculatedSpeed, calculatedScale, calculatedLifetime);
+                // 6. Kanama (Bleed) Deðerleri (PlayerStats'tan al)
+                float bleedPercent = playerStats.CurrentBleedPercent;
+                float critBleedPercent = playerStats.CurrentCritBleedPercent;
+
+                // TODO: Bounce ve Pierce þu an Projectile.cs'in Setup metodunda yoksa gönderilmiyor.
+                // int bounceCount = playerStats.CurrentProjectileBounce + extraBounce;
+                // float pierceValue = playerStats.CurrentPierce + extraPierce;
+
+                // Setup Çaðrýsý (Bleed parametrelerini de gönderiyoruz!)
+                // DÝKKAT: Projectile.cs'in Setup metodunu bu parametreleri alacak þekilde güncellemelisiniz.
+                projectileScript.Setup(
+                    calculatedDamage,
+                    finalCritChance,
+                    finalCritDamageMult,
+                    calculatedSpeed,
+                    calculatedScale,
+                    calculatedLifetime,
+                    bleedPercent,     // <<<--- YENÝ
+                    critBleedPercent  // <<<--- YENÝ
+                );
             }
             else { Debug.LogError($"{weaponData.projectilePrefab.name} prefab'ýnda Projectile script'i bulunamadý!"); }
 
@@ -115,13 +149,13 @@ public class ProjectileWeaponHandler : MonoBehaviour
         isFiring = false;
     }
 
-    // --- Yükseltme Metotlarý (Eksikler Eklendi) ---
+    // --- Yükseltme Metotlarý ---
     public void IncreaseDamageMultiplier(float percentage) { currentDamageMultiplier *= (1 + percentage / 100f); }
     public void IncreaseProjectileCount(int amount) { extraProjectiles += amount; }
     public void DecreaseCooldown(float percentage) { currentCooldownMultiplier *= (1 - percentage / 100f); }
     public void IncreaseProjectileScale(float percentage) { currentProjectileScaleMultiplier *= (1 + percentage / 100f); }
     public void IncreaseProjectileSpeed(float percentage) { currentProjectileSpeedMultiplier *= (1 + percentage / 100f); }
-    public void IncreaseDuration(float percentage) { extraDuration += (weaponData.projectileLifetime * percentage / 100f); } // Veya sabit?
+    public void IncreaseDuration(float percentage) { extraDuration += (weaponData.projectileLifetime * percentage / 100f); }
     public void IncreasePierce(float amount) { extraPierce += amount; }
     public void IncreaseBounce(int amount) { extraBounce += amount; }
     public void IncreaseCritChance(float amount) { extraCritChance += amount; }

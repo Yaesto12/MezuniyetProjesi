@@ -4,27 +4,45 @@ using UnityEngine;
 [RequireComponent(typeof(Collider))] // Collider'ýn IsTrigger=true olmalý
 public class Projectile : MonoBehaviour
 {
-    // Silah script'i tarafýndan doldurulacak olan özellikler
     private int damage;
     private float critChance;
     private float critMultiplier;
     private Rigidbody rb;
 
+    // --- YENÝ EKLENENLER (Kanama Ýçin) ---
+    private float bleedPercent;
+    private float critBleedPercent;
+    // -------------------------------------
+
     /// <summary>
     /// Handler tarafýndan çaðrýlýr, mermiyi ayarlar ve fýrlatýr.
     /// </summary>
-    public void Setup(int baseDamage, float baseCritChance, float baseCritMultiplier, float projectileSpeed, Vector3 scale, float lifetime)
+    public void Setup(
+        int baseDamage,
+        float baseCritChance,
+        float baseCritMultiplier,
+        float projectileSpeed,
+        Vector3 scale,
+        float lifetime,
+        float bleed,      // 7. Parametre
+        float critBleed   // 8. Parametre
+    )
     {
         this.damage = baseDamage;
         this.critChance = baseCritChance;
         this.critMultiplier = baseCritMultiplier;
+
+        // Kanama deðerlerini al
+        this.bleedPercent = bleed;
+        this.critBleedPercent = critBleed;
+
         transform.localScale = scale; // Boyutu ayarla
 
         rb = GetComponent<Rigidbody>();
         // Rigidbody ayarlarýný koddan da garanti edelim
         rb.useGravity = false;
-        rb.interpolation = RigidbodyInterpolation.Interpolate; // Daha akýcý hareket için (opsiyonel)
-        rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative; // Hýzlý mermiler için önerilir
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
+        rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
 
         // Fýrlat (Unity'nin yeni API'si ile)
         rb.linearVelocity = transform.forward * projectileSpeed;
@@ -50,8 +68,19 @@ public class Projectile : MonoBehaviour
                 if (isCritical)
                 {
                     finalDamage = Mathf.RoundToInt(this.damage * this.critMultiplier);
-                    // Debug.Log("Kritik Mermi Vuruþu!"); // Ýsteðe baðlý log
                 }
+
+                // --- KANAMA MANTIÐI ---
+                float totalBleed = bleedPercent;
+                if (isCritical) totalBleed += critBleedPercent;
+
+                if (totalBleed > 0)
+                {
+                    int bleedDamage = Mathf.RoundToInt(finalDamage * (totalBleed / 100f));
+                    // Düþmana kanama uygula (3 saniye sürecek þekilde)
+                    enemy.ApplyBleed(bleedDamage, 3f);
+                }
+                // ----------------------
 
                 // Düþmana hasar ver
                 enemy.TakeDamage(finalDamage);
@@ -60,10 +89,5 @@ public class Projectile : MonoBehaviour
                 Destroy(gameObject);
             }
         }
-        // Opsiyonel: Merminin duvar gibi baþka þeylere çarpýnca da yok olmasý
-        // else if (other.gameObject.CompareTag("Environment") || other.gameObject.layer == LayerMask.NameToLayer("Ground")) // Katman veya Tag kullanabilirsiniz
-        // {
-        //     Destroy(gameObject);
-        // }
     }
 }

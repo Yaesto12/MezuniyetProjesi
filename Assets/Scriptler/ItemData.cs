@@ -1,6 +1,5 @@
 using UnityEngine;
-
-// Enum'lar artýk GameDefinitions.cs dosyasýnda tanýmlý
+using System.Collections.Generic; // List için
 
 [CreateAssetMenu(fileName = "New ItemData", menuName = "Gameplay/Item Data")]
 public class ItemData : ScriptableObject
@@ -9,22 +8,17 @@ public class ItemData : ScriptableObject
     public string itemName = "Yeni Eþya";
     [TextArea] public string description = "Eþya açýklamasý...";
     public Sprite icon;
-    public RarityLevel rarity = RarityLevel.Common; // GameDefinitions'tan
+    public RarityLevel rarity = RarityLevel.Common;
 
-    [Header("Eþya Etkisi")]
-    [Tooltip("Bu eþyanýn hangi statý etkileyeceði.")]
-    public PassiveStatType effectType; // GameDefinitions'tan
+    [Header("Eþya Etkileri")]
+    [Tooltip("Bu eþyanýn etkilediði statlar listesi. Pozitif veya Negatif olabilir.")]
+    public List<ItemStatModifier> modifiers = new List<ItemStatModifier>();
 
-    [Tooltip("Statý ne kadar deðiþtireceði (sabit deðer veya yüzde).")]
-    public float effectValue;
-
-    [Tooltip("Deðer yüzde olarak mý (True) yoksa sabit bir ekleme mi (False)?")]
-    public bool isPercentageBased = false;
-
-    [Header("Seviye Atlama (Opsiyonel)")]
-    [Tooltip("Bu eþya birden fazla kez toplanabilir mi (seviye atlar mý)?")]
+    [Header("Ayarlar")]
+    [Tooltip("Bu eþya birden fazla kez toplanabilir mi?")]
     public bool isStackable = true;
 
-    [Tooltip("Eðer 'isStackable' iþaretliyse, her seviyede eklenecek deðer.")]
-    public float valuePerLevel = 2f;
+    [Header("Özel Mekanik (Opsiyonel)")]
+    [Tooltip("Sadece bu item alýndýðýnda çalýþacak özel bir script/görsel varsa, o prefabý buraya sürükle.")]
+    public GameObject specialEffectPrefab;
 }

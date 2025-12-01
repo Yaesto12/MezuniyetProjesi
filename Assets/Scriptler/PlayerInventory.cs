@@ -18,25 +18,15 @@ public class PlayerInventory : MonoBehaviour
 
     // --- Silah Metotlarý ---
 
-    /// <summary>
-    /// Oyuncunun belirtilen orijinal WeaponData asset'ine sahip olup olmadýðýný kontrol eder.
-    /// </summary>
     public bool HasWeaponData(WeaponData originalWeaponData)
     {
-        if (originalWeaponData == null)
-        {
-            return false; // Null ise sahip deðildir, 'return' eklendi.
-        }
+        if (originalWeaponData == null) return false;
 
-        // Klonlanmýþ instance'larýn isimlerini de kontrol et (StartsWith)
-        // 'return' ifadesi eklendi.
+        // Klonlanmýþ instance'larýn isimlerini de kontrol et
         return ownedWeaponBlueprints.Contains(originalWeaponData) ||
                ownedWeaponBlueprints.Exists(instance => instance != null && instance.name.StartsWith(originalWeaponData.name));
     }
 
-    /// <summary>
-    /// Yeni bir silahýn orijinal WeaponData asset'ini envantere ekler.
-    /// </summary>
     public void AddWeaponData(WeaponData originalWeaponData)
     {
         if (originalWeaponData == null) return;
@@ -49,23 +39,13 @@ public class PlayerInventory : MonoBehaviour
 
     // --- Yükseltme Metotlarý ---
 
-    /// <summary>
-    /// Belirtilen yükseltmenin mevcut seviyesini döndürür (0 eðer hiç alýnmamýþsa).
-    /// </summary>
     public int GetUpgradeLevel(UpgradeData upgrade)
     {
-        if (upgrade == null)
-        {
-            return 0; // 'return' eklendi.
-        }
-
+        if (upgrade == null) return 0;
         upgradeLevels.TryGetValue(upgrade, out int level);
-        return level; // 'return' zaten vardý, ama 'if' bloðu eklendi.
+        return level;
     }
 
-    /// <summary>
-    /// Belirtilen yükseltmenin seviyesini bir artýrýr veya 1 olarak baþlatýr.
-    /// </summary>
     public void IncrementUpgradeLevel(UpgradeData upgrade)
     {
         if (upgrade == null) return;
@@ -75,33 +55,57 @@ public class PlayerInventory : MonoBehaviour
     }
 
 
-    // --- Item Metotlarý ---
+    // --- Item Metotlarý (GÜNCELLENDÝ) ---
 
     /// <summary>
-    /// Envantere yeni bir item ekler veya mevcut item'ýn seviyesini artýrýr.
+    /// Envantere yeni bir item ekler. Statlarý günceller ve varsa özel efekti baþlatýr.
     /// </summary>
     public void AddItem(ItemData item)
     {
         if (item == null) return;
 
+        // 1. Item'ý Dictionary'e Ekle / Artýr
         if (ownedItems.ContainsKey(item))
         {
             if (item.isStackable)
             {
                 ownedItems[item]++;
-                Debug.Log($"[PlayerInventory] '{item.itemName}' item'ýnýn seviyesi arttý. Yeni seviye: {ownedItems[item]}");
+                Debug.Log($"[PlayerInventory] '{item.itemName}' seviyesi arttý: {ownedItems[item]}");
             }
             else
             {
-                Debug.Log($"[PlayerInventory] '{item.itemName}' zaten envanterde ve stacklenemez.");
+                Debug.Log($"[PlayerInventory] '{item.itemName}' zaten var ve stacklenemez.");
+                // Stacklenemeyen item tekrar alýnýrsa genelde bir þey yapýlmaz veya altýn verilir.
+                // Þimdilik çýkýyoruz.
+                return;
             }
         }
         else
         {
             ownedItems.Add(item, 1);
-            Debug.Log($"[PlayerInventory] Yeni item eklendi: '{item.itemName}' (Seviye 1)");
+            Debug.Log($"[PlayerInventory] Yeni item alýndý: '{item.itemName}'");
         }
 
+        // 2. --- YENÝ: Özel Efekt / Mekanik Baþlatma ---
+        // Eðer bu item'ýn özel bir prefabý varsa ve item ilk kez alýndýysa oluþtur.
+        if (item.specialEffectPrefab != null)
+        {
+            // Sadece ilk seviyede (1) oluþturuyoruz ki her seviye atlamada tekrar tekrar oluþmasýn.
+            // (Eðer her seviyede yeni bir tane oluþsun istersen bu if kontrolünü kaldýrabilirsin).
+            if (ownedItems[item] == 1)
+            {
+                GameObject effectObj = Instantiate(item.specialEffectPrefab, transform.position, Quaternion.identity, transform);
+                effectObj.name = $"{item.itemName}_Effect"; // Hierarchy'de düzgün görünsün
+
+                // Eðer bu efektin initialize'a ihtiyacý varsa burada GetComponent ile alýp yapabilirsin.
+                // Örn: effectObj.GetComponent<SpecialItemScript>()?.Initialize(playerStats);
+
+                Debug.Log($"[PlayerInventory] Özel efekt oluþturuldu: {effectObj.name}");
+            }
+        }
+        // ---------------------------------------------
+
+        // 3. Statlarý Yeniden Hesapla
         PlayerStats stats = GetComponent<PlayerStats>();
         if (stats != null)
         {
@@ -109,21 +113,14 @@ public class PlayerInventory : MonoBehaviour
         }
         else
         {
-            Debug.LogError("[PlayerInventory] AddItem: PlayerStats bulunamadý! Statlar güncellenmedi.");
+            Debug.LogError("[PlayerInventory] PlayerStats bulunamadý! Statlar güncellenmedi.");
         }
     }
 
-    /// <summary>
-    /// Belirtilen item'ýn mevcut seviyesini döndürür (0 eðer sahip deðilse).
-    /// </summary>
     public int GetItemLevel(ItemData item)
     {
-        if (item == null)
-        {
-            return 0; // 'return' eklendi.
-        }
-
+        if (item == null) return 0;
         ownedItems.TryGetValue(item, out int level);
-        return level; // 'return' zaten vardý, ama 'if' bloðu eklendi.
+        return level;
     }
 }
