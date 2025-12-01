@@ -3,58 +3,59 @@ using System.Collections.Generic;
 
 public class PlayerStats : MonoBehaviour
 {
-    // --- TEMEL STATLAR (Inspector) ---
+    // --- TEMEL STATLAR ---
     #region Base Stats
-    [Header("Savunma")]
+    [Header("Savunma Statlarý")]
     [SerializeField] private float baseMaxHealth = 100f;
     [SerializeField] private float baseHpRegen = 0f;
     [SerializeField] private float baseMaxOverheal = 0f;
     [SerializeField] private float baseArmor = 0f;
     [SerializeField] private float baseMaxShield = 0f;
     [SerializeField][Range(0f, 90f)] private float baseEvasion = 0f;
-
-    [Header("Saldýrý")]
+    [Header("Yaþam ve Etkileþim Statlarý")]
+    [SerializeField][Range(0f, 300f)] private float baseLifeSteal = 0f;
+    [SerializeField] private float baseThorns = 0f;
+    [SerializeField] private float baseCritHeal = 0f;
+    [Header("Saldýrý Statlarý")]
     [SerializeField] private float baseDamageMultiplier = 100f;
     [SerializeField][Range(0f, 100f)] private float baseCritChance = 5f;
     [SerializeField] private float baseCritDamage = 200f;
     [SerializeField] private float baseAttackSpeedMultiplier = 100f;
-    [SerializeField] private float baseProjectileSpeedMultiplier = 100f; // YENÝ: Global Mermi Hýzý
+    [SerializeField] private float baseProjectileSpeedMultiplier = 100f;
     [SerializeField] private int baseProjectileCountBonus = 0;
     [SerializeField] private int baseProjectileBounce = 0;
     [SerializeField] private float basePierce = 0f;
+    [Header("Alan ve Süre Statlarý")]
     [SerializeField] private float baseSizeMultiplier = 100f;
     [SerializeField] private float baseDurationMultiplier = 100f;
-    [SerializeField] private float baseBleedPercent = 0f; // YENÝ: Kanama Yüzdesi
-
-    [Header("Etkileþim (Life Steal, Thorns)")]
-    [SerializeField] private float baseLifeSteal = 0f;
-    [SerializeField] private float baseThorns = 0f;
-
-    [Header("Hareket")]
+    [SerializeField] private float baseBleedPercent = 0f;
+    [Header("Düþman Tipi Hasar Çarpanlarý (%)")]
+    [SerializeField] private float baseDamageToMobs = 100f;
+    [SerializeField] private float baseDamageToElites = 100f;
+    [SerializeField] private float baseDamageToMiniBosses = 100f;
+    [SerializeField] private float baseDamageToBosses = 100f;
+    [Header("Hareket Statlarý")]
     [SerializeField] private float baseMoveSpeed = 5f;
     [SerializeField] private int baseExtraJumps = 1;
-    [SerializeField] private float baseJumpHeightMultiplier = 100f; // YENÝ: Zýplama Gücü
-
-    [Header("Genel & Þans")]
+    [SerializeField] private float baseJumpHeightMultiplier = 100f;
+    [Header("Genel Statlar")]
     [SerializeField] private float baseLuck = 0f;
-    [SerializeField] private float baseCurse = 0f; // YENÝ: Lanet
+    [SerializeField] private float baseCurse = 0f;
+    [SerializeField] private float basePickupRange = 1.5f;
     [SerializeField] private float baseMagnetRange = 8f;
     [SerializeField] private float baseXpBonus = 100f;
     [SerializeField] private float baseGoldBonus = 100f;
-    [SerializeField] private float baseDropChanceBonus = 100f; // YENÝ: Eþya Düþürme Þansý (%100 = Normal)
     [SerializeField] private float baseEliteSpawnChanceBonus = 0f;
-
-    [Header("Yetenek & Diðer")]
-    [SerializeField] private float baseSkillCooldownReduction = 0f; // YENÝ: Yetenek Bekleme Süresi Azaltma
+    [SerializeField][Range(0f, 1000f)] private float baseDropChanceBonus = 0f;
+    [Header("Yetenek ve Diðer")]
+    [SerializeField] private float baseSkillCooldownReduction = 0f;
     [SerializeField] private int baseRevivals = 0;
     [SerializeField] private int baseRerolls = 0;
     [SerializeField] private int baseSkips = 0;
     [SerializeField] private int baseBanishes = 0;
-
-    // Düþman tipi hasarlarý vs. buraya eklenebilir...
     #endregion
 
-    // --- ANLIK STATLAR (Public Properties) ---
+    // --- ANLIK HESAPLANAN STATLAR ---
     #region Current Stats
     [field: SerializeField] public float CurrentMaxHealth { get; private set; }
     [field: SerializeField] public float CurrentHpRegen { get; private set; }
@@ -62,36 +63,37 @@ public class PlayerStats : MonoBehaviour
     [field: SerializeField] public float CurrentArmor { get; private set; }
     [field: SerializeField] public float CurrentMaxShield { get; private set; }
     [field: SerializeField] public float CurrentEvasion { get; private set; }
-    [field: SerializeField] public float CurrentCritBleedPercent { get; private set; } // YENÝ
 
     [field: SerializeField] public float CurrentDamageMultiplier { get; private set; }
     [field: SerializeField] public float CurrentCritChance { get; private set; }
     [field: SerializeField] public float CurrentCritDamage { get; private set; }
     [field: SerializeField] public float CurrentAttackSpeedMultiplier { get; private set; }
-    [field: SerializeField] public float CurrentProjectileSpeedMultiplier { get; private set; } // YENÝ
+    [field: SerializeField] public float CurrentProjectileSpeedMultiplier { get; private set; }
     [field: SerializeField] public int CurrentProjectileCountBonus { get; private set; }
     [field: SerializeField] public int CurrentProjectileBounce { get; private set; }
     [field: SerializeField] public float CurrentPierce { get; private set; }
     [field: SerializeField] public float CurrentSizeMultiplier { get; private set; }
     [field: SerializeField] public float CurrentDurationMultiplier { get; private set; }
-    [field: SerializeField] public float CurrentBleedPercent { get; private set; } // YENÝ
+    [field: SerializeField] public float CurrentBleedPercent { get; private set; }
+    [field: SerializeField] public float CurrentCritBleedPercent { get; private set; }
 
     [field: SerializeField] public float CurrentLifeSteal { get; private set; }
     [field: SerializeField] public float CurrentThorns { get; private set; }
+    [field: SerializeField] public float CurrentCritHeal { get; private set; }
 
     [field: SerializeField] public float CurrentMoveSpeed { get; private set; }
     [field: SerializeField] public int CurrentExtraJumps { get; private set; }
-    [field: SerializeField] public float CurrentJumpHeightMultiplier { get; private set; } // YENÝ
+    [field: SerializeField] public float CurrentJumpHeightMultiplier { get; private set; }
 
     [field: SerializeField] public float CurrentLuck { get; private set; }
-    [field: SerializeField] public float CurrentCurse { get; private set; } // YENÝ
+    [field: SerializeField] public float CurrentCurse { get; private set; }
     [field: SerializeField] public float CurrentMagnetRange { get; private set; }
     [field: SerializeField] public float CurrentXpBonus { get; private set; }
     [field: SerializeField] public float CurrentGoldBonus { get; private set; }
-    [field: SerializeField] public float CurrentDropChanceBonus { get; private set; } // YENÝ
+    [field: SerializeField] public float CurrentDropChanceBonus { get; private set; }
     [field: SerializeField] public float CurrentEliteSpawnChanceBonus { get; private set; }
 
-    [field: SerializeField] public float CurrentSkillCooldownReduction { get; private set; } // YENÝ
+    [field: SerializeField] public float CurrentSkillCooldownReduction { get; private set; }
     [field: SerializeField] public int CurrentRevivals { get; private set; }
     [field: SerializeField] public int CurrentRerolls { get; private set; }
     [field: SerializeField] public int CurrentSkips { get; private set; }
@@ -99,6 +101,10 @@ public class PlayerStats : MonoBehaviour
     #endregion
 
     private PlayerInventory playerInventory;
+
+    // --- YENÝ: Geçici Bonuslar ---
+    private float temporaryDamageBonus = 0f;
+    // -----------------------------
 
     void Awake()
     {
@@ -119,31 +125,32 @@ public class PlayerStats : MonoBehaviour
         CurrentCritChance = baseCritChance;
         CurrentCritDamage = baseCritDamage;
         CurrentAttackSpeedMultiplier = baseAttackSpeedMultiplier;
-        CurrentProjectileSpeedMultiplier = baseProjectileSpeedMultiplier; // YENÝ
+        CurrentProjectileSpeedMultiplier = baseProjectileSpeedMultiplier;
         CurrentProjectileCountBonus = baseProjectileCountBonus;
         CurrentProjectileBounce = baseProjectileBounce;
         CurrentPierce = basePierce;
         CurrentSizeMultiplier = baseSizeMultiplier;
         CurrentDurationMultiplier = baseDurationMultiplier;
-        CurrentBleedPercent = baseBleedPercent; // YENÝ
+        CurrentBleedPercent = baseBleedPercent;
+        CurrentCritBleedPercent = 0f;
         CurrentLifeSteal = baseLifeSteal;
         CurrentThorns = baseThorns;
+        CurrentCritHeal = baseCritHeal;
         CurrentMoveSpeed = baseMoveSpeed;
         CurrentExtraJumps = baseExtraJumps;
-        CurrentJumpHeightMultiplier = baseJumpHeightMultiplier; // YENÝ
+        CurrentJumpHeightMultiplier = baseJumpHeightMultiplier;
         CurrentLuck = baseLuck;
-        CurrentCurse = baseCurse; // YENÝ
+        CurrentCurse = baseCurse;
         CurrentMagnetRange = baseMagnetRange;
         CurrentXpBonus = baseXpBonus;
         CurrentGoldBonus = baseGoldBonus;
-        CurrentDropChanceBonus = baseDropChanceBonus; // YENÝ
+        CurrentDropChanceBonus = baseDropChanceBonus;
         CurrentEliteSpawnChanceBonus = baseEliteSpawnChanceBonus;
-        CurrentSkillCooldownReduction = baseSkillCooldownReduction; // YENÝ
+        CurrentSkillCooldownReduction = baseSkillCooldownReduction;
         CurrentRevivals = baseRevivals;
         CurrentRerolls = baseRerolls;
         CurrentSkips = baseSkips;
         CurrentBanishes = baseBanishes;
-        CurrentCritBleedPercent = 0f; // Baþlangýçta 0 (Lancet yoksa 0)
 
         // 2. Item Bonuslarýný Uygula
         if (playerInventory != null && playerInventory.ownedItems != null)
@@ -165,13 +172,17 @@ public class PlayerStats : MonoBehaviour
             }
         }
 
-        // 3. Limitler ve Mantýk
+        // --- 3. GEÇÝCÝ BONUSLARI EKLE (YENÝ) ---
+        CurrentDamageMultiplier += temporaryDamageBonus;
+        // ---------------------------------------
+
+        // 4. Limitler ve Mantýk
         if (CurrentCritChance > 100f) { float excess = CurrentCritChance - 100f; CurrentCritDamage += excess; CurrentCritChance = 100f; }
         CurrentCritChance = Mathf.Clamp(CurrentCritChance, 0f, 100f);
         CurrentEvasion = Mathf.Clamp(CurrentEvasion, 0f, 90f);
         CurrentLifeSteal = Mathf.Clamp(CurrentLifeSteal, 0f, 300f);
         CurrentDropChanceBonus = Mathf.Clamp(CurrentDropChanceBonus, 0f, 1000f);
-        CurrentSkillCooldownReduction = Mathf.Clamp(CurrentSkillCooldownReduction, -Mathf.Infinity, 95f); // Max %95 azalma
+        CurrentSkillCooldownReduction = Mathf.Clamp(CurrentSkillCooldownReduction, -Mathf.Infinity, 95f);
         CurrentAttackSpeedMultiplier = Mathf.Max(10f, CurrentAttackSpeedMultiplier);
         CurrentMaxHealth = Mathf.Max(1f, CurrentMaxHealth);
         CurrentMoveSpeed = Mathf.Max(0.1f, CurrentMoveSpeed);
@@ -184,29 +195,14 @@ public class PlayerStats : MonoBehaviour
     {
         switch (type)
         {
-            // --- YENÝ EKLENEN STATLAR ---
-            case PassiveStatType.Bleed:
-                CurrentBleedPercent += value; // Sabit ekleme (% olarak)
-                break;
-            case PassiveStatType.Curse:
-                CurrentCurse += value; // Sabit ekleme
-                break;
-            case PassiveStatType.CritBleed:
-                CurrentCritBleedPercent += value; // Sabit yüzde eklemesi (Örn: 10)
-                break;
-            case PassiveStatType.SkillCooldown:
-                CurrentSkillCooldownReduction += value; // % azaltma deðeri eklenir
-                break;
-            case PassiveStatType.JumpHeight:
-                CurrentJumpHeightMultiplier += value; // % artýþ
-                break;
-            case PassiveStatType.DropChance:
-                CurrentDropChanceBonus += value; // % artýþ
-                break;
-            case PassiveStatType.ProjectileSpeed:
-                CurrentProjectileSpeedMultiplier += value; // % artýþ
-                break;
-            // -----------------------------
+            case PassiveStatType.CritHeal: CurrentCritHeal += value; break;
+            case PassiveStatType.Bleed: CurrentBleedPercent += value; break;
+            case PassiveStatType.CritBleed: CurrentCritBleedPercent += value; break;
+            case PassiveStatType.Curse: CurrentCurse += value; break;
+            case PassiveStatType.SkillCooldown: CurrentSkillCooldownReduction += value; break;
+            case PassiveStatType.JumpHeight: CurrentJumpHeightMultiplier += value; break;
+            case PassiveStatType.DropChance: CurrentDropChanceBonus += value; break;
+            case PassiveStatType.ProjectileSpeed: CurrentProjectileSpeedMultiplier += value; break;
 
             case PassiveStatType.MaxHealth: CurrentMaxHealth += isPercentage ? (baseMaxHealth * value / 100f) : value; break;
             case PassiveStatType.MoveSpeed: CurrentMoveSpeed += isPercentage ? (baseMoveSpeed * value / 100f) : value; break;
@@ -242,11 +238,25 @@ public class PlayerStats : MonoBehaviour
         if (collector != null) collector.UpdateMagnetRadius();
     }
 
-    // --- Temel Artýrma Metotlarý (Ayný kalabilir veya yenileri eklenebilir) ---
-    public void IncreaseBaseMaxHealth(float amount) { baseMaxHealth += amount; RecalculateStats(); }
-    // ... Diðerleri ...
-    public void IncreaseBaseRevivals(int amount) { baseRevivals += amount; RecalculateStats(); }
+    // --- GEÇÝCÝ STAT YÖNETÝMÝ (YENÝ) ---
+    public void AddTemporaryDamage(float amount)
+    {
+        temporaryDamageBonus += amount;
+        RecalculateStats();
+    }
+    public void RemoveTemporaryDamage(float amount)
+    {
+        temporaryDamageBonus -= amount;
+        RecalculateStats();
+    }
+    // ----------------------------------
 
+    // --- TEMEL STATLARI ARTIRAN METOTLAR ---
+    public void IncreaseBaseMaxHealth(float amount) { baseMaxHealth += amount; RecalculateStats(); }
+    public void IncreaseBaseRevivals(int amount) { baseRevivals += amount; RecalculateStats(); }
+    public void IncreaseBaseRerolls(int amount) { baseRerolls += amount; RecalculateStats(); }
+
+    // --- HARCANABÝLÝR STATLAR ---
     public bool UseRevival() { if (CurrentRevivals > 0) { baseRevivals--; RecalculateStats(); return true; } return false; }
     public bool UseReroll() { if (CurrentRerolls > 0) { baseRerolls--; RecalculateStats(); return true; } return false; }
     public bool UseSkip() { if (CurrentSkips > 0) { baseSkips--; RecalculateStats(); return true; } return false; }

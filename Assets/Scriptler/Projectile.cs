@@ -85,6 +85,11 @@ public class Projectile : MonoBehaviour
                 // Düþmana hasar ver
                 enemy.TakeDamage(finalDamage);
 
+                if (GameEventManager.Instance != null)
+                {
+                    GameEventManager.Instance.TriggerEnemyHit(enemy, finalDamage, isCritical);
+                }
+
                 // Düþmana çarptýktan sonra mermiyi yok et
                 Destroy(gameObject);
             }

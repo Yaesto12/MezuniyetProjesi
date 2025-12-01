@@ -142,6 +142,11 @@ public class PlayerHealth : MonoBehaviour
             {
                 currentHealth -= finalDamage;
                 Debug.Log($"Cana {finalDamage} hasar verildi. Kalan Can: {currentHealth:F0}");
+
+                if (GameEventManager.Instance != null)
+                {
+                    GameEventManager.Instance.TriggerPlayerTakeDamage(finalDamage);
+                }
             }
         }
 

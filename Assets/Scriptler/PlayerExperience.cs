@@ -1,6 +1,6 @@
 using UnityEngine;
-using UnityEngine.UI; // UI Manager'ýn kullandýðý bileþenler için (Slider)
-using TMPro; // UI Manager'ýn kullandýðý bileþenler için (TextMeshPro)
+using UnityEngine.UI;
+using TMPro;
 using System.Collections.Generic;
 using System.Linq;
 using System.Collections;
@@ -11,6 +11,7 @@ using System.Text; // StringBuilder için
 [RequireComponent(typeof(PlayerStats))]
 public class PlayerExperience : MonoBehaviour
 {
+    // --- Inspector Ayarlarý ---
     [Header("Seviye Ayarlarý")]
     [SerializeField] private int currentLevel = 1;
     [SerializeField] private int xpToNextLevel = 100;
@@ -46,8 +47,6 @@ public class PlayerExperience : MonoBehaviour
     private int targetXp = 0;
     private float animatingXp = 0;
     private bool isLevelUpSequenceActive = false;
-
-    // UI Referanslarý (xpBar, levelText) buradan kaldýrýldý.
 
     void Awake()
     {
@@ -102,8 +101,12 @@ public class PlayerExperience : MonoBehaviour
         Cursor.visible = true;
 
         PerformLevelUpCalculations();
+
+        // 1. Filtrelenmiþ "Silah Fýrsatlarý"ný (UpgradeData) al
         List<UpgradeData> possibleOpportunities = GetFilteredUpgradeOpportunities();
+        // 2. Bu fýrsatlardan 3 tane rastgele (Þans'a göre) seç
         List<UpgradeData> chosenOpportunities = ChooseRandomOpportunities(possibleOpportunities, 3);
+        // 3. Bu 3 fýrsatý, "Dinamik Yükseltme Sonuçlarý"na dönüþtür
         List<GeneratedUpgradeOption> finalOptions = GenerateOptionsFromOpportunities(chosenOpportunities);
 
         if (finalOptions.Count > 0)
@@ -126,9 +129,20 @@ public class PlayerExperience : MonoBehaviour
         animatingXp = 0;
         UpdateLevelTextInternal();
         UpdateXpBarInternal();
+
         Debug.LogWarning($"SEVÝYE ATLANDI! Yeni Seviye: {currentLevel}");
+
+        // --- YENÝ EKLENEN KISIM: Olayý Tetikle ---
+        if (GameEventManager.Instance != null)
+        {
+            GameEventManager.Instance.TriggerPlayerLevelUp(currentLevel);
+        }
+        // ----------------------------------------
     }
 
+    /// <summary>
+    /// Oyuncunun alabileceði tüm geçerli "Silah Fýrsatlarýný" (UpgradeData) filtreler.
+    /// </summary>
     private List<UpgradeData> GetFilteredUpgradeOpportunities()
     {
         List<UpgradeData> availableUpgrades = new List<UpgradeData>();
@@ -148,21 +162,25 @@ public class PlayerExperience : MonoBehaviour
                     if (upgrade.targetWeaponData != null && playerInventory.HasWeaponData(upgrade.targetWeaponData))
                         canAdd = true;
                     break;
-                    // Pasif stat kategorisi KASITLI OLARAK KALDIRILDI
             }
             if (canAdd) availableUpgrades.Add(upgrade);
         }
         return availableUpgrades;
     }
 
+    /// <summary>
+    /// Verilen listeden, Þans'a göre aðýrlýklý rastgele seçim yaparak 'count' adet seçer.
+    /// </summary>
     private List<UpgradeData> ChooseRandomOpportunities(List<UpgradeData> opportunities, int count)
     {
-        // TODO: Þansa göre aðýrlýklý seçim
         System.Random rng = new System.Random();
         List<UpgradeData> shuffledList = opportunities.OrderBy(a => rng.Next()).ToList();
         return shuffledList.Take(count).ToList();
     }
 
+    /// <summary>
+    /// Seçilen 3 "Fýrsat"ý, "Dinamik Sonuç"lara (GeneratedUpgradeOption) dönüþtürür.
+    /// </summary>
     private List<GeneratedUpgradeOption> GenerateOptionsFromOpportunities(List<UpgradeData> opportunities)
     {
         List<GeneratedUpgradeOption> finalOptions = new List<GeneratedUpgradeOption>();
@@ -174,8 +192,10 @@ public class PlayerExperience : MonoBehaviour
             option.BaseUpgradeData = opportunity;
             option.Icon = opportunity.icon;
             option.Modifications = new List<StatModification>();
+
             RarityLevel rolledRarity = RollForRarity(opportunity.rarity, playerStats.CurrentLuck);
             option.RolledRarity = rolledRarity;
+
             StringBuilder descBuilder = new StringBuilder();
             option.Name = $"[{rolledRarity}] {opportunity.upgradeName}";
             descBuilder.AppendLine(opportunity.description);
@@ -189,7 +209,11 @@ public class PlayerExperience : MonoBehaviour
             {
                 int statsToUpgrade = GetStatCountForRarity(rolledRarity);
                 List<WeaponStatType> availableStats = new List<WeaponStatType>(opportunity.targetWeaponData.availableStatUpgrades);
-                if (availableStats.Count > 0)
+                if (availableStats.Count == 0)
+                {
+                    descBuilder.Append("Yükseltilecek stat bulunamadý!");
+                }
+                else
                 {
                     if (availableStats.Count < statsToUpgrade) statsToUpgrade = availableStats.Count;
                     List<WeaponStatType> chosenStats = availableStats.OrderBy(a => rng.Next()).Take(statsToUpgrade).ToList();
@@ -207,6 +231,7 @@ public class PlayerExperience : MonoBehaviour
                     }
                 }
             }
+
             option.Description = descBuilder.ToString();
             finalOptions.Add(option);
         }
@@ -413,32 +438,13 @@ public class PlayerExperience : MonoBehaviour
         }
     }
 
-    // --- UI GÜNCELLEME METOTLARI (DÜZELTÝLDÝ) ---
+    // --- UI GÜNCELLEME METOTLARI (UIManager veya Direkt) ---
     private void UpdateLevelTextInternal()
     {
-        // Artýk UIManager'a güveniyor
-        if (UIManager.Instance != null)
-        {
-            UIManager.Instance.UpdateLevelText(currentLevel);
-        }
-        // Fallback (else if) kaldýrýldý
-        else
-        {
-            // Baþlangýçta UIManager'dan önce çaðrýlýrsa hata vermemesi için
-            // Debug.LogError("PlayerExperience: UIManager bulunamadý!");
-        }
+        if (UIManager.Instance != null) { UIManager.Instance.UpdateLevelText(currentLevel); }
     }
     private void UpdateXpBarInternal()
     {
-        // Artýk UIManager'a güveniyor
-        if (UIManager.Instance != null && xpToNextLevel > 0)
-        {
-            UIManager.Instance.UpdateXpBar(animatingXp, xpToNextLevel);
-        }
-        // Fallback (else if) kaldýrýldý
-        else if (UIManager.Instance == null)
-        {
-            // Debug.LogError("PlayerExperience: UIManager bulunamadý!");
-        }
+        if (UIManager.Instance != null && xpToNextLevel > 0) { UIManager.Instance.UpdateXpBar(animatingXp, xpToNextLevel); }
     }
-} // Sýnýf sonu
+}

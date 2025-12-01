@@ -1,5 +1,7 @@
 using UnityEngine;
-using System.Collections.Generic;
+using System.Collections.Generic; // List için
+
+// --- BU DOSYA TÜM GLOBAL TANIMLAMALARI ÝÇERÝR ---
 
 public enum RarityLevel { Common, Rare, Epic, Legendary }
 
@@ -10,19 +12,24 @@ public enum PassiveStatType
     MaxHealth, HpRegen, Armor, Evasion,
     // Saldýrý
     Damage, CritChance, CritDamage, AttackSpeed,
-    ProjectileCount, Size, ProjectileSpeed, // <-- ProjectileSpeed EKLENDÝ
-    Bleed, // <-- Bleed EKLENDÝ
+    ProjectileCount, Size, ProjectileSpeed,
+    Bleed,
     CritBleed,
     Pierce, ProjectileBounce,
+
+    // --- EKSÝK OLAN BU ---
+    CritHeal, // Kritik vuruþta gelen iyileþme
+    // --------------------
+
     // Hareket
-    MoveSpeed, JumpHeight, // <-- JumpHeight EKLENDÝ
+    MoveSpeed, JumpHeight,
     // Genel
-    Luck, Curse, // <-- Curse EKLENDÝ
-    MagnetRange, // (Pickup Range yerine bunu kullanabiliriz veya ayrý yapabiliriz)
+    Luck, Curse,
+    MagnetRange,
     XpBonus, GoldBonus,
-    DropChance, // <-- DropChance EKLENDÝ
+    DropChance,
     // Yetenek
-    SkillCooldown, // <-- SkillCooldown EKLENDÝ
+    SkillCooldown,
     Duration,
     Revival, LifeSteal, Thorns
 }

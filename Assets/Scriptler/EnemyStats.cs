@@ -115,6 +115,12 @@ public class EnemyStats : MonoBehaviour
             Instantiate(goldCoinVisualPrefab, spawnPos, Quaternion.identity);
         }
 
+        if (GameEventManager.Instance != null)
+        {
+            GameEventManager.Instance.TriggerEnemyKilled(this);
+        }
+
+
         Destroy(gameObject);
     }
 }

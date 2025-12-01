@@ -55,7 +55,7 @@ public class PlayerInventory : MonoBehaviour
     }
 
 
-    // --- Item Metotlarý (GÜNCELLENDÝ) ---
+    // --- Item Metotlarý (GÜNCELLENEN KISIM) ---
 
     /// <summary>
     /// Envantere yeni bir item ekler. Statlarý günceller ve varsa özel efekti baþlatýr.
@@ -75,8 +75,6 @@ public class PlayerInventory : MonoBehaviour
             else
             {
                 Debug.Log($"[PlayerInventory] '{item.itemName}' zaten var ve stacklenemez.");
-                // Stacklenemeyen item tekrar alýnýrsa genelde bir þey yapýlmaz veya altýn verilir.
-                // Þimdilik çýkýyoruz.
                 return;
             }
         }
@@ -90,17 +88,22 @@ public class PlayerInventory : MonoBehaviour
         // Eðer bu item'ýn özel bir prefabý varsa ve item ilk kez alýndýysa oluþtur.
         if (item.specialEffectPrefab != null)
         {
-            // Sadece ilk seviyede (1) oluþturuyoruz ki her seviye atlamada tekrar tekrar oluþmasýn.
-            // (Eðer her seviyede yeni bir tane oluþsun istersen bu if kontrolünü kaldýrabilirsin).
+            // Sadece ilk seviyede (1) oluþturuyoruz ki her stack'te tekrar tekrar oluþmasýn.
             if (ownedItems[item] == 1)
             {
+                // Prefab'ý oyuncunun çocuðu (child) olarak oluþtur
                 GameObject effectObj = Instantiate(item.specialEffectPrefab, transform.position, Quaternion.identity, transform);
-                effectObj.name = $"{item.itemName}_Effect"; // Hierarchy'de düzgün görünsün
+                effectObj.name = $"{item.itemName}_Effect";
 
-                // Eðer bu efektin initialize'a ihtiyacý varsa burada GetComponent ile alýp yapabilirsin.
-                // Örn: effectObj.GetComponent<SpecialItemScript>()?.Initialize(playerStats);
+                // ItemEffect scriptini bul ve baþlat (Strategy Pattern)
+                ItemEffect effectScript = effectObj.GetComponent<ItemEffect>();
+                if (effectScript != null)
+                {
+                    // PlayerStats'ý ve Player'ýn kendisini (this) gönder
+                    effectScript.OnEquip(GetComponent<PlayerStats>(), this);
+                }
 
-                Debug.Log($"[PlayerInventory] Özel efekt oluþturuldu: {effectObj.name}");
+                Debug.Log($"[PlayerInventory] Özel efekt oluþturuldu ve baþlatýldý: {effectObj.name}");
             }
         }
         // ---------------------------------------------
@@ -119,6 +122,9 @@ public class PlayerInventory : MonoBehaviour
 
     public int GetItemLevel(ItemData item)
     {
+        if (item == null) return 0;
+        if (item == null) return 0;
+        if (item == null) return 0;
         if (item == null) return 0;
         ownedItems.TryGetValue(item, out int level);
         return level;
