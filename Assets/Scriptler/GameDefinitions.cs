@@ -24,7 +24,7 @@ public enum PassiveStatType
     DamageToMiniBosses, // Mini Bosslara hasar çarpaný
     DamageToBosses,     // Bosslara hasar çarpaný
     // ---------------------------------------
-
+    MaxOverheal,
     // Hareket
     MoveSpeed, JumpHeight,
     // Genel

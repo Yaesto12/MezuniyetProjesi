@@ -44,7 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 18572000ce43c3849a4ced92a7c24931, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Item_ReapersScythe
-  myItemData: {fileID: 0}
+  myItemData: {fileID: 11400000, guid: 64e93655fe5c6fe458825b2ddc3e7a06, type: 2}
   baseThreshold: 10
   initialBonus: 6
   decayAmount: 2

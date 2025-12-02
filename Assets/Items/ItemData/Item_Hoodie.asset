@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79e2ec3704c85a146a3777b17c467f88, type: 3}
+  m_Name: Item_Hoodie
+  m_EditorClassIdentifier: Assembly-CSharp::ItemData
+  itemName: Hoodie
+  description: "E\u015Fya a\xE7\u0131klamas\u0131..."
+  icon: {fileID: 0}
+  rarity: 0
+  modifiers: []
+  isStackable: 1
+  specialEffectPrefab: {fileID: 72019515689813839, guid: 8141c4a3de05f5248883a66245a6e3bc, type: 3}
+  createEffectPerStack: 0

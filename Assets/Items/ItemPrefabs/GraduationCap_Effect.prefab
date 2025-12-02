@@ -44,5 +44,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d291ab7d32a216a44b396d101d823b84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Item_GraduationCap
-  myItemData: {fileID: 0}
+  myItemData: {fileID: 11400000, guid: 056cc1e8bd984b14a94d18d7aaec17d7, type: 2}
   bonusPercentPerLevel: 5

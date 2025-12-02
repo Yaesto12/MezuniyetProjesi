@@ -21,8 +21,6 @@ public class PlayerInventory : MonoBehaviour
     public bool HasWeaponData(WeaponData originalWeaponData)
     {
         if (originalWeaponData == null) return false;
-
-        // Klonlanmýþ instance'larýn isimlerini de kontrol et
         return ownedWeaponBlueprints.Contains(originalWeaponData) ||
                ownedWeaponBlueprints.Exists(instance => instance != null && instance.name.StartsWith(originalWeaponData.name));
     }
@@ -55,11 +53,8 @@ public class PlayerInventory : MonoBehaviour
     }
 
 
-    // --- Item Metotlarý (GÜNCELLENEN KISIM) ---
+    // --- Item Metotlarý (GÜNCELLENMÝÞ HALÝ) ---
 
-    /// <summary>
-    /// Envantere yeni bir item ekler. Statlarý günceller ve varsa özel efekti baþlatýr.
-    /// </summary>
     public void AddItem(ItemData item)
     {
         if (item == null) return;
@@ -84,26 +79,27 @@ public class PlayerInventory : MonoBehaviour
             Debug.Log($"[PlayerInventory] Yeni item alýndý: '{item.itemName}'");
         }
 
-        // 2. --- YENÝ: Özel Efekt / Mekanik Baþlatma ---
-        // Eðer bu item'ýn özel bir prefabý varsa ve item ilk kez alýndýysa oluþtur.
+        // 2. --- ÖZEL EFEKT / MEKANÝK BAÞLATMA ---
         if (item.specialEffectPrefab != null)
         {
-            // Sadece ilk seviyede (1) oluþturuyoruz ki her stack'te tekrar tekrar oluþmasýn.
-            if (ownedItems[item] == 1)
+            // KURAL: Ya item ilk kez alýnmýþtýr (Seviye 1)
+            // YA DA item "Her Stack Ýçin Oluþtur" (createEffectPerStack) modundadýr.
+            if (ownedItems[item] == 1 || item.createEffectPerStack)
             {
-                // Prefab'ý oyuncunun çocuðu (child) olarak oluþtur
+                // Prefab'ý oyuncunun çocuðu olarak oluþtur
                 GameObject effectObj = Instantiate(item.specialEffectPrefab, transform.position, Quaternion.identity, transform);
-                effectObj.name = $"{item.itemName}_Effect";
 
-                // ItemEffect scriptini bul ve baþlat (Strategy Pattern)
+                // Ýsimlendirme (Karýþýklýðý önlemek için seviyeyi ekleyelim)
+                effectObj.name = $"{item.itemName}_Effect_Stack{ownedItems[item]}";
+
+                // ItemEffect scriptini bul ve baþlat
                 ItemEffect effectScript = effectObj.GetComponent<ItemEffect>();
                 if (effectScript != null)
                 {
-                    // PlayerStats'ý ve Player'ýn kendisini (this) gönder
                     effectScript.OnEquip(GetComponent<PlayerStats>(), this);
                 }
 
-                Debug.Log($"[PlayerInventory] Özel efekt oluþturuldu ve baþlatýldý: {effectObj.name}");
+                Debug.Log($"[PlayerInventory] Özel efekt oluþturuldu: {effectObj.name}");
             }
         }
         // ---------------------------------------------
@@ -122,9 +118,6 @@ public class PlayerInventory : MonoBehaviour
 
     public int GetItemLevel(ItemData item)
     {
-        if (item == null) return 0;
-        if (item == null) return 0;
-        if (item == null) return 0;
         if (item == null) return 0;
         ownedItems.TryGetValue(item, out int level);
         return level;

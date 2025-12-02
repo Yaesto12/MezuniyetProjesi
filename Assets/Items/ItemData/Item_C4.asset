@@ -18,4 +18,4 @@ MonoBehaviour:
   rarity: 0
   modifiers: []
   isStackable: 1
-  specialEffectPrefab: {fileID: 0}
+  specialEffectPrefab: {fileID: 6560917586092127447, guid: 05b6dc132b1fd124aa3b7675c7e23ced, type: 3}

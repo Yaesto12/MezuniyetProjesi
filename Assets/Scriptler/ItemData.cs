@@ -8,7 +8,7 @@ public class ItemData : ScriptableObject
     public string itemName = "Yeni Eþya";
     [TextArea] public string description = "Eþya açýklamasý...";
     public Sprite icon;
-    public RarityLevel rarity = RarityLevel.Common;
+    public RarityLevel rarity = RarityLevel.Common; // GameDefinitions'tan
 
     [Header("Eþya Etkileri")]
     [Tooltip("Bu eþyanýn etkilediði statlar listesi. Pozitif veya Negatif olabilir.")]
@@ -21,4 +21,9 @@ public class ItemData : ScriptableObject
     [Header("Özel Mekanik (Opsiyonel)")]
     [Tooltip("Sadece bu item alýndýðýnda çalýþacak özel bir script/görsel varsa, o prefabý buraya sürükle.")]
     public GameObject specialEffectPrefab;
+
+    // --- YENÝ EKLENEN AYAR ---
+    [Tooltip("Eðer iþaretliyse, bu item her alýndýðýnda (stacklendiðinde) yeni bir efekt prefabý oluþturulur. (Fang Pendant gibi baðýmsýz çalýþan itemler için).")]
+    public bool createEffectPerStack = false;
+    // -------------------------
 }

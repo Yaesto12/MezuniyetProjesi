@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 79e2ec3704c85a146a3777b17c467f88, type: 3}
-  m_Name: New ItemData 7
+  m_Name: Item_Painkiller
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
-  itemName: "Yeni E\u015Fya"
+  itemName: Painkiller
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
   icon: {fileID: 0}
   rarity: 0
   modifiers: []
   isStackable: 1
-  specialEffectPrefab: {fileID: 0}
+  specialEffectPrefab: {fileID: 457834927013978801, guid: 3cbda3bc699956143830bdc37b73a6eb, type: 3}

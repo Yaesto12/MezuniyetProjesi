@@ -7,28 +7,22 @@ public class GameEventManager : MonoBehaviour
 
     void Awake()
     {
-        // Singleton (Sahnede tek olmasýný saðlar)
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
     }
 
     // --- OLAYLAR (Events) ---
 
-    // Düþmana vurulduðunda tetiklenir (Düþman Stats, Verilen Hasar, Kritik mi?)
     public event Action<EnemyStats, int, bool> onEnemyHit;
-
-    // Düþman öldüðünde tetiklenir
     public event Action<EnemyStats> onEnemyKilled;
 
-    // Oyuncu hasar aldýðýnda tetiklenir
-    public event Action<int> onPlayerTakeDamage;
+    // DEÐÝÞTÝ: Artýk saldýraný da gönderiyor (int damage, EnemyStats attacker)
+    public event Action<int, EnemyStats> onPlayerTakeDamage;
 
-    // --- YENÝ EKLENEN: Seviye Atlandýðýnda Tetiklenir ---
-    public event Action<int> onPlayerLevelUp; // Parametre olarak yeni seviyeyi gönderir
-    // ---------------------------------------------------
+    public event Action<int> onPlayerLevelUp;
     public event Action onPlayerSkillUsed;
 
-    // --- TETÝKLEYÝCÝLER (Ana scriptler bunlarý çaðýrýr) ---
+    // --- TETÝKLEYÝCÝLER ---
 
     public void TriggerEnemyHit(EnemyStats enemy, int damage, bool isCrit)
     {
@@ -40,22 +34,19 @@ public class GameEventManager : MonoBehaviour
         if (onEnemyKilled != null) onEnemyKilled(enemy);
     }
 
-    public void TriggerPlayerSkillUsed()
+    // DEÐÝÞTÝ: Saldýran parametresi eklendi
+    public void TriggerPlayerTakeDamage(int damage, EnemyStats attacker)
     {
-        if (onPlayerSkillUsed != null) onPlayerSkillUsed();
-        // Debug.Log("EVENT: Yetenek Kullanýldý!");
+        if (onPlayerTakeDamage != null) onPlayerTakeDamage(damage, attacker);
     }
 
-    public void TriggerPlayerTakeDamage(int damage)
-    {
-        if (onPlayerTakeDamage != null) onPlayerTakeDamage(damage);
-    }
-
-    // --- YENÝ TETÝKLEYÝCÝ ---
     public void TriggerPlayerLevelUp(int newLevel)
     {
         if (onPlayerLevelUp != null) onPlayerLevelUp(newLevel);
-        Debug.Log($"EVENT: Seviye Atlama Olayý Tetiklendi! (Seviye {newLevel})");
     }
-    // ------------------------
+
+    public void TriggerPlayerSkillUsed()
+    {
+        if (onPlayerSkillUsed != null) onPlayerSkillUsed();
+    }
 }
