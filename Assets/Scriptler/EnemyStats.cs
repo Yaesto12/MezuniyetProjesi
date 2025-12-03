@@ -3,136 +3,186 @@ using System.Collections;
 
 public class EnemyStats : MonoBehaviour
 {
-    [Header("Temel Nitelikler")]
-    [SerializeField] private int maxHealth = 100;
-    [SerializeField] private float speed = 3f;
+    [Header("Temel Statlar")]
+    [SerializeField] private float maxHealth = 100f;
     [SerializeField] private int damage = 10;
+    [SerializeField] private float moveSpeed = 3.0f;
 
-    [Header("Tecrübe Puaný (XP)")]
-    [SerializeField] private GameObject xpOrbPrefab;
+    [Header("Ödül / Loot")]
     [SerializeField] private int xpValue = 10;
+    [SerializeField] private int goldValue = 5;
+    [SerializeField] private GameObject xpOrbPrefab;
+    [SerializeField] private GameObject goldCoinPrefab;
 
-    [Header("Altýn Düþürme")]
-    [Tooltip("Sadece görsel efekt olarak kullanýlacak altýn prefabý (Fiziksiz).")]
-    [SerializeField] private GameObject goldCoinVisualPrefab;
-    [Tooltip("Bu düþman öldüðünde en az kaç altýn versin?")]
-    [SerializeField] private int minGoldDrop = 1;
-    [Tooltip("Bu düþman öldüðünde en fazla kaç altýn versin?")]
-    [SerializeField] private int maxGoldDrop = 3;
+    // --- HESAPLANMIÞ ÖZELLÝKLER (Properties) ---
+    // Donmuþsa hýz 0, deðilse (Hýz * Ýðrenme Çarpaný)
+    public float Speed => (isFrozen ? 0 : moveSpeed) * grossedOutSpeedMult;
 
-    // --- GÜNCELLENEN KISIM: Hýz ve Donma ---
+    // (Hasar * Ýðrenme Çarpaný)
+    public int Damage => Mathf.Max(1, Mathf.RoundToInt(damage * grossedOutDamageMult));
+
+    public float CurrentHealth => currentHealth;
+    public float MaxHealth => maxHealth;
+    // -------------------------------------------
+
+    // --- DURUM EFEKTLERÝ ---
     private bool isFrozen = false;
+    private bool isBleeding = false;
+
+    // --- GROSSED OUT (PUNGENT ONION) ---
+    private bool isGrossedOut = false;
+    private float grossedOutSpeedMult = 1f; // 1.0 = Normal, 0.5 = Yarý Hýz
+    private float grossedOutDamageMult = 1f;
+    private Coroutine grossedOutCoroutine;
+    // -----------------------------------
+
+    public bool IsGolden { get; private set; } = false;
+
+    private float currentHealth;
     private Coroutine freezeCoroutine;
-
-    // Dýþarýdan hýz istendiðinde, donmuþsa 0, deðilse normal hýzý ver
-    public float Speed => isFrozen ? 0f : speed;
-    // ---------------------------------------
-
-    public int Damage => damage;
-
-    private int currentHealth;
     private Coroutine bleedCoroutine;
 
-    private void Awake()
+    private void Start()
     {
         currentHealth = maxHealth;
     }
 
-    public void TakeDamage(int damageAmount, bool isDoT = false)
+    public void TakeDamage(int damageAmount)
     {
-        if (currentHealth <= 0) return;
         currentHealth -= damageAmount;
-
-        if (currentHealth <= 0)
-        {
-            Die();
-        }
+        if (currentHealth <= 0) Die();
     }
 
-    public void ApplyBleed(int totalBleedDamage, float duration)
-    {
-        if (totalBleedDamage <= 0) return;
-        if (bleedCoroutine != null) StopCoroutine(bleedCoroutine);
-        bleedCoroutine = StartCoroutine(BleedRoutine(totalBleedDamage, duration));
-    }
-
-    private IEnumerator BleedRoutine(int totalDamage, float duration)
-    {
-        float damagePerSecond = totalDamage / duration;
-        float tickRate = 0.5f;
-        float timer = 0f;
-
-        while (timer < duration && currentHealth > 0)
-        {
-            yield return new WaitForSeconds(tickRate);
-            timer += tickRate;
-            int tickDamage = Mathf.CeilToInt(damagePerSecond * tickRate);
-            TakeDamage(tickDamage, true);
-        }
-        bleedCoroutine = null;
-    }
-
-    // --- YENÝ METOT: Dondurma ---
+    // --- FREEZE ---
     public void Freeze(float duration)
     {
-        // Eðer zaten donmuþsa, süreyi uzatabilir veya sýfýrlayabiliriz.
-        // Basitlik için eskiyi durdurup yenisini baþlatýyoruz.
         if (freezeCoroutine != null) StopCoroutine(freezeCoroutine);
         freezeCoroutine = StartCoroutine(FreezeRoutine(duration));
     }
-
     private IEnumerator FreezeRoutine(float duration)
     {
         isFrozen = true;
-        // Debug.Log($"{gameObject.name} dondu! ({duration} saniye)");
+        yield return new WaitForSeconds(duration);
+        isFrozen = false;
+    }
 
-        // Opsiyonel: Görsel olarak donduðunu belli etmek için renk deðiþimi
-        var renderer = GetComponentInChildren<Renderer>();
-        Color originalColor = Color.white;
-        if (renderer != null)
+    // --- BLEED ---
+    public void ApplyBleed(int damagePerTick, float duration)
+    {
+        if (!isBleeding)
         {
-            originalColor = renderer.material.color;
-            renderer.material.color = Color.cyan; // Maviye boya
+            bleedCoroutine = StartCoroutine(BleedRoutine(damagePerTick, duration));
         }
+    }
+    private IEnumerator BleedRoutine(int dmg, float time)
+    {
+        isBleeding = true;
+        float timer = 0;
+        while (timer < time)
+        {
+            TakeDamage(dmg);
+            yield return new WaitForSeconds(1f);
+            timer += 1f;
+        }
+        isBleeding = false;
+    }
+
+    // --- YENÝ EKLENEN: GROSSED OUT ---
+    public void ApplyGrossedOut(float duration, float speedReductionPercent, float damageReductionPercent)
+    {
+        // Coroutine zaten çalýþýyorsa durdurup yeniden baþlat
+        if (grossedOutCoroutine != null) StopCoroutine(grossedOutCoroutine);
+        grossedOutCoroutine = StartCoroutine(GrossedOutRoutine(duration, speedReductionPercent, damageReductionPercent));
+    }
+
+    private IEnumerator GrossedOutRoutine(float duration, float speedRed, float damageRed)
+    {
+        isGrossedOut = true;
+
+        // Örn: %30 azalma için (1 - 0.30) = 0.70 çarpaný
+        grossedOutSpeedMult = Mathf.Clamp01(1f - (speedRed / 100f));
+        grossedOutDamageMult = Mathf.Clamp01(1f - (damageRed / 100f));
+
+        // Görsel efekt (Yeþilimsi renk)
+        Renderer[] renderers = GetComponentsInChildren<Renderer>();
+        foreach (Renderer r in renderers) r.material.color = Color.green;
 
         yield return new WaitForSeconds(duration);
 
-        // Eski haline döndür
-        isFrozen = false;
-        if (renderer != null) renderer.material.color = originalColor;
+        // Eski haline dön
+        isGrossedOut = false;
+        grossedOutSpeedMult = 1f;
+        grossedOutDamageMult = 1f;
 
-        freezeCoroutine = null;
+        // Rengi düzelt (Eðer Altýn ise sarýya, deðilse beyaza)
+        foreach (Renderer r in renderers)
+        {
+            r.material.color = IsGolden ? Color.yellow : Color.white;
+        }
     }
-    // ----------------------------
+    // ---------------------------------
+
+    public float GetHealthPercentage() => currentHealth / maxHealth;
+
+    public void MakeGolden()
+    {
+        if (IsGolden) return;
+        IsGolden = true;
+        Renderer[] renderers = GetComponentsInChildren<Renderer>();
+        foreach (Renderer r in renderers)
+        {
+            r.material.color = Color.yellow;
+            r.material.EnableKeyword("_EMISSION");
+            r.material.SetColor("_EmissionColor", Color.yellow * 2f);
+        }
+    }
 
     private void Die()
     {
-        if (xpOrbPrefab != null)
-        {
-            GameObject orbGO = Instantiate(xpOrbPrefab, transform.position + Vector3.up * 0.5f, Quaternion.identity);
-            XpOrb orbScript = orbGO.GetComponent<XpOrb>();
-            if (orbScript != null) orbScript.Setup(xpValue);
-        }
-
-        int goldAmount = Random.Range(minGoldDrop, maxGoldDrop + 1);
-        PlayerWallet wallet = FindFirstObjectByType<PlayerWallet>();
-        if (wallet != null)
-        {
-            wallet.AddGold(goldAmount);
-        }
-
-        if (goldCoinVisualPrefab != null)
-        {
-            Vector3 spawnPos = transform.position + Vector3.up * 2f;
-            Instantiate(goldCoinVisualPrefab, spawnPos, Quaternion.identity);
-        }
-
+        if (GameEventManager.Instance != null) GameEventManager.Instance.TriggerEnemyKilled(this);
+        int finalXp = IsGolden ? xpValue * 10 : xpValue;
+        int finalGold = IsGolden ? goldValue * 10 : goldValue;
+        DropLoot(finalXp, finalGold);
         Destroy(gameObject);
     }
 
-    public float GetHealthPercentage()
+    private void DropLoot(int xpAmount, int goldAmount)
     {
-        if (maxHealth <= 0) return 0;
-        return (float)currentHealth / maxHealth;
+        // 1. XP Küresi (Fiziksel olarak düþmeye devam etsin, onu XpCollector topluyor)
+        if (xpOrbPrefab != null)
+        {
+            Instantiate(xpOrbPrefab, transform.position, Quaternion.identity);
+        }
+
+        // 2. Altýn (OTOMATÝK TOPLAMA)
+        if (goldAmount > 0)
+        {
+            // Oyuncuyu bul ve parayý direkt ekle
+            // (FindObject performanslý deðildir ama sadece ölünce çalýþtýðý için sorun olmaz)
+            PlayerInventory playerInventory = FindObjectOfType<PlayerInventory>();
+
+            if (playerInventory != null)
+            {
+                playerInventory.AddGold(goldAmount);
+            }
+
+            // 3. Görsel Efekt (Altýn Logosu)
+            // Bu obje sadece görsellik içindir, içinde script olmasýna gerek yok.
+            // Üzerinde "AutoDestroy" scripti olmasý yeterli.
+            if (goldCoinPrefab != null)
+            {
+                // Biraz yukarýda çýksýn
+                Instantiate(goldCoinPrefab, transform.position + Vector3.up * 1.0f, Quaternion.identity);
+            }
+        }
+    }
+
+    private void OnCollisionStay(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            PlayerHealth playerHealth = collision.gameObject.GetComponent<PlayerHealth>();
+            if (playerHealth != null) playerHealth.TakeDamage(Damage, this); // Özellikten gelen Damage'i kullanýr
+        }
     }
 }

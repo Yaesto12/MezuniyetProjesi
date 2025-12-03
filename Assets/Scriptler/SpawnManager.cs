@@ -22,13 +22,11 @@ public class SpawnManager : MonoBehaviour
     [Tooltip("Kaç saniyede bir spawn dalgasý tetiklenecek.")]
     [SerializeField] private float spawnInterval = 2f;
 
-    // --- YENÝ EKLENEN KISIM ---
     [Header("Miktar Ayarlarý")]
     [Tooltip("Her dalgada en az kaç düþman doðsun?")]
     [SerializeField] private int minSpawnAmount = 1;
     [Tooltip("Her dalgada en fazla kaç düþman doðsun?")]
     [SerializeField] private int maxSpawnAmount = 3;
-    // --------------------------
 
     [Header("Düþman Havuzu")]
     [SerializeField] private List<EnemySpawnData> enemyList = new List<EnemySpawnData>();
@@ -51,7 +49,7 @@ public class SpawnManager : MonoBehaviour
             if (playerObj != null)
             {
                 playerTransform = playerObj.transform;
-                Debug.Log("SpawnManager: Oyuncu bulundu, spawn baþlýyor.");
+                // Debug.Log("SpawnManager: Oyuncu bulundu, spawn baþlýyor.");
                 StartCoroutine(SpawnEnemyRoutine());
             }
             yield return null;
@@ -74,12 +72,29 @@ public class SpawnManager : MonoBehaviour
 
                 if (prefabToSpawn != null)
                 {
-                    // Her düþman için ayrý bir rastgele nokta bul (Daðýnýk spawn)
+                    // Her düþman için ayrý bir rastgele nokta bul
                     Vector3 spawnPos = GetValidSpawnPosition();
 
                     if (spawnPos != Vector3.zero)
                     {
-                        Instantiate(prefabToSpawn, spawnPos, Quaternion.identity);
+                        // --- DEÐÝÞÝKLÝK YAPILAN KISIM ---
+
+                        // Düþmaný oluþtur ve referansýný al
+                        GameObject newEnemy = Instantiate(prefabToSpawn, spawnPos, Quaternion.identity);
+
+                        // EnemyStats bileþenini al
+                        EnemyStats stats = newEnemy.GetComponent<EnemyStats>();
+
+                        if (stats != null)
+                        {
+                            // Eðer GameEventManager varsa, düþmanýn doðduðunu bildir (Midas Touched burada devreye girer)
+                            if (GameEventManager.Instance != null)
+                            {
+                                GameEventManager.Instance.TriggerEnemySpawned(stats);
+                            }
+                        }
+
+                        // --------------------------------
                     }
                 }
             }
@@ -120,13 +135,13 @@ public class SpawnManager : MonoBehaviour
 
             Vector3 potentialPos = playerTransform.position + new Vector3(randomCircle.x, 0, randomCircle.y) * randomDistance;
 
-            // Yüksekten (Y=100) aþaðý ýþýn atarak haritayý bul
+            // Yüksekten aþaðý ýþýn atarak zemini bul
             Vector3 rayOrigin = new Vector3(potentialPos.x, 100f, potentialPos.z);
 
             RaycastHit hit;
             if (Physics.Raycast(rayOrigin, Vector3.down, out hit, 200f, groundLayer))
             {
-                return hit.point + Vector3.up * 1f;
+                return hit.point + Vector3.up * 1f; // Zeminin biraz üstünde doðsun
             }
         }
 

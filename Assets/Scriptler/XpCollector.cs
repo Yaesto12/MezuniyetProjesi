@@ -10,18 +10,13 @@ public class XpCollector : MonoBehaviour
     void Awake()
     {
         playerTransform = transform.parent;
-        // Referanslarý burada alýyoruz
         InitializeReferences();
 
         if (playerTransform == null) Debug.LogError("XpCollector: Üst obje (Player) bulunamadý!", this);
 
-        // Baþlangýç boyutunu ayarla
         UpdateMagnetRadius();
     }
 
-    /// <summary>
-    /// Referanslarý bulup atayan yardýmcý metot.
-    /// </summary>
     private void InitializeReferences()
     {
         if (playerStats == null) playerStats = GetComponentInParent<PlayerStats>();
@@ -38,26 +33,41 @@ public class XpCollector : MonoBehaviour
         {
             if (playerTransform != null) orb.StartSeeking(playerTransform);
         }
-        // Altýn toplama buraya dahil deðil (otomatik toplanýyor)
     }
 
-    /// <summary>
-    /// PlayerStats deðiþtiðinde çaðrýlýr ve mýknatýs collider'ýnýn boyutunu günceller.
-    /// </summary>
     public void UpdateMagnetRadius()
     {
-        // Eðer PlayerStats bunu Awake'ten önce çaðýrýrsa diye referanslarý kontrol et/al
         InitializeReferences();
 
         if (playerStats != null && magnetCollider != null)
         {
             magnetCollider.radius = playerStats.CurrentMagnetRange;
         }
-        else
+    }
+
+    // --- YENÝ EKLENEN KISIM (Magnet Item'ý Ýçin) ---
+    /// <summary>
+    /// Sahnedeki aktif olan TÜM XpOrb'larý bulur ve oyuncuya doðru çeker.
+    /// Magnet item'ý tarafýndan tetiklenir.
+    /// </summary>
+    public void PullAllActiveOrbs()
+    {
+        if (playerTransform == null) return;
+
+        // Sahnedeki tüm XpOrb scriptlerini bul (Aðýr bir iþlemdir ama 
+        // 20 saniyede bir çalýþacaðý için sorun olmaz)
+        XpOrb[] allOrbs = FindObjectsByType<XpOrb>(FindObjectsSortMode.None);
+
+        if (allOrbs != null && allOrbs.Length > 0)
         {
-            // Eðer hala null ise, sadece sessizce çýk. 
-            // Çünkü Awake henüz çalýþmamýþ olabilir, hata vermeye gerek yok.
-            // Awake çalýþtýðýnda zaten hatalarý kontrol edecek.
+            // Debug.Log($"Magnet Aktif: {allOrbs.Length} XP küresi çekiliyor!");
+            foreach (XpOrb orb in allOrbs)
+            {
+                // Zaten çekilmekte olanlarý tekrar tetiklemeye gerek yok ama
+                // StartSeeking içinde kontrolü varsa sorun olmaz.
+                orb.StartSeeking(playerTransform);
+            }
         }
     }
+    // -----------------------------------------------
 }

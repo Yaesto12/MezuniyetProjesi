@@ -11,6 +11,12 @@ public class GameEventManager : MonoBehaviour
         else Destroy(gameObject);
     }
 
+    public event Action<EnemyStats> onEnemySpawned;
+
+    public void TriggerEnemySpawned(EnemyStats enemy)
+    {
+        onEnemySpawned?.Invoke(enemy);
+    }
     // --- OLAYLAR (Events) ---
 
     public event Action<EnemyStats, int, bool> onEnemyHit;

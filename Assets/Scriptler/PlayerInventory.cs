@@ -12,6 +12,9 @@ public class PlayerInventory : MonoBehaviour
     [Tooltip("Alýnan yükseltmelerin (UpgradeData) seviyelerini takip eder.")]
     public Dictionary<UpgradeData, int> upgradeLevels = new Dictionary<UpgradeData, int>();
 
+    [Header("Para")]
+    public int CurrentGold { get; private set; } = 0;
+
     [Header("Pasif Item Envanteri")]
     [Tooltip("Oyuncunun sahip olduðu pasif item'larý ve mevcut seviyelerini takip eder.")]
     public Dictionary<ItemData, int> ownedItems = new Dictionary<ItemData, int>();
@@ -114,6 +117,13 @@ public class PlayerInventory : MonoBehaviour
         {
             Debug.LogError("[PlayerInventory] PlayerStats bulunamadý! Statlar güncellenmedi.");
         }
+    }
+
+    public void AddGold(int amount)
+    {
+        CurrentGold += amount;
+        // Debug.Log($"Altýn Kazanýldý: {amount}. Toplam: {CurrentGold}");
+        // Burada UI güncellemesi (UIManager) çaðýrýlabilir.
     }
 
     public int GetItemLevel(ItemData item)
