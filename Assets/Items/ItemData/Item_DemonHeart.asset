@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Demon Heart
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: cd21047952d0c964e844b2bc61375103, type: 3}
   rarity: 0
   modifiers:
   - statType: 1
@@ -22,4 +22,6 @@ MonoBehaviour:
     amountPerLevel: 20
     isPercentage: 1
   isStackable: 1
+  dropWeight: 100
   specialEffectPrefab: {fileID: 0}
+  createEffectPerStack: 0

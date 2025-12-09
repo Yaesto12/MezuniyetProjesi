@@ -418,7 +418,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a4083cc5e64890d4db674b51bbe76610, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerInventory
-  ownedWeaponBlueprints: []
+  weapons: []
+  ownedItems: []
 --- !u!114 &6620999504069436482
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -455,25 +456,27 @@ MonoBehaviour:
   baseEvasion: 0
   baseLifeSteal: 0
   baseThorns: 0
+  baseCritHeal: 0
   baseDamageMultiplier: 100
   baseCritChance: 5
   baseCritDamage: 200
   baseAttackSpeedMultiplier: 100
+  baseProjectileSpeedMultiplier: 100
   baseProjectileCountBonus: 0
   baseProjectileBounce: 0
   basePierce: 0
   baseSizeMultiplier: 100
   baseDurationMultiplier: 100
+  baseBleedPercent: 0
   baseDamageToMobs: 100
   baseDamageToElites: 100
   baseDamageToMiniBosses: 100
   baseDamageToBosses: 100
-  baseMoveSpeed: 5
+  baseMoveSpeed: 30
   baseExtraJumps: 1
   baseJumpHeightMultiplier: 100
   baseLuck: 0
   baseCurse: 0
-  basePickupRange: 1.5
   baseMagnetRange: 8
   baseXpBonus: 100
   baseGoldBonus: 100
@@ -490,32 +493,35 @@ MonoBehaviour:
   <CurrentArmor>k__BackingField: 0
   <CurrentMaxShield>k__BackingField: 0
   <CurrentEvasion>k__BackingField: 0
-  <CurrentLifeSteal>k__BackingField: 0
-  <CurrentThorns>k__BackingField: 0
   <CurrentDamageMultiplier>k__BackingField: 0
   <CurrentCritChance>k__BackingField: 0
   <CurrentCritDamage>k__BackingField: 0
   <CurrentAttackSpeedMultiplier>k__BackingField: 0
+  <CurrentProjectileSpeedMultiplier>k__BackingField: 0
   <CurrentProjectileCountBonus>k__BackingField: 0
   <CurrentProjectileBounce>k__BackingField: 0
   <CurrentPierce>k__BackingField: 0
   <CurrentSizeMultiplier>k__BackingField: 0
   <CurrentDurationMultiplier>k__BackingField: 0
-  <CurrentDamageToMobs>k__BackingField: 0
-  <CurrentDamageToElites>k__BackingField: 0
-  <CurrentDamageToMiniBosses>k__BackingField: 0
-  <CurrentDamageToBosses>k__BackingField: 0
+  <CurrentBleedPercent>k__BackingField: 0
+  <CurrentCritBleedPercent>k__BackingField: 0
+  <CurrentLifeSteal>k__BackingField: 0
+  <CurrentThorns>k__BackingField: 0
+  <CurrentCritHeal>k__BackingField: 0
   <CurrentMoveSpeed>k__BackingField: 0
   <CurrentExtraJumps>k__BackingField: 0
   <CurrentJumpHeightMultiplier>k__BackingField: 0
   <CurrentLuck>k__BackingField: 0
   <CurrentCurse>k__BackingField: 0
-  <CurrentPickupRange>k__BackingField: 0
   <CurrentMagnetRange>k__BackingField: 0
   <CurrentXpBonus>k__BackingField: 0
   <CurrentGoldBonus>k__BackingField: 0
-  <CurrentEliteSpawnChanceBonus>k__BackingField: 0
   <CurrentDropChanceBonus>k__BackingField: 0
+  <CurrentEliteSpawnChanceBonus>k__BackingField: 0
+  <CurrentDamageToMobs>k__BackingField: 0
+  <CurrentDamageToElites>k__BackingField: 0
+  <CurrentDamageToMiniBosses>k__BackingField: 0
+  <CurrentDamageToBosses>k__BackingField: 0
   <CurrentSkillCooldownReduction>k__BackingField: 0
   <CurrentRevivals>k__BackingField: 0
   <CurrentRerolls>k__BackingField: 0

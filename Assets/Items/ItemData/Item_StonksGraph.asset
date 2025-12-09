@@ -14,8 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Stonks Graph
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 6dfe1f605b7a69444adc221a2bef224a, type: 3}
   rarity: 0
   modifiers: []
   isStackable: 1
+  dropWeight: 100
   specialEffectPrefab: {fileID: 6478655770454262211, guid: 3353a5b99ba9464419492af6f69e24a8, type: 3}
+  createEffectPerStack: 0

@@ -3,32 +3,39 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
+[System.Serializable]
+public class WorldObjectData
+{
+    public string name;
+    public GameObject prefab;
+    public int count; // Inspector'da buranýn 0 olmadýðýndan emin ol!
+    [Tooltip("Objeyi zeminden ne kadar yukarý kaldýralým?")]
+    public float yOffset = 0f;
+}
+
 public class MapGenerator : MonoBehaviour
 {
     public static MapGenerator Instance { get; private set; }
 
     [Header("Harita Ayarlarý")]
-    [Tooltip("Her bir karenin (küpün) kenar uzunluðu.")]
     [SerializeField] private float tileSize = 30f;
-    [Tooltip("Rampalar veya Düzlükler arasý dikey hizalama farký.")]
     [SerializeField] private float yOffsetCorrection = 0f;
-
     [SerializeField] private int targetTileCount = 100;
     [SerializeField] private int mapRadius = 8;
-    [SerializeField] private float generationSpeed = 0.05f;
+    [SerializeField] private float generationSpeed = 0.05f; // Hýzlý test için 0 yapabilirsin
+
+    [Header("Oyuncu Ayarlarý")]
+    [SerializeField] private float playerSpawnHeight = 2f;
 
     [Header("Yükseklik Ayarlarý")]
     [SerializeField] private int maxHeight = 2;
     [SerializeField] private int minHeight = -2;
     [Range(0f, 1f)][SerializeField] private float rampChance = 0.3f;
 
-    [Header("Doldurma ve Temel Ayarlarý")]
+    [Header("Doldurma Ayarlarý")]
     [SerializeField] private bool fillGaps = true;
     [Range(1, 4)][SerializeField] private int minNeighborsToFill = 3;
-
-    [Tooltip("Temel bloklarý hangi Yüksekliðe (Y) kadar insin? (Örn: -90)")]
     [SerializeField] private float foundationMinY = -90f;
-    [Tooltip("Temel bloklarý yüzeyin ne kadar altýndan baþlasýn? (15 ideal)")]
     [SerializeField] private float foundationStartOffset = 15f;
 
     [Header("Prefablar")]
@@ -36,8 +43,11 @@ public class MapGenerator : MonoBehaviour
     [SerializeField] private GameObject groundTile;
     [SerializeField] private GameObject rampUpPrefab;
     [SerializeField] private GameObject rampDownPrefab;
-    [Tooltip("Zeminin altýna koyulacak düz blok prefabý.")]
     [SerializeField] private GameObject fillerTile;
+
+    [Header("Obje Daðýtýmý")]
+    [SerializeField] private List<WorldObjectData> objectsToSpawn;
+    [SerializeField] private Transform objectsParent;
 
     public List<Vector3> SpawnablePositions { get; private set; } = new List<Vector3>();
     public Vector3 StartTilePosition { get; private set; }
@@ -50,37 +60,49 @@ public class MapGenerator : MonoBehaviour
     void Start() { StartCoroutine(GenerateMap()); }
 
     enum MoveType { Flat, RampUpPair, RampDownPair }
-
-    struct GenerationStep
-    {
-        public MoveType Type;
-        public Vector2Int Direction;
-        public Vector3Int CurrentPos;
-    }
+    struct GenerationStep { public MoveType Type; public Vector2Int Direction; public Vector3Int CurrentPos; }
 
     IEnumerator GenerateMap()
     {
-        Debug.Log($"<color=cyan>HARÝTA OLUÞTURMA BAÞLADI...</color> (Hedef: {targetTileCount} parça)");
+        Debug.Log($"<color=cyan>HARÝTA OLUÞTURMA BAÞLADI...</color>");
 
         heightMap.Clear();
         activePoints.Clear();
         SpawnablePositions.Clear();
         IsMapGenerated = false;
 
-        // 1. Baþlangýç
+        // --- GÜVENLÝ TEMÝZLÝK ---
+        if (objectsParent != null)
+        {
+            for (int i = objectsParent.childCount - 1; i >= 0; i--) Destroy(objectsParent.GetChild(i).gameObject);
+        }
+        else
+        {
+            GameObject parentObj = new GameObject("SpawnedObjects");
+            parentObj.transform.SetParent(this.transform);
+            objectsParent = parentObj.transform;
+        }
+
+        for (int i = transform.childCount - 1; i >= 0; i--)
+        {
+            Transform child = transform.GetChild(i);
+            if (child == objectsParent) continue;
+            Destroy(child.gameObject);
+        }
+
+        yield return null;
+
         Vector3Int startPos = Vector3Int.zero;
         CreateTile(startTile, new Vector2Int(0, 0), 0, Quaternion.identity, false);
         activePoints.Add(startPos);
 
         int tilesCreated = 1;
         int attempts = 0;
-        int maxLoopSafety = 10000;
 
-        // 2. Ana Döngü
         while (tilesCreated < targetTileCount && activePoints.Count > 0)
         {
             attempts++;
-            if (attempts > maxLoopSafety) { Debug.LogError("ACÝL DURDURMA: Ana döngü sýnýrý aþýldý."); break; }
+            if (attempts > 10000) break;
 
             int index = Random.Range(0, activePoints.Count);
             Vector3Int current = activePoints[index];
@@ -91,7 +113,6 @@ public class MapGenerator : MonoBehaviour
             {
                 GenerationStep step = validSteps[Random.Range(0, validSteps.Count)];
                 Vector3Int nextActivePoint = current;
-
                 Vector3 direction3D = new Vector3(step.Direction.x, 0, step.Direction.y);
                 Quaternion lookRot = Quaternion.LookRotation(direction3D);
 
@@ -110,7 +131,6 @@ public class MapGenerator : MonoBehaviour
 
                     Vector3Int flatPos = current + new Vector3Int(step.Direction.x * 2, 1, step.Direction.y * 2);
                     CreateTile(groundTile, new Vector2Int(flatPos.x, flatPos.z), flatPos.y, Quaternion.identity, false);
-
                     nextActivePoint = flatPos;
                     tilesCreated += 2;
                 }
@@ -134,53 +154,118 @@ public class MapGenerator : MonoBehaviour
             }
         }
 
-        Debug.Log($"Ana harita bitti. {tilesCreated} parça.");
-
-        // 3. Boþluk Doldurma
         if (fillGaps)
         {
-            int gapsFilled = FillMapGaps();
-            Debug.Log($"<color=yellow>Boþluk Doldurma: {gapsFilled} parça eklendi.</color>");
+            FillMapGaps();
             yield return new WaitForSeconds(0.1f);
         }
 
-        // --- BÝTÝÞ ---
-        Debug.Log($"<color=green>HARÝTA OLUÞTURMA TAMAMLANDI. Toplam Yüzey: {heightMap.Count}</color>");
+        StartCoroutine(TeleportPlayerAndSpawnObjects());
+        Debug.Log($"Harita Tamamlandý. Parça Sayýsý: {heightMap.Count}");
         IsMapGenerated = true;
     }
 
-    // --- GÜNCELLENEN: Temel Yüksekliði Ayarlý ---
+    IEnumerator TeleportPlayerAndSpawnObjects()
+    {
+        yield return new WaitForFixedUpdate();
+        yield return new WaitForFixedUpdate();
+
+        // 1. OYUNCU YERLEÞTÝRME
+        if (SpawnablePositions.Count > 0)
+        {
+            Vector3 randomSpot = SpawnablePositions[Random.Range(0, SpawnablePositions.Count)];
+            Vector3 rayOrigin = new Vector3(randomSpot.x, 200f, randomSpot.z);
+            RaycastHit hit;
+
+            if (Physics.Raycast(rayOrigin, Vector3.down, out hit, 500f))
+            {
+                StartTilePosition = hit.point + Vector3.up * playerSpawnHeight;
+                PlayerStats player = FindAnyObjectByType<PlayerStats>();
+                if (player != null)
+                {
+                    CharacterController cc = player.GetComponent<CharacterController>();
+                    if (cc != null) cc.enabled = false;
+                    player.transform.position = StartTilePosition;
+                    if (cc != null) cc.enabled = true;
+
+                    Rigidbody rb = player.GetComponent<Rigidbody>();
+                    if (rb != null) { rb.linearVelocity = Vector3.zero; rb.angularVelocity = Vector3.zero; }
+                }
+            }
+        }
+
+        // 2. SANDIK VE OBJE YERLEÞTÝRME
+        SpawnWorldObjects();
+    }
+
+    void SpawnWorldObjects()
+    {
+        if (objectsToSpawn == null || objectsToSpawn.Count == 0)
+        {
+            Debug.LogWarning("Spawn edilecek obje listesi boþ! Sandýk ekledin mi?");
+            return;
+        }
+
+        List<Vector3> availableSpots = new List<Vector3>(SpawnablePositions);
+        Vector3 playerPosFlat = new Vector3(StartTilePosition.x, 0, StartTilePosition.z);
+        availableSpots.RemoveAll(pos => Vector3.Distance(new Vector3(pos.x, 0, pos.z), playerPosFlat) < tileSize * 1.5f);
+
+        foreach (var objData in objectsToSpawn)
+        {
+            if (objData.prefab == null) continue;
+            int spawnedCount = 0;
+
+            // Debug: Kaç adet üretmeye çalýþýyoruz?
+            // Debug.Log($"Obje Üretiliyor: {objData.name}, Hedef: {objData.count}");
+
+            for (int i = 0; i < objData.count; i++)
+            {
+                if (availableSpots.Count == 0) break;
+
+                int randomIndex = Random.Range(0, availableSpots.Count);
+                Vector3 potentialPos = availableSpots[randomIndex];
+                availableSpots.RemoveAt(randomIndex);
+
+                Vector3 rayOrigin = new Vector3(potentialPos.x, 200f, potentialPos.z);
+                RaycastHit hit;
+
+                // Mesafeyi 500f yaptýk, zemini kesin bulmalý
+                if (Physics.Raycast(rayOrigin, Vector3.down, out hit, 500f))
+                {
+                    Vector3 finalPos = hit.point + Vector3.up * objData.yOffset;
+                    Quaternion randomRot = Quaternion.Euler(0, Random.Range(0, 360), 0);
+                    Instantiate(objData.prefab, finalPos, randomRot, objectsParent);
+                    spawnedCount++;
+                }
+            }
+            // Debug.Log($"{objData.name} üretildi: {spawnedCount}/{objData.count}");
+        }
+    }
+
     void CreateTile(GameObject prefab, Vector2Int coord2D, int height, Quaternion rot, bool isRamp, bool isFoundation = false)
     {
         float yPos = (height * tileSize) + yOffsetCorrection;
 
-        // Rampa ise yüzeyi aþaðý indiriyoruz (Görsel düzeltme)
+        // --- 1. Rampa Düzeltmesi (15 birim aþaðý) ---
         if (isRamp) yPos -= 15f;
 
         Vector3 worldPos = new Vector3(coord2D.x * tileSize, yPos, coord2D.y * tileSize);
-
-        if (heightMap.Count == 0) StartTilePosition = worldPos;
-
-        GameObject obj = Instantiate(prefab, worldPos, rot, transform);
+        Instantiate(prefab, worldPos, rot, transform);
 
         if (!isFoundation && !heightMap.ContainsKey(coord2D))
         {
             heightMap.Add(coord2D, height);
-            if (!isRamp) SpawnablePositions.Add(worldPos);
+            SpawnablePositions.Add(worldPos);
 
-            // --- TEMEL ATMA ---
             if (fillerTile != null)
             {
-                float currentY = yPos - tileSize - foundationStartOffset;
+                float currentY = yPos - tileSize;
+                currentY -= foundationStartOffset;
+                currentY += 15f;
 
-                // --- DÜZELTME: Eðer Rampa ise temeli 15 birim yukarý çek ---
-                // Çünkü rampayý yukarýda -15 ile indirmiþtik, temeli de peþinden indirdi.
-                // Temelin düzlüklerle hizalý veya boþluksuz görünmesi için geri kaldýrýyoruz.
-                if (isRamp)
-                {
-                    currentY += 15f;
-                }
-                // ----------------------------------------------------------
+                // --- 2. Uzatma Düzeltmesi (Sadece Rampalar için 15 birim yukarý çek) ---
+                if (isRamp) currentY += 15f;
+                // ----------------------------------------------------------------------
 
                 while (currentY >= foundationMinY)
                 {
@@ -212,7 +297,6 @@ public class MapGenerator : MonoBehaviour
                     List<int> neighborHeights = new List<int>();
                     Vector2Int[] dirs = { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
                     foreach (var dir in dirs) { Vector2Int neighborCoord = currentCoord + dir; if (heightMap.ContainsKey(neighborCoord)) { neighborCount++; neighborHeights.Add(heightMap[neighborCoord]); } }
-
                     if (neighborCount >= minNeighborsToFill)
                     {
                         var heightGroups = neighborHeights.GroupBy(h => h).OrderByDescending(g => g.Count());
@@ -226,10 +310,7 @@ public class MapGenerator : MonoBehaviour
         foreach (var gap in gapsToFill)
         {
             Vector2Int coord = new Vector2Int(gap.CurrentPos.x, gap.CurrentPos.z);
-            if (!heightMap.ContainsKey(coord))
-            {
-                CreateTile(groundTile, coord, gap.CurrentPos.y, Quaternion.identity, false);
-            }
+            if (!heightMap.ContainsKey(coord)) CreateTile(groundTile, coord, gap.CurrentPos.y, Quaternion.identity, false);
         }
         return gapsToFill.Count;
     }
@@ -240,21 +321,17 @@ public class MapGenerator : MonoBehaviour
     {
         List<GenerationStep> steps = new List<GenerationStep>();
         Vector2Int[] dirs = { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
-
         foreach (var dir in dirs)
         {
             Vector3Int target1 = current + new Vector3Int(dir.x, 0, dir.y);
             Vector2Int t1_2D = new Vector2Int(target1.x, target1.z);
             bool canGoFlat = !IsOccupied(t1_2D) && IsInBounds(t1_2D);
-
             if (canGoFlat) steps.Add(new GenerationStep { Type = MoveType.Flat, Direction = dir, CurrentPos = current });
-
             if (Random.value < rampChance)
             {
                 Vector3Int target2 = current + new Vector3Int(dir.x * 2, 0, dir.y * 2);
                 Vector2Int t2_2D = new Vector2Int(target2.x, target2.z);
                 bool canPlacePair = canGoFlat && !IsOccupied(t2_2D) && IsInBounds(t2_2D);
-
                 if (canPlacePair)
                 {
                     if (current.y < maxHeight) steps.Add(new GenerationStep { Type = MoveType.RampUpPair, Direction = dir, CurrentPos = current });

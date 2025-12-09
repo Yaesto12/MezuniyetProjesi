@@ -14,8 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Scarred Heart
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 6570aecf325032942bc92a6559b873a5, type: 3}
   rarity: 0
   modifiers: []
   isStackable: 1
+  dropWeight: 100
   specialEffectPrefab: {fileID: 1610009827162581135, guid: fb5caec4bcfe5164c845b0930454bf31, type: 3}
+  createEffectPerStack: 0

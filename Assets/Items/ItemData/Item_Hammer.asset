@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Hammer
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: a71e3c3d4c5b60d42801297f87e1da2d, type: 3}
   rarity: 0
   modifiers:
   - statType: 5
@@ -22,4 +22,6 @@ MonoBehaviour:
     amountPerLevel: 15
     isPercentage: 1
   isStackable: 1
+  dropWeight: 100
   specialEffectPrefab: {fileID: 0}
+  createEffectPerStack: 0

@@ -4,7 +4,7 @@ using TMPro;
 using System.Collections.Generic;
 using System.Linq;
 using System.Collections;
-using System.Text; // StringBuilder için
+using System.Text;
 
 [RequireComponent(typeof(PlayerInventory))]
 [RequireComponent(typeof(PlayerWeaponController))]
@@ -21,18 +21,15 @@ public class PlayerExperience : MonoBehaviour
     [SerializeField] private float xpFillSpeed = 150f;
 
     [Header("Yükseltme Sistemi (SÝLAH)")]
-    [Tooltip("Tüm olasý 'Yükseltme Fýrsatlarý'nýn (UpgradeData) bulunduðu liste.")]
+    [Tooltip("Tüm olasý 'Yükseltme Fýrsatlarý'nýn bulunduðu liste.")]
     [SerializeField] private List<UpgradeData> upgradePool;
-    [Tooltip("Seviye atlama UI'ýný yöneten script.")]
     [SerializeField] private LevelUpUI levelUpUI;
 
-    [Header("Nadirlik Ayarlarý (Yükseltme Deðerleri)")]
+    [Header("Nadirlik Ayarlarý")]
     [SerializeField] private float commonMultiplier = 1.0f;
     [SerializeField] private float rareMultiplier = 1.5f;
     [SerializeField] private float epicMultiplier = 2.0f;
     [SerializeField] private float legendaryMultiplier = 3.0f;
-
-    [Header("Nadirlik Ayarlarý (Stat Sayýsý)")]
     [SerializeField] private int statsPerCommon = 1;
     [SerializeField] private int statsPerRare = 2;
     [SerializeField] private int statsPerEpic = 2;
@@ -53,17 +50,11 @@ public class PlayerExperience : MonoBehaviour
         playerInventory = GetComponent<PlayerInventory>();
         weaponController = GetComponent<PlayerWeaponController>();
         playerStats = GetComponent<PlayerStats>();
-        if (playerInventory == null || weaponController == null || playerStats == null)
-        {
-            Debug.LogError("FATAL ERROR: PlayerExperience için gerekli bileþenler bulunamadý!", gameObject);
-            enabled = false; return;
-        }
+
         if (levelUpUI == null)
         {
             levelUpUI = FindFirstObjectByType<LevelUpUI>(FindObjectsInactive.Include);
-            if (levelUpUI == null) Debug.LogWarning("LevelUpUI referansý atanmamýþ ve sahnede bulunamadý!", this);
         }
-        if (upgradePool == null || upgradePool.Count == 0) { Debug.LogWarning("Upgrade Pool boþ!", this); }
     }
 
     void Start()
@@ -93,7 +84,7 @@ public class PlayerExperience : MonoBehaviour
 
     private void StartLevelUpSequence()
     {
-        if (levelUpUI == null) { Debug.LogError("Seviye atlanamýyor, LevelUpUI script'i bulunamadý!"); ResumeGame(); return; }
+        if (levelUpUI == null) { Debug.LogError("LevelUpUI bulunamadý!"); ResumeGame(); return; }
 
         isLevelUpSequenceActive = true;
         Time.timeScale = 0f;
@@ -102,11 +93,8 @@ public class PlayerExperience : MonoBehaviour
 
         PerformLevelUpCalculations();
 
-        // 1. Filtrelenmiþ "Silah Fýrsatlarý"ný (UpgradeData) al
         List<UpgradeData> possibleOpportunities = GetFilteredUpgradeOpportunities();
-        // 2. Bu fýrsatlardan 3 tane rastgele (Þans'a göre) seç
         List<UpgradeData> chosenOpportunities = ChooseRandomOpportunities(possibleOpportunities, 3);
-        // 3. Bu 3 fýrsatý, "Dinamik Yükseltme Sonuçlarý"na dönüþtür
         List<GeneratedUpgradeOption> finalOptions = GenerateOptionsFromOpportunities(chosenOpportunities);
 
         if (finalOptions.Count > 0)
@@ -115,7 +103,6 @@ public class PlayerExperience : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("Sunulacak geçerli yükseltme seçeneði bulunamadý. Oyun devam ettiriliyor.");
             ApplyGeneratedUpgrade(null);
         }
     }
@@ -130,19 +117,12 @@ public class PlayerExperience : MonoBehaviour
         UpdateLevelTextInternal();
         UpdateXpBarInternal();
 
-        Debug.LogWarning($"SEVÝYE ATLANDI! Yeni Seviye: {currentLevel}");
-
-        // --- YENÝ EKLENEN KISIM: Olayý Tetikle ---
         if (GameEventManager.Instance != null)
         {
             GameEventManager.Instance.TriggerPlayerLevelUp(currentLevel);
         }
-        // ----------------------------------------
     }
 
-    /// <summary>
-    /// Oyuncunun alabileceði tüm geçerli "Silah Fýrsatlarýný" (UpgradeData) filtreler.
-    /// </summary>
     private List<UpgradeData> GetFilteredUpgradeOpportunities()
     {
         List<UpgradeData> availableUpgrades = new List<UpgradeData>();
@@ -168,19 +148,12 @@ public class PlayerExperience : MonoBehaviour
         return availableUpgrades;
     }
 
-    /// <summary>
-    /// Verilen listeden, Þans'a göre aðýrlýklý rastgele seçim yaparak 'count' adet seçer.
-    /// </summary>
     private List<UpgradeData> ChooseRandomOpportunities(List<UpgradeData> opportunities, int count)
     {
         System.Random rng = new System.Random();
-        List<UpgradeData> shuffledList = opportunities.OrderBy(a => rng.Next()).ToList();
-        return shuffledList.Take(count).ToList();
+        return opportunities.OrderBy(a => rng.Next()).Take(count).ToList();
     }
 
-    /// <summary>
-    /// Seçilen 3 "Fýrsat"ý, "Dinamik Sonuç"lara (GeneratedUpgradeOption) dönüþtürür.
-    /// </summary>
     private List<GeneratedUpgradeOption> GenerateOptionsFromOpportunities(List<UpgradeData> opportunities)
     {
         List<GeneratedUpgradeOption> finalOptions = new List<GeneratedUpgradeOption>();
@@ -201,19 +174,12 @@ public class PlayerExperience : MonoBehaviour
             descBuilder.AppendLine(opportunity.description);
             descBuilder.AppendLine("--------------------");
 
-            if (opportunity.category == UpgradeCategory.WeaponUnlock)
-            {
-                // Açýklama gerekmez
-            }
-            else if (opportunity.category == UpgradeCategory.WeaponUpgrade)
+            if (opportunity.category == UpgradeCategory.WeaponUpgrade)
             {
                 int statsToUpgrade = GetStatCountForRarity(rolledRarity);
                 List<WeaponStatType> availableStats = new List<WeaponStatType>(opportunity.targetWeaponData.availableStatUpgrades);
-                if (availableStats.Count == 0)
-                {
-                    descBuilder.Append("Yükseltilecek stat bulunamadý!");
-                }
-                else
+
+                if (availableStats.Count > 0)
                 {
                     if (availableStats.Count < statsToUpgrade) statsToUpgrade = availableStats.Count;
                     List<WeaponStatType> chosenStats = availableStats.OrderBy(a => rng.Next()).Take(statsToUpgrade).ToList();
@@ -231,35 +197,36 @@ public class PlayerExperience : MonoBehaviour
                     }
                 }
             }
-
             option.Description = descBuilder.ToString();
             finalOptions.Add(option);
         }
         return finalOptions;
     }
 
-
     public void ApplyGeneratedUpgrade(GeneratedUpgradeOption chosenOption)
     {
         if (chosenOption == null) { ResumeGame(); return; }
         Debug.Log("Yükseltme Uygulanýyor: " + chosenOption.Name);
+
         UpgradeData opportunity = chosenOption.BaseUpgradeData;
-        playerInventory.IncrementUpgradeLevel(opportunity);
 
         if (opportunity.category == UpgradeCategory.WeaponUnlock)
         {
-            if (opportunity.weaponDataToUnlock != null)
+            if (opportunity.weaponDataToUnlock != null && !playerInventory.HasWeaponData(opportunity.weaponDataToUnlock))
             {
-                if (!playerInventory.HasWeaponData(opportunity.weaponDataToUnlock))
-                {
-                    playerInventory.AddWeaponData(opportunity.weaponDataToUnlock);
-                    WeaponData runtimeData = Instantiate(opportunity.weaponDataToUnlock);
-                    weaponController.AddAndInitializeWeapon(runtimeData);
-                }
+                playerInventory.AddWeaponData(opportunity.weaponDataToUnlock);
+                WeaponData runtimeData = Instantiate(opportunity.weaponDataToUnlock);
+                weaponController.AddAndInitializeWeapon(runtimeData);
             }
         }
         else if (opportunity.category == UpgradeCategory.WeaponUpgrade)
         {
+            if (opportunity.targetWeaponData != null)
+            {
+                // DÜZELTÝLEN KISIM: WeaponData gönderiyoruz
+                playerInventory.IncrementUpgradeLevel(opportunity.targetWeaponData);
+            }
+
             foreach (StatModification mod in chosenOption.Modifications)
             {
                 ApplyStatModification(opportunity.targetWeaponData, mod);
@@ -282,21 +249,13 @@ public class PlayerExperience : MonoBehaviour
         if (targetWeapon != null)
         {
             MonoBehaviour handler = weaponController.GetActiveWeaponHandler(targetWeapon);
-            if (handler != null)
-            {
-                ApplyWeaponStatUpgrade(handler, modification);
-            }
-            else { Debug.LogWarning($"Aktif Handler bulunamadý: {targetWeapon.name}"); }
+            if (handler != null) ApplyWeaponStatUpgrade(handler, modification);
         }
     }
-
 
     private void ApplyWeaponStatUpgrade(MonoBehaviour weaponHandler, StatModification mod)
     {
         float value = mod.Value;
-        bool isPercent = mod.IsPercentage;
-
-        Debug.Log($"ApplyWeaponStatUpgrade: Handler={weaponHandler.GetType().Name}, Stat={mod.WeaponStat}, Deðer={value}");
 
         if (weaponHandler is ProjectileWeaponHandler projHandler)
         {
@@ -362,14 +321,8 @@ public class PlayerExperience : MonoBehaviour
                 case WeaponStatType.Duration: mineHandler.IncreaseMineLifetime(value); break;
             }
         }
-        else
-        {
-            Debug.LogWarning($"ApplyWeaponStatUpgrade bilinmeyen Handler türüyle çaðrýldý: {weaponHandler.GetType().Name}");
-        }
     }
 
-
-    // --- YARDIMCI METOTLAR (Nadirlik ve Deðer Hesaplama) ---
     private RarityLevel RollForRarity(RarityLevel baseRarity, float playerLuck)
     {
         float roll = Random.Range(0f, 100f);
@@ -377,14 +330,11 @@ public class PlayerExperience : MonoBehaviour
         {
             int currentRarityInt = (int)baseRarity;
             int maxRarityInt = System.Enum.GetValues(typeof(RarityLevel)).Length - 1;
-            if (currentRarityInt < maxRarityInt)
-            {
-                Debug.Log("Þanslý Zar! Nadirlik 1 seviye arttý!");
-                return (RarityLevel)(currentRarityInt + 1);
-            }
+            if (currentRarityInt < maxRarityInt) return (RarityLevel)(currentRarityInt + 1);
         }
         return baseRarity;
     }
+
     private int GetStatCountForRarity(RarityLevel rarity)
     {
         switch (rarity)
@@ -396,6 +346,7 @@ public class PlayerExperience : MonoBehaviour
             default: return 1;
         }
     }
+
     private float GetValueForRarity(float baseValue, RarityLevel rarity)
     {
         float multiplier;
@@ -411,6 +362,7 @@ public class PlayerExperience : MonoBehaviour
         if (Mathf.Approximately(finalValue % 1, 0)) return Mathf.RoundToInt(finalValue);
         return Mathf.Round(finalValue * 100f) / 100f;
     }
+
     private float GetBaseValueForWeaponStat(WeaponStatType stat)
     {
         switch (stat)
@@ -427,6 +379,7 @@ public class PlayerExperience : MonoBehaviour
             default: return 5f;
         }
     }
+
     private bool IsWeaponStatPercentage(WeaponStatType stat)
     {
         switch (stat)
@@ -438,7 +391,6 @@ public class PlayerExperience : MonoBehaviour
         }
     }
 
-    // --- UI GÜNCELLEME METOTLARI (UIManager veya Direkt) ---
     private void UpdateLevelTextInternal()
     {
         if (UIManager.Instance != null) { UIManager.Instance.UpdateLevelText(currentLevel); }

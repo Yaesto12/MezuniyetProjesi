@@ -18,6 +18,11 @@ public class ItemData : ScriptableObject
     [Tooltip("Bu eþya birden fazla kez toplanabilir mi?")]
     public bool isStackable = true;
 
+    [Header("Düþme Þansý (Aðýrlýk)")]
+    [Tooltip("Bu sayý ne kadar yüksekse, sandýktan çýkma ihtimali o kadar artar. (Örn: Common=100, Legendary=5)")]
+    [Range(1, 1000)]
+    public int dropWeight = 100; // Varsayýlan deðer 100
+
     [Header("Özel Mekanik (Opsiyonel)")]
     [Tooltip("Sadece bu item alýndýðýnda çalýþacak özel bir script/görsel varsa, o prefabý buraya sürükle.")]
     public GameObject specialEffectPrefab;

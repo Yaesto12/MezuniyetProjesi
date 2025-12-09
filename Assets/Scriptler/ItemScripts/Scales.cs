@@ -24,6 +24,9 @@ public class Item_Scales : ItemEffect
     {
         base.OnEquip(stats, playerOwner);
         inventory = playerOwner.GetComponent<PlayerInventory>();
+
+        // Ýlk giyildiðinde bonusu hesapla
+        UpdateDamageBonus();
     }
 
     public override void OnUnequip()
@@ -39,21 +42,27 @@ public class Item_Scales : ItemEffect
     {
         if (inventory == null || playerStats == null) return;
 
-        // Para deðiþtiyse güncelle
-        if (inventory.CurrentGold != lastGoldAmount)
+        // DÜZELTME: Parayý artýk inventory'den deðil, playerStats'tan alýyoruz.
+        // Ayrýca deðiþkene küçük harfle 'currentGold' olarak eriþiyoruz.
+        if (playerStats.currentGold != lastGoldAmount)
         {
             UpdateDamageBonus();
-            lastGoldAmount = inventory.CurrentGold;
+            lastGoldAmount = playerStats.currentGold;
         }
     }
 
     private void UpdateDamageBonus()
     {
+        if (inventory == null || playerStats == null) return;
+
         int stack = 1;
+        // Item seviyesini öðrenmek için hala inventory'ye ihtiyacýmýz var (Bu doðru)
         if (myItemData != null) stack = inventory.GetItemLevel(myItemData);
 
         float currentRate = damagePercentPerGold + (bonusPerStack * (stack - 1));
-        float targetBonus = inventory.CurrentGold * currentRate;
+
+        // DÜZELTME: Hesaplama yaparken de playerStats.currentGold kullanýyoruz.
+        float targetBonus = playerStats.currentGold * currentRate;
 
         targetBonus = Mathf.Min(targetBonus, maxDamageCap);
 

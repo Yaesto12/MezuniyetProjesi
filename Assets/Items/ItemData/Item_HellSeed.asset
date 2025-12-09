@@ -14,8 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Hell Seed
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 02c64438fd361fe4091c5a55b974cb48, type: 3}
   rarity: 0
   modifiers: []
   isStackable: 1
+  dropWeight: 100
   specialEffectPrefab: {fileID: 2567538518096435430, guid: 5d9aab9d984ed5e468f564ec9c069063, type: 3}
+  createEffectPerStack: 0

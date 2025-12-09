@@ -1,135 +1,107 @@
 using UnityEngine;
 using System.Collections.Generic;
-using System.Linq;
 
 public class PlayerInventory : MonoBehaviour
 {
-    [Header("Silah Envanteri")]
-    [Tooltip("Oyuncunun sahip olduðu orijinal WeaponData asset'leri.")]
-    public List<WeaponData> ownedWeaponBlueprints = new List<WeaponData>();
+    // EKONOMÝ KISMI SÝLÝNDÝ (Artýk PlayerStats'ta)
 
-    [Header("Yükseltme Seviyeleri")]
-    [Tooltip("Alýnan yükseltmelerin (UpgradeData) seviyelerini takip eder.")]
-    public Dictionary<UpgradeData, int> upgradeLevels = new Dictionary<UpgradeData, int>();
+    [Header("Ýstatistikler")]
+    public int EliteKills { get; private set; } = 0;
 
-    [Header("Para")]
-    public int CurrentGold { get; private set; } = 0;
+    [Header("Silahlar")]
+    public List<WeaponData> weapons = new List<WeaponData>();
 
-    [Header("Pasif Item Envanteri")]
-    [Tooltip("Oyuncunun sahip olduðu pasif item'larý ve mevcut seviyelerini takip eder.")]
-    public Dictionary<ItemData, int> ownedItems = new Dictionary<ItemData, int>();
+    [Header("Itemler")]
+    public List<ItemData> ownedItems = new List<ItemData>();
 
-    // --- Silah Metotlarý ---
+    private PlayerStats playerStats;
+    private PlayerWeaponController weaponController;
 
-    public bool HasWeaponData(WeaponData originalWeaponData)
+    private void Awake()
     {
-        if (originalWeaponData == null) return false;
-        return ownedWeaponBlueprints.Contains(originalWeaponData) ||
-               ownedWeaponBlueprints.Exists(instance => instance != null && instance.name.StartsWith(originalWeaponData.name));
+        playerStats = GetComponent<PlayerStats>();
+        // Controller yoksa hata vermesin diye generic kontrol ekledik
+        weaponController = GetComponent<PlayerWeaponController>();
     }
 
-    public void AddWeaponData(WeaponData originalWeaponData)
+    public void AddEliteKill()
     {
-        if (originalWeaponData == null) return;
-        if (!HasWeaponData(originalWeaponData))
-        {
-            ownedWeaponBlueprints.Add(originalWeaponData);
-            Debug.Log($"[PlayerInventory] {originalWeaponData.weaponName} (Orijinal Asset) envantere eklendi.");
-        }
+        EliteKills++;
     }
 
-    // --- Yükseltme Metotlarý ---
-
-    public int GetUpgradeLevel(UpgradeData upgrade)
-    {
-        if (upgrade == null) return 0;
-        upgradeLevels.TryGetValue(upgrade, out int level);
-        return level;
-    }
-
-    public void IncrementUpgradeLevel(UpgradeData upgrade)
-    {
-        if (upgrade == null) return;
-        if (upgradeLevels.ContainsKey(upgrade)) { upgradeLevels[upgrade]++; }
-        else { upgradeLevels.Add(upgrade, 1); }
-        Debug.Log($"[PlayerInventory] '{upgrade.upgradeName}' yükseltmesinin seviyesi arttý. Yeni seviye: {upgradeLevels[upgrade]}");
-    }
-
-
-    // --- Item Metotlarý (GÜNCELLENMÝÞ HALÝ) ---
+    // ========================================================================
+    // --- ITEM YÖNETÝMÝ (BU KISIM ÖNEMLÝ) ---
+    // ========================================================================
 
     public void AddItem(ItemData item)
     {
-        if (item == null) return;
-
-        // 1. Item'ý Dictionary'e Ekle / Artýr
-        if (ownedItems.ContainsKey(item))
+        if (item == null)
         {
-            if (item.isStackable)
-            {
-                ownedItems[item]++;
-                Debug.Log($"[PlayerInventory] '{item.itemName}' seviyesi arttý: {ownedItems[item]}");
-            }
-            else
-            {
-                Debug.Log($"[PlayerInventory] '{item.itemName}' zaten var ve stacklenemez.");
-                return;
-            }
-        }
-        else
-        {
-            ownedItems.Add(item, 1);
-            Debug.Log($"[PlayerInventory] Yeni item alýndý: '{item.itemName}'");
+            Debug.LogError("HATA: AddItem'e boþ (null) item gönderildi!");
+            return;
         }
 
-        // 2. --- ÖZEL EFEKT / MEKANÝK BAÞLATMA ---
-        if (item.specialEffectPrefab != null)
+        ownedItems.Add(item);
+
+        // KONSOLA LOG BASIYORUZ KÝ GÖREBÝLELÝM
+        Debug.Log($"<color=green>ENVANTERE EKLENDÝ: {item.itemName}</color>");
+
+        // Item efektini baþlat (Eðer itemin bir efekti varsa)
+        if (item.specialEffectPrefab != null && playerStats != null)
         {
-            // KURAL: Ya item ilk kez alýnmýþtýr (Seviye 1)
-            // YA DA item "Her Stack Ýçin Oluþtur" (createEffectPerStack) modundadýr.
-            if (ownedItems[item] == 1 || item.createEffectPerStack)
+            if (GetItemLevel(item) == 1)
             {
-                // Prefab'ý oyuncunun çocuðu olarak oluþtur
-                GameObject effectObj = Instantiate(item.specialEffectPrefab, transform.position, Quaternion.identity, transform);
+                GameObject effectObj = Instantiate(item.specialEffectPrefab, transform.position, Quaternion.identity);
+                effectObj.transform.SetParent(transform);
 
-                // Ýsimlendirme (Karýþýklýðý önlemek için seviyeyi ekleyelim)
-                effectObj.name = $"{item.itemName}_Effect_Stack{ownedItems[item]}";
-
-                // ItemEffect scriptini bul ve baþlat
-                ItemEffect effectScript = effectObj.GetComponent<ItemEffect>();
+                // Generic kontrol ile script var mý bakýyoruz
+                var effectScript = effectObj.GetComponent<MonoBehaviour>();
                 if (effectScript != null)
                 {
-                    effectScript.OnEquip(GetComponent<PlayerStats>(), this);
+                    // Reflection ile metodu çaðýrmayý dener (Script adýný bilmediðim için)
+                    effectScript.SendMessage("OnEquip", new object[] { playerStats, this }, SendMessageOptions.DontRequireReceiver);
                 }
-
-                Debug.Log($"[PlayerInventory] Özel efekt oluþturuldu: {effectObj.name}");
             }
         }
-        // ---------------------------------------------
+    }
 
-        // 3. Statlarý Yeniden Hesapla
-        PlayerStats stats = GetComponent<PlayerStats>();
-        if (stats != null)
+    public int GetItemLevel(ItemData itemToCheck)
+    {
+        int count = 0;
+        foreach (var item in ownedItems)
         {
-            stats.RecalculateStats();
+            if (item == itemToCheck) count++;
         }
-        else
+        return count;
+    }
+
+    // ========================================================================
+    // --- SÝLAH YÖNETÝMÝ ---
+    // ========================================================================
+
+    public bool HasWeaponData(WeaponData weaponData)
+    {
+        return weapons.Contains(weaponData);
+    }
+
+    public void AddWeaponData(WeaponData weaponData)
+    {
+        if (!weapons.Contains(weaponData))
         {
-            Debug.LogError("[PlayerInventory] PlayerStats bulunamadý! Statlar güncellenmedi.");
+            weapons.Add(weaponData);
+
+            if (weaponController != null)
+            {
+                weaponController.SendMessage("AddWeapon", weaponData, SendMessageOptions.DontRequireReceiver);
+            }
         }
     }
 
-    public void AddGold(int amount)
+    public void IncrementUpgradeLevel(WeaponData weaponData)
     {
-        CurrentGold += amount;
-        // Debug.Log($"Altýn Kazanýldý: {amount}. Toplam: {CurrentGold}");
-        // Burada UI güncellemesi (UIManager) çaðýrýlabilir.
-    }
-
-    public int GetItemLevel(ItemData item)
-    {
-        if (item == null) return 0;
-        ownedItems.TryGetValue(item, out int level);
-        return level;
+        if (weaponController != null)
+        {
+            weaponController.SendMessage("LevelUpWeapon", weaponData, SendMessageOptions.DontRequireReceiver);
+        }
     }
 }

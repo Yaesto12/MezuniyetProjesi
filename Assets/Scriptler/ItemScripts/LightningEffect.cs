@@ -6,7 +6,6 @@ public class LightningEffect : MonoBehaviour
 {
     private LineRenderer lineRenderer;
     [SerializeField] private float duration = 0.2f; // Efektin ekranda kalma süresi
-    [SerializeField] private float textureScrollSpeed = 10f; // Elektrik animasyonu hýzý
 
     private void Awake()
     {

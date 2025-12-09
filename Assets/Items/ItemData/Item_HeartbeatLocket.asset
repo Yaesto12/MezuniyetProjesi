@@ -14,9 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Heartbeat Locket
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: aea9fc09dec77204da5b29046f42c6a8, type: 3}
   rarity: 0
   modifiers: []
   isStackable: 1
+  dropWeight: 100
   specialEffectPrefab: {fileID: 1159600393679926972, guid: ba6c312eccda6c44393650c9160074f5, type: 3}
   createEffectPerStack: 0

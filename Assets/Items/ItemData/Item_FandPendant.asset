@@ -14,9 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Fang Pendant
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 7fd7f61a34f9cdf45a97105e7fdbffdd, type: 3}
   rarity: 0
   modifiers: []
   isStackable: 1
+  dropWeight: 100
   specialEffectPrefab: {fileID: 1196853053342340385, guid: 26af60791fd528e40a4cad0c318ace3c, type: 3}
   createEffectPerStack: 1

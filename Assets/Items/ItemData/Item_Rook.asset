@@ -14,8 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: "Yeni E\u015Fya"
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: f9a52b22b2ffb584faa93ccac24ceaf5, type: 3}
   rarity: 0
   modifiers: []
   isStackable: 1
+  dropWeight: 100
   specialEffectPrefab: {fileID: 131706067888143302, guid: e8f9af6b1f53a06499b1117c3e4d6651, type: 3}
+  createEffectPerStack: 0

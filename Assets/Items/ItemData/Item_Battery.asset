@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Battery
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 19141cf690c4fc64faa2aadd93555476, type: 3}
   rarity: 0
   modifiers:
   - statType: 23
@@ -22,4 +22,6 @@ MonoBehaviour:
     amountPerLevel: 8
     isPercentage: 1
   isStackable: 1
+  dropWeight: 100
   specialEffectPrefab: {fileID: 0}
+  createEffectPerStack: 0

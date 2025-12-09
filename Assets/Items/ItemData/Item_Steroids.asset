@@ -14,8 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Steroids
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: baafaecc25d44bc43bd6f5c54b8ffd4f, type: 3}
   rarity: 0
   modifiers: []
   isStackable: 1
+  dropWeight: 100
   specialEffectPrefab: {fileID: 8348429082160839815, guid: 6e4f25202b3bd664ba6fefd9b33a121a, type: 3}
+  createEffectPerStack: 0

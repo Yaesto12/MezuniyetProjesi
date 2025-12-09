@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Monkey Paw
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: b7ef845036a9ceb4eb84ebf546cfe16b, type: 3}
   rarity: 0
   modifiers:
   - statType: 5
@@ -26,4 +26,6 @@ MonoBehaviour:
     amountPerLevel: 7
     isPercentage: 1
   isStackable: 1
+  dropWeight: 100
   specialEffectPrefab: {fileID: 0}
+  createEffectPerStack: 0

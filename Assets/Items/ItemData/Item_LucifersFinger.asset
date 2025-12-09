@@ -14,9 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Lucifer's Finger
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 489959e1a06056f4088d5512f36b51da, type: 3}
   rarity: 0
   modifiers: []
   isStackable: 1
+  dropWeight: 100
   specialEffectPrefab: {fileID: 3539409505137137302, guid: 5676827c6e887a040a8c0f4bcdf80db7, type: 3}
   createEffectPerStack: 0

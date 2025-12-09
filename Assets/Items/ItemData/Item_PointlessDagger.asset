@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Pointless Dagger
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 6e87e57493efa5f46b0b2c0e4b373620, type: 3}
   rarity: 0
   modifiers:
   - statType: 6
@@ -26,4 +26,6 @@ MonoBehaviour:
     amountPerLevel: -5
     isPercentage: 1
   isStackable: 1
+  dropWeight: 100
   specialEffectPrefab: {fileID: 0}
+  createEffectPerStack: 0

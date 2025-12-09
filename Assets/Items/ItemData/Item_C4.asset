@@ -14,8 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: C4
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 87a832ce664bcd34d8f8e38ed77d9e63, type: 3}
   rarity: 0
   modifiers: []
   isStackable: 1
+  dropWeight: 100
   specialEffectPrefab: {fileID: 6560917586092127447, guid: 05b6dc132b1fd124aa3b7675c7e23ced, type: 3}
+  createEffectPerStack: 0
