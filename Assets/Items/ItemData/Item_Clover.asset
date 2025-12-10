@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Clover
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 21300000, guid: bc5b023f5893f3549859dffd24502ef9, type: 3}
+  icon: {fileID: 21300000, guid: 0b770712ca7e9aa46b8f71da18ab1dad, type: 3}
   rarity: 0
   modifiers:
   - statType: 22

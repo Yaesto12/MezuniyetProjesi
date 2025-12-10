@@ -15,5 +15,5 @@ MonoBehaviour:
   characterName: Buisness Man
   description: "Karakter a\xE7\u0131klamas\u0131..."
   icon: {fileID: 0}
-  characterPrefab: {fileID: 208520526238075981, guid: c94277e382bbcc44398f43ec08f9a0ab, type: 3}
+  characterPrefab: {fileID: 9021488017884228616, guid: bd7b641979929d648897a3ee9af9ac58, type: 3}
   startingWeaponData: {fileID: 11400000, guid: a06ad0aea32668248b91115f499b5a5f, type: 2}

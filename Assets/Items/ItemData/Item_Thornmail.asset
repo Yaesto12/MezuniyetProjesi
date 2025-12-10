@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Thornmail
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 21300000, guid: 6a468c74759743646aa7c2171cef67c5, type: 3}
+  icon: {fileID: 21300000, guid: 7a560e1d44468834cbe967fb34c87724, type: 3}
   rarity: 0
   modifiers:
   - statType: 3

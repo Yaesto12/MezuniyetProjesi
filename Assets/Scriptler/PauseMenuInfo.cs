@@ -1,10 +1,13 @@
+using System.Collections.Generic;
+using System.Linq; // GroupBy için gerekli
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
-using System.Collections.Generic;
 
 public class PauseMenuInfo : MonoBehaviour
 {
+    public static PauseMenuInfo Instance; // Singleton eriþimi için
+
     // =========================================================
     // --- 1. SAÐ TARAF: STATLAR (TEXT REFERANSLARI) ---
     // =========================================================
@@ -51,9 +54,21 @@ public class PauseMenuInfo : MonoBehaviour
     public Transform itemsGridParent; // Grid Layout Group olan obje
     public GameObject itemIconPrefab; // Ýkon Prefabý
 
+    [Header("--- TOOLTIP AYARLARI (YENÝ) ---")]
+    public GameObject tooltipPanel;       // Açýlacak küçük pencere
+    public TextMeshProUGUI tooltipName;   // Ýtem ismi texti
+    public TextMeshProUGUI tooltipDesc;   // Açýklama texti
+
     // Script Referanslarý
     private PlayerStats stats;
     private PlayerInventory inventory;
+
+    void Awake()
+    {
+        // TooltipTrigger'ýn bu scripte ulaþabilmesi için Singleton yapýyoruz
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
+    }
 
     void OnEnable()
     {
@@ -64,7 +79,30 @@ public class PauseMenuInfo : MonoBehaviour
         // Güncellemeleri yap
         if (stats != null) UpdateStatsUI();
         if (inventory != null) UpdateItemsUI();
+
+        // Menü açýldýðýnda tooltip kapalý baþlasýn
+        HideTooltip();
     }
+
+    // --- TOOLTIP FONKSÝYONLARI ---
+    public void ShowTooltip(string name, string desc)
+    {
+        if (tooltipPanel != null)
+        {
+            tooltipPanel.SetActive(true);
+            if (tooltipName != null) tooltipName.text = name;
+            if (tooltipDesc != null) tooltipDesc.text = desc;
+        }
+    }
+
+    public void HideTooltip()
+    {
+        if (tooltipPanel != null)
+        {
+            tooltipPanel.SetActive(false);
+        }
+    }
+    // -----------------------------
 
     void UpdateStatsUI()
     {
@@ -108,17 +146,34 @@ public class PauseMenuInfo : MonoBehaviour
     {
         if (itemsGridParent == null || itemIconPrefab == null) return;
 
-        // Eski ikonlarý temizle
         foreach (Transform child in itemsGridParent) Destroy(child.gameObject);
 
-        // Yeni ikonlarý diz
-        foreach (ItemData item in inventory.ownedItems)
+        // Listeyi benzersiz itemlere göre grupla (LINQ kullanarak)
+        var groupedItems = inventory.ownedItems
+            .GroupBy(i => i.itemName)
+            .Select(group => new { Data = group.First(), Count = group.Count() });
+
+        foreach (var itemGroup in groupedItems)
         {
             GameObject newIconObj = Instantiate(itemIconPrefab, itemsGridParent);
             Image imgComponent = newIconObj.GetComponent<Image>();
 
-            if (item.icon != null) imgComponent.sprite = item.icon;
-            else imgComponent.color = new Color(1, 1, 1, 0.5f);
+            // Eðer ItemData'da deðiþken adý 'Icon' ise burayý 'itemGroup.Data.Icon' yapýn
+            if (itemGroup.Data.icon != null)
+                imgComponent.sprite = itemGroup.Data.icon;
+
+            // Sayaç Yazýsý
+            TextMeshProUGUI qText = newIconObj.GetComponentInChildren<TextMeshProUGUI>();
+            if (qText != null)
+            {
+                qText.text = itemGroup.Count > 1 ? $"x{itemGroup.Count}" : "";
+            }
+
+            // TOOLTIP SÝSTEMÝ
+            // ItemTooltipTrigger scriptinin projenizde var olduðundan emin olun
+            ItemTooltipTrigger tooltip = newIconObj.AddComponent<ItemTooltipTrigger>();
+            tooltip.description = itemGroup.Data.description;
+            tooltip.itemName = itemGroup.Data.itemName;
         }
     }
 }

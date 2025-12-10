@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Lancet
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 21300000, guid: 37259dd3acdb4d84f94a0565a366f4c4, type: 3}
+  icon: {fileID: 21300000, guid: fa001cbff9cd9eb4fa0e0041fc0df8dc, type: 3}
   rarity: 0
   modifiers:
   - statType: 13

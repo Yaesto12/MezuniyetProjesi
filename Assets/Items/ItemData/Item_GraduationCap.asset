@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Graduation Cap
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 21300000, guid: f9db92359789c4b47a33060c69a7c77e, type: 3}
+  icon: {fileID: 21300000, guid: 9c8f6855ff0567c429942db85edb11fb, type: 3}
   rarity: 0
   modifiers: []
   isStackable: 1

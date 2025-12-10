@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Reaper's Sycthe
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 21300000, guid: 3077c45b9e369704aa405cbdec7a0fb8, type: 3}
+  icon: {fileID: 21300000, guid: 610718beb5f5d5f4186fe3a1c3ed454a, type: 3}
   rarity: 0
   modifiers: []
   isStackable: 1

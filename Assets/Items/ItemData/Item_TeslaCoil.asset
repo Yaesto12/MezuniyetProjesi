@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Tesla Coil
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 21300000, guid: 6865b17cfc53cfb429a45e902c3fd0fb, type: 3}
+  icon: {fileID: 21300000, guid: 2d7d833d0f0699b468b907788285deea, type: 3}
   rarity: 0
   modifiers: []
   isStackable: 1

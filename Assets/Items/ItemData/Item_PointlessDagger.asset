@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Pointless Dagger
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 21300000, guid: 6e87e57493efa5f46b0b2c0e4b373620, type: 3}
+  icon: {fileID: 21300000, guid: 4c800e7f07caead4aaaa098acbaa6d0e, type: 3}
   rarity: 0
   modifiers:
   - statType: 6

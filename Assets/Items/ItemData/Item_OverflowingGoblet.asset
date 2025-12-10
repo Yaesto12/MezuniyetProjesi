@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Overflowing Goblet
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 21300000, guid: fedf14da3de5cfd4999e5487eb65a9a4, type: 3}
+  icon: {fileID: 21300000, guid: 0f0782a25b674704ebb96c0dc27dcd2a, type: 3}
   rarity: 0
   modifiers: []
   isStackable: 1

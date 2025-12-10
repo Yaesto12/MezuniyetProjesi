@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Crown of Ancients
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 21300000, guid: ec845e1b43e532b4f9024eacf53b689c, type: 3}
+  icon: {fileID: 21300000, guid: e510eb61d7ef1b146a34389ade6f54bc, type: 3}
   rarity: 0
   modifiers:
   - statType: 20

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Spear
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 21300000, guid: 93d3e5e0d661ffc4f810a7b8438a56d0, type: 3}
+  icon: {fileID: 21300000, guid: 7904bfe87e87e124a9b67a03b5ab52b7, type: 3}
   rarity: 0
   modifiers:
   - statType: 13

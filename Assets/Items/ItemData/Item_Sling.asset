@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Sling
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 21300000, guid: b598cb48967a7da4ab97fd128c5153f5, type: 3}
+  icon: {fileID: 21300000, guid: e8c64c79d1034544f9fb3d7374046afd, type: 3}
   rarity: 0
   modifiers:
   - statType: 11

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Quiver
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 21300000, guid: f2cb517d52af77c4f801cde5e242622b, type: 3}
+  icon: {fileID: 21300000, guid: 361db895f4b33434d8f3fff9dab28b75, type: 3}
   rarity: 0
   modifiers:
   - statType: 9

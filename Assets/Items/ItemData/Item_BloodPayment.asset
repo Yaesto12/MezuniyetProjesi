@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Blood Payment
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 21300000, guid: 0619efb9a76c83f4e8da34108e7eb80c, type: 3}
+  icon: {fileID: 21300000, guid: 65616b6a6b4dbbb4b9022b0d3e58101e, type: 3}
   rarity: 0
   modifiers: []
   isStackable: 1

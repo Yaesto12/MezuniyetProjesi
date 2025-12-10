@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Eagle's Eyes
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 21300000, guid: cb07ce33062a904499ca7c5b0c1f2b4c, type: 3}
+  icon: {fileID: 21300000, guid: 8cc259f55dd01224ea476f05bcd7a876, type: 3}
   rarity: 0
   modifiers:
   - statType: 6

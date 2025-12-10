@@ -45,27 +45,38 @@ public class CharacterSelectManager : MonoBehaviour
     /// </summary>
     void PopulateCharacterGrid()
     {
-        // Önce eski butonlarý temizle (varsa)
-        foreach (Transform child in characterGridPanel)
+        // 1. Önce eski butonlarý temizle (Editörde kalanlarý temizlemek için önemli)
+        // Transform.GetChild ile tersten dönerek silmek daha güvenlidir.
+        for (int i = characterGridPanel.childCount - 1; i >= 0; i--)
         {
-            Destroy(child.gameObject);
+            Destroy(characterGridPanel.GetChild(i).gameObject);
         }
 
-        // Her karakter için bir buton oluþtur
+        // 2. Her karakter için yeni buton oluþtur
         foreach (CharacterData character in allCharacters)
         {
             GameObject buttonGO = Instantiate(characterButtonPrefab, characterGridPanel);
             Button button = buttonGO.GetComponent<Button>();
-            Image iconImage = buttonGO.GetComponentInChildren<Image>(); // Butonun içindeki Image'ý bulduðunu varsayýyoruz
-            // TextMeshProUGUI nameText = buttonGO.GetComponentInChildren<TextMeshProUGUI>(); // Ýsterseniz butona isim de ekleyebilirsiniz
+
+            // ÝKONU BULMA:
+            // Yöntem A: Prefabýn içinde "Icon" adýnda bir obje varsa onu bul
+            // Transform iconTransform = buttonGO.transform.Find("Icon");
+            // Image iconImage = iconTransform != null ? iconTransform.GetComponent<Image>() : null;
+
+            // Yöntem B (Daha genel): Butonun kendisindeki Image (arka plan) deðil, altýndaki ilk Image'i bul
+            Image[] images = buttonGO.GetComponentsInChildren<Image>();
+            Image iconImage = null;
+
+            // Genelde [0] butonun kendisi, [1] ise ikondur.
+            if (images.Length > 1) iconImage = images[1];
+            else if (images.Length == 1 && images[0].gameObject != buttonGO) iconImage = images[0];
 
             if (iconImage != null && character.icon != null)
             {
                 iconImage.sprite = character.icon;
+                iconImage.preserveAspect = true; // Ýkonun en-boy oranýný koru
             }
-            // if (nameText != null) nameText.text = character.characterName;
 
-            // Butona týklandýðýnda SelectCharacter fonksiyonunu çaðýrmasýný saðla
             button.onClick.AddListener(() => SelectCharacter(character));
         }
     }

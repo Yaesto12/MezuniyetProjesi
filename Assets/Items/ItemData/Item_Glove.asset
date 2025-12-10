@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Gloves
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 21300000, guid: 61871761d6c69834d9a8fca6877fbd4b, type: 3}
+  icon: {fileID: 21300000, guid: 402fb535ebc05a74b9c00802465967d4, type: 3}
   rarity: 0
   modifiers:
   - statType: 8

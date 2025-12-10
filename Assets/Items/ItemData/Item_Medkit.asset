@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Medkit
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 21300000, guid: 3cb9fd07093d6294a911b998d9e3b75e, type: 3}
+  icon: {fileID: 21300000, guid: a562705b35bfd4c4da53b1b96f81d60a, type: 3}
   rarity: 0
   modifiers:
   - statType: 2

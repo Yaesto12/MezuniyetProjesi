@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Vampire Teeth
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 21300000, guid: 65feaec757b036f4593cc7eb1653a9e5, type: 3}
+  icon: {fileID: 21300000, guid: 9533f1216cf8dca448dff272a841c106, type: 3}
   rarity: 0
   modifiers:
   - statType: 26

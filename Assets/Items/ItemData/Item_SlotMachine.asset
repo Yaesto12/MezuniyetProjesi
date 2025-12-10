@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Slot Machine
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 21300000, guid: 55b9db6f0fcf95e4991b4f9de454a4e9, type: 3}
+  icon: {fileID: 21300000, guid: 94b3d1f90771426488bbef7764e8f066, type: 3}
   rarity: 0
   modifiers: []
   isStackable: 1

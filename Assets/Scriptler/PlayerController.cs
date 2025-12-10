@@ -2,50 +2,51 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(CharacterController))]
-[RequireComponent(typeof(PlayerStats))] // PlayerStats zorunlu
+[RequireComponent(typeof(PlayerStats))]
 public class PlayerController : MonoBehaviour
 {
-    // --- Zýplama Ayarlarý (Temel Deðer) ---
+    // --- Zýplama Ayarlarý ---
     [Header("Zýplama Ayarlarý")]
-    [SerializeField] private float baseJumpHeight = 1.5f; // PlayerStats'tan gelen çarpanla kullanýlacak
+    [SerializeField] private float baseJumpHeight = 1.5f;
     [SerializeField] private float gravityValue = -9.81f;
 
-    // --- Duvar Týrmanma Ayarlarý (KULLANILIYOR) ---
+    // --- Duvar Týrmanma Ayarlarý ---
     [Header("Duvara Týrmanma Ayarlarý")]
     [SerializeField] private float wallClimbSpeed = 3f;
     [SerializeField] private float wallClimbStrafeSpeed = 2f;
     [SerializeField] private float wallSlideSpeed = 1f;
     [SerializeField] private Vector2 wallJumpForce = new Vector2(7f, 14f);
     [Tooltip("Karakterin önünde duvar aramasý için kullanýlacak mesafe.")]
-    [SerializeField] private float wallCheckDistance = 0.5f; // <<<--- BU KULLANILACAK ---<<<
+    [SerializeField] private float wallCheckDistance = 0.5f;
     [SerializeField] private LayerMask wallLayer;
 
-    // --- Köþe Aþma Ayarlarý (KULLANILIYOR) ---
+    // --- Köþe Aþma Ayarlarý ---
     [Header("Köþe Aþma (Vaulting) Ayarlarý")]
-    [Tooltip("Köþe tespiti için üst ýþýnýn yüksekliði (karakterin merkezine göre).")]
-    [SerializeField] private float vaultCheckOffsetY = 0.7f; // <<<--- BU KULLANILACAK ---<<<
-    [Tooltip("Köþeyi aþmak için uygulanacak itme kuvveti (X=Ýleri, Y=Yukarý).")]
+    [Tooltip("Köþe tespiti için üst ýþýnýn yüksekliði.")]
+    [SerializeField] private float vaultCheckOffsetY = 0.7f;
+    [Tooltip("Köþeyi aþmak için uygulanacak itme kuvveti.")]
     [SerializeField] private Vector2 vaultForce = new Vector2(4f, 8f);
 
-    // --- Savrulma Ayarlarý (KULLANILIYOR) ---
+    // --- Savrulma Ayarlarý ---
     [Header("Savrulma Ayarlarý")]
     [Tooltip("Düþman çarptýðýnda karaktere uygulanacak anlýk itme kuvveti.")]
-    [SerializeField] private float knockbackForce = 15f; // <<<--- BU KULLANILACAK ---<<<
-    [Tooltip("Savrulma etkisinin ne kadar hýzlý azalacaðý (sürtünme gibi).")]
-    [SerializeField] private float knockbackDrag = 5f; // <<<--- BU KULLANILACAK ---<<<
+    [SerializeField] private float knockbackForce = 15f;
+    [Tooltip("Savrulma etkisinin ne kadar hýzlý azalacaðý.")]
+    [SerializeField] private float knockbackDrag = 5f;
 
     // --- Referanslar ---
     private CharacterController controller;
     private PlayerInputActions playerInputActions;
-    private PlayerStats playerStats; // Statlarý okumak için
+    private PlayerStats playerStats;
+    private Animator animator; // <--- ANÝMASYON ÝÇÝN EKLENDÝ
 
     // --- Dahili Deðiþkenler ---
-    private Vector3 playerVelocity; // Oyuncu girdisi + yerçekimi
-    private Vector3 impactForce;    // Dýþ kuvvetler (savrulma, köþe aþma)
+    private Vector3 playerVelocity;
+    private Vector3 impactForce;
     private bool isGrounded;
     private bool isWallClimbing;
     private RaycastHit wallHit;
-    private int jumpCount = 0; // Mevcut zýplama sayacý
+    private int jumpCount = 0;
 
     private void Awake()
     {
@@ -60,176 +61,170 @@ public class PlayerController : MonoBehaviour
             Debug.LogError("PlayerController: PlayerStats bileþeni bulunamadý!", this);
             enabled = false;
         }
+
+        // <--- ANÝMASYON ÝÇÝN EKLENDÝ (BAÞLANGIÇ) ---
+        // Animator bu objede mi yoksa alt objede (modelde) mi kontrol et
+        animator = GetComponent<Animator>();
+        if (animator == null)
+        {
+            animator = GetComponentInChildren<Animator>();
+        }
+        // <--- ANÝMASYON ÝÇÝN EKLENDÝ (BÝTÝÞ) ---
     }
 
     void Update()
     {
         isGrounded = controller.isGrounded;
 
-        HandleWallClimbingState(); // Duvar ve Köþe Aþma mantýðý
-        HandlePlayerInputAndGravity(); // Hareket ve Yerçekimi
-        HandleImpactForce(); // Savrulma kuvvetinin azalmasý
+        HandleWallClimbingState();
+        HandlePlayerInputAndGravity();
+        HandleImpactForce();
 
         // Son Hareketi Uygula (Oyuncu hareketi + Dýþ etkenler)
         controller.Move((playerVelocity + impactForce) * Time.deltaTime);
     }
 
-    /// <summary>
-    /// Oyuncu girdisine ve PlayerStats'a göre hareketi ve yerçekimini yönetir.
-    /// </summary>
     private void HandlePlayerInputAndGravity()
     {
         Vector2 inputVector = playerInputActions.Player.Move.ReadValue<Vector2>();
+        float currentSpeed = (playerStats != null) ? playerStats.CurrentMoveSpeed : 5f;
 
-        // Güncel hareket hýzýný PlayerStats'tan al
-        float currentSpeed = (playerStats != null) ? playerStats.CurrentMoveSpeed : 5f; // Hata durumunda 5
+        // <--- ANÝMASYON ÝÇÝN EKLENDÝ (BAÞLANGIÇ) ---
+        // Eðer input deðeri varsa (karakter hareket etmeye çalýþýyorsa) isWalking true olsun
+        if (animator != null)
+        {
+            bool isMoving = inputVector.sqrMagnitude > 0.01f;
+            animator.SetBool("isWalking", isMoving);
+        }
+        // <--- ANÝMASYON ÝÇÝN EKLENDÝ (BÝTÝÞ) ---
 
         Vector3 horizontalVelocity;
         if (isWallClimbing)
         {
             Vector3 strafeMovement = transform.right * inputVector.x * wallClimbStrafeSpeed;
-            Vector3 forwardMovement = transform.forward * (currentSpeed * 0.3f); // Köþeyi aþmak için hafif ileri itme
+            Vector3 forwardMovement = transform.forward * (currentSpeed * 0.3f);
             horizontalVelocity = strafeMovement + forwardMovement;
         }
         else
         {
-            // Normal yer ve hava hareketi
             horizontalVelocity = (transform.forward * inputVector.y + transform.right * inputVector.x) * currentSpeed;
         }
         playerVelocity.x = horizontalVelocity.x;
         playerVelocity.z = horizontalVelocity.z;
 
-        // Dikey Hýz (Yerçekimi / Týrmanma)
         if (isWallClimbing)
         {
-            if (inputVector.y > 0) playerVelocity.y = wallClimbSpeed; // 'W' basýyorsa týrman
-            else playerVelocity.y = -wallSlideSpeed; // Basmýyorsa kay
+            if (inputVector.y > 0) playerVelocity.y = wallClimbSpeed;
+            else playerVelocity.y = -wallSlideSpeed;
         }
         else
         {
-            // Yerdeyse ve düþmüyorsa yerçekimini sýfýrla
             if (isGrounded && playerVelocity.y < 0)
             {
                 playerVelocity.y = -2f;
-                jumpCount = 0; // Zýplama sayacýný sýfýrla
+                jumpCount = 0;
             }
-            playerVelocity.y += gravityValue * Time.deltaTime; // Yerçekimini uygula
+            playerVelocity.y += gravityValue * Time.deltaTime;
         }
     }
 
-    /// <summary>
-    /// Duvara týrmanma, kayma ve köþe aþma (vaulting) mantýðýný yönetir.
-    /// </summary>
     private void HandleWallClimbingState()
     {
         Vector2 moveInput = playerInputActions.Player.Move.ReadValue<Vector2>();
-
-        // Ayak hizasýndan duvarý kontrol et (wallCheckDistance KULLANILIYOR)
         bool isAgainstWall = Physics.Raycast(transform.position, transform.forward, out wallHit, wallCheckDistance, wallLayer);
 
-        // 1. Köþe Aþma (Vaulting) Kontrolü
-        if (isWallClimbing && moveInput.y > 0) // Týrmanýrken ve 'W' basarken
+        if (isWallClimbing && moveInput.y > 0)
         {
-            // Göðüs hizasýndan (vaultCheckOffsetY KULLANILIYOR) ikinci bir ýþýn gönder
             Vector3 upperRaycastOrigin = transform.position + new Vector3(0, vaultCheckOffsetY, 0);
 
-            // Eðer ayak hizasýnda duvar VARSA ama göðüs hizasýnda duvar YOKSA...
             if (isAgainstWall && !Physics.Raycast(upperRaycastOrigin, transform.forward, wallCheckDistance, wallLayer))
             {
-                // Bu bir köþedir! Köþeyi aþma hareketini tetikle.
-                isWallClimbing = false; // Týrmanmayý býrak
-                playerVelocity = Vector3.zero; // Oyuncu kontrolündeki hýzý sýfýrla
+                isWallClimbing = false;
+                playerVelocity = Vector3.zero;
 
-                // Köþeden yukarý ve ileri doðru bir itme kuvveti uygula (vaultForce KULLANILIYOR)
                 Vector3 vaultVelocity = transform.forward * vaultForce.x + Vector3.up * vaultForce.y;
-                impactForce = vaultVelocity; // Bu itmeyi dýþ kuvvet olarak ata
+                impactForce = vaultVelocity;
 
-                return; // Bu frame için diðer kontrolleri atla
+                // Opsiyonel: Vault yaparken zýplama animasyonu çalýþtýrýlabilir
+                if (animator != null) animator.SetTrigger("Jump");
+
+                return;
             }
         }
 
-        // 2. Normal Týrmanma Durumu Kontrolü
         if (isWallClimbing)
         {
-            // Duvardan ayrýldýysak VEYA yere indiysek týrmanmayý býrak
             if (!isAgainstWall || isGrounded)
             {
                 isWallClimbing = false;
             }
         }
-        else // Týrmanmýyorsak, týrmanmaya baþlama þartlarýný kontrol et
+        else
         {
-            // Yerde deðilsek, duvara karþýysak ve 'W' basýyorsak
             if (!isGrounded && isAgainstWall && moveInput.y > 0)
             {
                 isWallClimbing = true;
-                playerVelocity = Vector3.zero; // Baþlarken dikey hýzý sýfýrla
-                jumpCount = 0; // Duvara tutununca zýplama haklarý yenilensin
+                playerVelocity = Vector3.zero;
+                jumpCount = 0;
             }
         }
     }
 
-    /// <summary>
-    /// Dýþ kuvvetlerin (savrulma, köþe aþma) etkisini zamanla azaltýr.
-    /// </summary>
     private void HandleImpactForce()
     {
-        // Dýþ kuvvet varsa
         if (impactForce.magnitude > 0.2f)
         {
-            // Kuvveti yavaþça azalt (knockbackDrag KULLANILIYOR)
             impactForce = Vector3.Lerp(impactForce, Vector3.zero, knockbackDrag * Time.deltaTime);
         }
         else
         {
-            impactForce = Vector3.zero; // Yeterince azalýnca sýfýrla
+            impactForce = Vector3.zero;
         }
     }
 
-    /// <summary>
-    /// Zýplama tuþuna basýldýðýnda çaðrýlýr.
-    /// </summary>
     private void Jump(InputAction.CallbackContext context)
     {
-        if (playerStats == null) return; // Stats yoksa zýplama
+        if (playerStats == null) return;
 
-        // Toplam zýplama hakký = 1 (yerden) + Ekstra Haklar
         int maxTotalJumps = 1 + playerStats.CurrentExtraJumps;
 
         if (isWallClimbing)
         {
-            // Duvardan Zýplama
             isWallClimbing = false;
-            jumpCount = 1; // Duvardan zýpladý, 1 hakký gitti
+            jumpCount = 1;
             Vector3 wallJumpVelocity = (wallHit.normal * wallJumpForce.x) + (Vector3.up * wallJumpForce.y);
-            impactForce += wallJumpVelocity; // Dýþ kuvvete ekle
+            impactForce += wallJumpVelocity;
+
+            // <--- ANÝMASYON ÝÇÝN EKLENDÝ ---
+            if (animator != null) animator.SetTrigger("Jump");
         }
-        else if (jumpCount < maxTotalJumps) // Yerde veya havada zýplama hakký var mý?
+        else if (jumpCount < maxTotalJumps)
         {
-            // Zýplama
             float currentJumpHeightApplied = baseJumpHeight * (playerStats.CurrentJumpHeightMultiplier / 100f);
             playerVelocity.y = Mathf.Sqrt(currentJumpHeightApplied * -2.0f * gravityValue);
-            jumpCount++; // Sayacý artýr
+            jumpCount++;
+
+            // <--- ANÝMASYON ÝÇÝN EKLENDÝ ---
+            if (animator != null) animator.SetTrigger("Jump");
         }
     }
 
-    /// <summary>
-    /// Hurtbox tarafýndan çaðrýlýr, savrulma uygular.
-    /// </summary>
+    public void ApplyKnockback(Vector3 direction, float force)
+    {
+        direction.Normalize();
+        direction.y = 0.5f;
+        impactForce = direction * force;
+    }
+
     public void ProcessHitByEnemy(EnemyAI enemy)
     {
-        // Düþmanýn saldýrý fonksiyonunu çaðýr (Hasar alma vb. PlayerHealth'te yönetilir)
         enemy.NotifyPlayerContact();
-
-        // Savrulma mantýðýný uygula (knockbackForce KULLANILIYOR)
         Vector3 knockbackDirection = (transform.position - enemy.transform.position).normalized;
-        Vector3 knockback = knockbackDirection * knockbackForce;
-        knockback.y = knockbackForce / 2; // Hafifçe havaya kaldýr
-        impactForce = knockback; // Dýþ kuvveti ayarla (eskisinin üzerine yaz)
+        ApplyKnockback(knockbackDirection, knockbackForce);
     }
 
     private void OnDisable()
     {
-        playerInputActions?.Player.Disable(); // Güvenli kapatma
+        playerInputActions?.Player.Disable();
     }
 }

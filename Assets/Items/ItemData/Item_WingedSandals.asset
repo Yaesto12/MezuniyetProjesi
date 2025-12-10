@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Winged Sandals
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 21300000, guid: eabf52bf540d856419cce84744a08d2d, type: 3}
+  icon: {fileID: 21300000, guid: 2490bd1ba594ae94d93862601eb8fd34, type: 3}
   rarity: 0
   modifiers:
   - statType: 22

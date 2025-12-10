@@ -1,27 +1,21 @@
 using UnityEngine;
-using UnityEngine.SceneManagement; // Sahne yönetimi için bu satýr GEREKLÝDÝR.
+using UnityEngine.SceneManagement; // Sahne geçiþleri için þart
 
-public class MainMenu : MonoBehaviour
+public class MainMenuManager : MonoBehaviour
 {
-    // [SerializeField] private string gameSceneName = "GameScene"; // <<<--- BU SATIR KALDIRILDI (Gereksiz) ---<<<
-
-    /// <summary>
-    /// "Oyna" butonuna týklandýðýnda bu fonksiyon çaðrýlýr.
-    /// </summary>
-    public void StartGame()
+    // Oyna butonuna basýnca çalýþacak
+    public void PlayGame()
     {
-        // Doðrudan Karakter Seçim sahnesini yükle
-        SceneManager.LoadScene("CharacterSelect"); // Sahne adýnýzýn bu olduðundan emin olun
-        Debug.Log("CharacterSelect sahnesi yükleniyor...");
+        // Buraya gitmek istediðin sahnenin tam adýný yazmalýsýn.
+        // Karakter seçimi sahnenin adý neyse onu týrnak içine yaz.
+        // Örn: "CharacterSelect" veya "GameScene"
+        SceneManager.LoadScene("CharacterSelect");
     }
 
-    /// <summary>
-    /// "Çýkýþ" butonuna týklandýðýnda bu fonksiyon çaðrýlýr.
-    /// </summary>
-    public void ExitGame()
+    // Çýkýþ butonuna basýnca çalýþacak
+    public void QuitGame()
     {
-        // Oyunu kapatýr (Sadece derlenmiþ oyunda çalýþýr, Editör'de deðil).
-        Debug.Log("Oyundan çýkýlýyor..."); // Editörde çalýþtýðýný görmek için log mesajý
+        Debug.Log("Oyundan Çýkýldý!"); // Editörde çýkýþ çalýþmaz, bunu konsolda görmek için yazýyoruz.
         Application.Quit();
     }
 }

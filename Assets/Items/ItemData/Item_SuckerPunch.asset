@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Sucker Punch
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 21300000, guid: 1ba4f5814bf9f9f40b11270ca70d28df, type: 3}
+  icon: {fileID: 21300000, guid: bef4a6e9ca74c2547935f8ce4fa57425, type: 3}
   rarity: 0
   modifiers: []
   isStackable: 1

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: D20
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 21300000, guid: 25832deb43933054a8543a71f777058e, type: 3}
+  icon: {fileID: 21300000, guid: 4a8fbca0ca6ade944bf809d5f077d307, type: 3}
   rarity: 0
   modifiers: []
   isStackable: 0

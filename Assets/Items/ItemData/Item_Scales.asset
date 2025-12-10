@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Scales
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 21300000, guid: ac04f4f03fcb12e438a1c08a9167142b, type: 3}
+  icon: {fileID: 21300000, guid: 7bc938e503a3e2841a7f269d591620b0, type: 3}
   rarity: 0
   modifiers: []
   isStackable: 1

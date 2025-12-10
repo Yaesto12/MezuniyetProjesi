@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Magnet
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 21300000, guid: 5671d2ad53ed86648ac3b073a2932e9f, type: 3}
+  icon: {fileID: 21300000, guid: f1d4a1e6e0d0e8349a0a73baf5a9c9a7, type: 3}
   rarity: 0
   modifiers: []
   isStackable: 1

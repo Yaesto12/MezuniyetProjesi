@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Pogo Stick
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 21300000, guid: f8506265c37a44442b25e8850078bc74, type: 3}
+  icon: {fileID: 21300000, guid: b4dcae12b2215c2488eb37c790db2404, type: 3}
   rarity: 0
   modifiers:
   - statType: 16

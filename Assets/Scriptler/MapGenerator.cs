@@ -8,7 +8,7 @@ public class WorldObjectData
 {
     public string name;
     public GameObject prefab;
-    public int count; // Inspector'da buranýn 0 olmadýðýndan emin ol!
+    public int count; // Ýstediðin kadar sayý yazabilirsin
     [Tooltip("Objeyi zeminden ne kadar yukarý kaldýralým?")]
     public float yOffset = 0f;
 }
@@ -22,7 +22,7 @@ public class MapGenerator : MonoBehaviour
     [SerializeField] private float yOffsetCorrection = 0f;
     [SerializeField] private int targetTileCount = 100;
     [SerializeField] private int mapRadius = 8;
-    [SerializeField] private float generationSpeed = 0.05f; // Hýzlý test için 0 yapabilirsin
+    [SerializeField] private float generationSpeed = 0.05f;
 
     [Header("Oyuncu Ayarlarý")]
     [SerializeField] private float playerSpawnHeight = 2f;
@@ -64,14 +64,12 @@ public class MapGenerator : MonoBehaviour
 
     IEnumerator GenerateMap()
     {
-        Debug.Log($"<color=cyan>HARÝTA OLUÞTURMA BAÞLADI...</color>");
-
+        // --- TEMÝZLÝK KISMI ---
         heightMap.Clear();
         activePoints.Clear();
         SpawnablePositions.Clear();
         IsMapGenerated = false;
 
-        // --- GÜVENLÝ TEMÝZLÝK ---
         if (objectsParent != null)
         {
             for (int i = objectsParent.childCount - 1; i >= 0; i--) Destroy(objectsParent.GetChild(i).gameObject);
@@ -92,6 +90,7 @@ public class MapGenerator : MonoBehaviour
 
         yield return null;
 
+        // --- HARÝTA OLUÞTURMA DÖNGÜSÜ ---
         Vector3Int startPos = Vector3Int.zero;
         CreateTile(startTile, new Vector2Int(0, 0), 0, Quaternion.identity, false);
         activePoints.Add(startPos);
@@ -106,7 +105,6 @@ public class MapGenerator : MonoBehaviour
 
             int index = Random.Range(0, activePoints.Count);
             Vector3Int current = activePoints[index];
-
             List<GenerationStep> validSteps = GetValidSteps(current);
 
             if (validSteps.Count > 0)
@@ -114,7 +112,7 @@ public class MapGenerator : MonoBehaviour
                 GenerationStep step = validSteps[Random.Range(0, validSteps.Count)];
                 Vector3Int nextActivePoint = current;
                 Vector3 direction3D = new Vector3(step.Direction.x, 0, step.Direction.y);
-                Quaternion lookRot = Quaternion.LookRotation(direction3D);
+                Quaternion lookRot = (direction3D != Vector3.zero) ? Quaternion.LookRotation(direction3D) : Quaternion.identity;
 
                 if (step.Type == MoveType.Flat)
                 {
@@ -194,59 +192,59 @@ public class MapGenerator : MonoBehaviour
             }
         }
 
-        // 2. SANDIK VE OBJE YERLEÞTÝRME
+        // 2. SANDIK VE OBJE YERLEÞTÝRME (SINIRSIZ & RASTGELE)
         SpawnWorldObjects();
     }
 
     void SpawnWorldObjects()
     {
-        if (objectsToSpawn == null || objectsToSpawn.Count == 0)
-        {
-            Debug.LogWarning("Spawn edilecek obje listesi boþ! Sandýk ekledin mi?");
-            return;
-        }
+        if (objectsToSpawn == null || objectsToSpawn.Count == 0) return;
+        if (SpawnablePositions.Count == 0) return; // Harita yoksa spawn yok
 
-        List<Vector3> availableSpots = new List<Vector3>(SpawnablePositions);
+        // Oyuncunun baþlangýç noktasýný referans al (Üzerine düþmesin diye basit kontrol)
         Vector3 playerPosFlat = new Vector3(StartTilePosition.x, 0, StartTilePosition.z);
-        availableSpots.RemoveAll(pos => Vector3.Distance(new Vector3(pos.x, 0, pos.z), playerPosFlat) < tileSize * 1.5f);
 
         foreach (var objData in objectsToSpawn)
         {
             if (objData.prefab == null) continue;
-            int spawnedCount = 0;
 
-            // Debug: Kaç adet üretmeye çalýþýyoruz?
-            // Debug.Log($"Obje Üretiliyor: {objData.name}, Hedef: {objData.count}");
-
+            // Ýstenen sayý kadar döngü kur (Yer sýnýrý kontrolü yok!)
             for (int i = 0; i < objData.count; i++)
             {
-                if (availableSpots.Count == 0) break;
+                // Rastgele bir nokta seç (Her seferinde tüm liste içinden)
+                int randomIndex = Random.Range(0, SpawnablePositions.Count);
+                Vector3 basePos = SpawnablePositions[randomIndex];
 
-                int randomIndex = Random.Range(0, availableSpots.Count);
-                Vector3 potentialPos = availableSpots[randomIndex];
-                availableSpots.RemoveAt(randomIndex);
+                // Eðer oyuncunun çok yakýnýndaysa bu seferlik pas geçelim (veya tekrar deneyebiliriz ama pas geçmek daha performanslý)
+                if (Vector3.Distance(new Vector3(basePos.x, 0, basePos.z), playerPosFlat) < tileSize)
+                {
+                    // Þanssýzlýk, oyuncunun üstüne denk geldi.
+                    // Bir hak daha verelim:
+                    randomIndex = Random.Range(0, SpawnablePositions.Count);
+                    basePos = SpawnablePositions[randomIndex];
+                }
 
-                Vector3 rayOrigin = new Vector3(potentialPos.x, 200f, potentialPos.z);
+                // Rastgele Sapma (Offset) Ekle
+                float jitter = tileSize / 3f;
+                float offsetX = Random.Range(-jitter, jitter);
+                float offsetZ = Random.Range(-jitter, jitter);
+
+                Vector3 rayOrigin = new Vector3(basePos.x + offsetX, 200f, basePos.z + offsetZ);
+
                 RaycastHit hit;
-
-                // Mesafeyi 500f yaptýk, zemini kesin bulmalý
                 if (Physics.Raycast(rayOrigin, Vector3.down, out hit, 500f))
                 {
                     Vector3 finalPos = hit.point + Vector3.up * objData.yOffset;
                     Quaternion randomRot = Quaternion.Euler(0, Random.Range(0, 360), 0);
                     Instantiate(objData.prefab, finalPos, randomRot, objectsParent);
-                    spawnedCount++;
                 }
             }
-            // Debug.Log($"{objData.name} üretildi: {spawnedCount}/{objData.count}");
         }
     }
 
     void CreateTile(GameObject prefab, Vector2Int coord2D, int height, Quaternion rot, bool isRamp, bool isFoundation = false)
     {
         float yPos = (height * tileSize) + yOffsetCorrection;
-
-        // --- 1. Rampa Düzeltmesi (15 birim aþaðý) ---
         if (isRamp) yPos -= 15f;
 
         Vector3 worldPos = new Vector3(coord2D.x * tileSize, yPos, coord2D.y * tileSize);
@@ -262,10 +260,7 @@ public class MapGenerator : MonoBehaviour
                 float currentY = yPos - tileSize;
                 currentY -= foundationStartOffset;
                 currentY += 15f;
-
-                // --- 2. Uzatma Düzeltmesi (Sadece Rampalar için 15 birim yukarý çek) ---
                 if (isRamp) currentY += 15f;
-                // ----------------------------------------------------------------------
 
                 while (currentY >= foundationMinY)
                 {

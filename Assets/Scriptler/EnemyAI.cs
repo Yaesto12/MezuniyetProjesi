@@ -78,4 +78,19 @@ public class EnemyAI : MonoBehaviour
         yield return new WaitForSeconds(attackCooldown);
         canAttack = true;
     }
+
+    private void OnCollisionStay(Collision collision)
+    {
+        // Eðer oyuncuya deðiyorsak ve saldýrabiliyorsak
+        if (collision.gameObject.CompareTag("Player") && canAttack)
+        {
+            PlayerHealth ph = collision.gameObject.GetComponent<PlayerHealth>();
+            if (ph != null)
+            {
+                ph.TakeDamage(stats.Damage);
+                NotifyPlayerContact(); // Bu fonksiyon zaten cooldown baþlatýyordu
+            }
+        }
+    }
+
 }

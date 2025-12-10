@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Razor Blade
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 21300000, guid: cb6707e22a99ddc4699329c3a8c4133d, type: 3}
+  icon: {fileID: 21300000, guid: 8ea018aec3f212046a3edd6f6eaa05e9, type: 3}
   rarity: 0
   modifiers:
   - statType: 12

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Midas Touched
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 21300000, guid: d6bd792a9f0f901448a50c74a7bb4b92, type: 3}
+  icon: {fileID: 21300000, guid: 264852de22ba397429f23f79e4cc21d1, type: 3}
   rarity: 0
   modifiers: []
   isStackable: 1

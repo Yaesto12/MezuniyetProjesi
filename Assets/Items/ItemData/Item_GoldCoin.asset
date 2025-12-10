@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Gold Coin
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 21300000, guid: f31a5a4138dfd4744b02f8f4b48abdfa, type: 3}
+  icon: {fileID: 21300000, guid: 2bf69b1117562314c9b152282060d907, type: 3}
   rarity: 0
   modifiers:
   - statType: 21

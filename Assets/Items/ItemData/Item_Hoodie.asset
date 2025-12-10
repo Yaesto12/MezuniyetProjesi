@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Hoodie
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 21300000, guid: 53edb07aec2c06741924454348fd243a, type: 3}
+  icon: {fileID: 21300000, guid: c635015aaa07ecb45814a7feb86244d3, type: 3}
   rarity: 0
   modifiers: []
   isStackable: 1

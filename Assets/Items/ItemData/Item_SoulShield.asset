@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Soul Shield
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 21300000, guid: 0b35cf3d27ff3bc4b933f0a952a9a03a, type: 3}
+  icon: {fileID: 21300000, guid: 7cea9405f250ce04295c3767903e1f4a, type: 3}
   rarity: 0
   modifiers: []
   isStackable: 1

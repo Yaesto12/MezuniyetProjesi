@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Voodoo Doll
   description: "E\u015Fya a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 21300000, guid: 52387ab132e8cad45b62e686b608a110, type: 3}
+  icon: {fileID: 21300000, guid: 67b58c538290bf54ea7f81a175041c22, type: 3}
   rarity: 0
   modifiers:
   - statType: 18
