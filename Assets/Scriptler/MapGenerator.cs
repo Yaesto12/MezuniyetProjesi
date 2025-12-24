@@ -8,9 +8,17 @@ public class WorldObjectData
 {
     public string name;
     public GameObject prefab;
-    public int count; // Ýstediðin kadar sayý yazabilirsin
+    public int count;
     [Tooltip("Objeyi zeminden ne kadar yukarý kaldýralým?")]
     public float yOffset = 0f;
+
+    // --- YENÝ EKLENEN ÖZELLÝK ---
+    [Header("Rastgele Boyut (Scale)")]
+    [Tooltip("Objenin minimum boyutu (Örn: 0.8)")]
+    public float minScale = 1f;
+    [Tooltip("Objenin maksimum boyutu (Örn: 1.2)")]
+    public float maxScale = 1f;
+    // ----------------------------
 }
 
 public class MapGenerator : MonoBehaviour
@@ -64,7 +72,6 @@ public class MapGenerator : MonoBehaviour
 
     IEnumerator GenerateMap()
     {
-        // --- TEMÝZLÝK KISMI ---
         heightMap.Clear();
         activePoints.Clear();
         SpawnablePositions.Clear();
@@ -90,7 +97,6 @@ public class MapGenerator : MonoBehaviour
 
         yield return null;
 
-        // --- HARÝTA OLUÞTURMA DÖNGÜSÜ ---
         Vector3Int startPos = Vector3Int.zero;
         CreateTile(startTile, new Vector2Int(0, 0), 0, Quaternion.identity, false);
         activePoints.Add(startPos);
@@ -168,7 +174,6 @@ public class MapGenerator : MonoBehaviour
         yield return new WaitForFixedUpdate();
         yield return new WaitForFixedUpdate();
 
-        // 1. OYUNCU YERLEÞTÝRME
         if (SpawnablePositions.Count > 0)
         {
             Vector3 randomSpot = SpawnablePositions[Random.Range(0, SpawnablePositions.Count)];
@@ -192,39 +197,31 @@ public class MapGenerator : MonoBehaviour
             }
         }
 
-        // 2. SANDIK VE OBJE YERLEÞTÝRME (SINIRSIZ & RASTGELE)
         SpawnWorldObjects();
     }
 
     void SpawnWorldObjects()
     {
         if (objectsToSpawn == null || objectsToSpawn.Count == 0) return;
-        if (SpawnablePositions.Count == 0) return; // Harita yoksa spawn yok
+        if (SpawnablePositions.Count == 0) return;
 
-        // Oyuncunun baþlangýç noktasýný referans al (Üzerine düþmesin diye basit kontrol)
         Vector3 playerPosFlat = new Vector3(StartTilePosition.x, 0, StartTilePosition.z);
 
         foreach (var objData in objectsToSpawn)
         {
             if (objData.prefab == null) continue;
 
-            // Ýstenen sayý kadar döngü kur (Yer sýnýrý kontrolü yok!)
             for (int i = 0; i < objData.count; i++)
             {
-                // Rastgele bir nokta seç (Her seferinde tüm liste içinden)
                 int randomIndex = Random.Range(0, SpawnablePositions.Count);
                 Vector3 basePos = SpawnablePositions[randomIndex];
 
-                // Eðer oyuncunun çok yakýnýndaysa bu seferlik pas geçelim (veya tekrar deneyebiliriz ama pas geçmek daha performanslý)
                 if (Vector3.Distance(new Vector3(basePos.x, 0, basePos.z), playerPosFlat) < tileSize)
                 {
-                    // Þanssýzlýk, oyuncunun üstüne denk geldi.
-                    // Bir hak daha verelim:
                     randomIndex = Random.Range(0, SpawnablePositions.Count);
                     basePos = SpawnablePositions[randomIndex];
                 }
 
-                // Rastgele Sapma (Offset) Ekle
                 float jitter = tileSize / 3f;
                 float offsetX = Random.Range(-jitter, jitter);
                 float offsetZ = Random.Range(-jitter, jitter);
@@ -236,7 +233,15 @@ public class MapGenerator : MonoBehaviour
                 {
                     Vector3 finalPos = hit.point + Vector3.up * objData.yOffset;
                     Quaternion randomRot = Quaternion.Euler(0, Random.Range(0, 360), 0);
-                    Instantiate(objData.prefab, finalPos, randomRot, objectsParent);
+
+                    // --- YARATMA VE SCALE ÝÞLEMÝ ---
+                    GameObject newObj = Instantiate(objData.prefab, finalPos, randomRot, objectsParent);
+
+                    // Yeni eklenen Min-Max scale özelliðini uygula
+                    // (Objeyi her eksende eþit oranda büyütüp küçültür)
+                    float randomScale = Random.Range(objData.minScale, objData.maxScale);
+                    newObj.transform.localScale = Vector3.one * randomScale;
+                    // -------------------------------
                 }
             }
         }

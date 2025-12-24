@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections; // Coroutine için gerekli
 using System.Collections.Generic;
 using TMPro;
 
@@ -14,17 +15,24 @@ public class Chest : MonoBehaviour
     [SerializeField] private float costMultiplier = 1.2f;
 
     [Header("UI Ayarlarý")]
-    [Tooltip("Sandýðýn üstündeki Canvas/Panel")]
     [SerializeField] private GameObject interactionUI;
-    [Tooltip("Fiyatý yazacak TextMeshPro")]
     [SerializeField] private TMP_Text costText;
 
     [Header("Görsel")]
     [SerializeField] private GameObject visualModel;
     [SerializeField] private Material openedMaterial;
 
+    // --- YENÝ EKLENEN KISIM: YOK OLMA AYARLARI ---
+    [Header("Yok Olma Ayarlarý")]
+    [Tooltip("Sandýk açýldýktan kaç saniye sonra yok olmaya baþlasýn?")]
+    [SerializeField] private float destroyDelay = 2.0f;
+
+    [Tooltip("Küçülerek yok olma animasyonu ne kadar sürsün?")]
+    [SerializeField] private float shrinkDuration = 1.0f;
+    // ---------------------------------------------
+
     private bool isPlayerNearby = false;
-    private bool isOpen = false; // YENÝ: Sandýk açýk mý kilidi
+    private bool isOpen = false;
 
     private PlayerStats currentStats;
     private PlayerInventory currentInventory;
@@ -38,7 +46,6 @@ public class Chest : MonoBehaviour
 
     void Update()
     {
-        // YENÝ: Eðer sandýk zaten açýldýysa (isOpen) bir daha E'ye basýlamaz.
         if (isPlayerNearby && !isOpen && Input.GetKeyDown(KeyCode.E))
         {
             TryOpenChest();
@@ -47,7 +54,7 @@ public class Chest : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (isOpen) return; // Açýk sandýkla etkileþime girilmez
+        if (isOpen) return;
 
         PlayerStats stats = other.GetComponent<PlayerStats>();
         if (stats == null) stats = other.GetComponentInParent<PlayerStats>();
@@ -79,51 +86,42 @@ public class Chest : MonoBehaviour
 
     private void TryOpenChest()
     {
-        if (isOpen) return; // Çift týklama korumasý
+        if (isOpen) return;
         if (currentStats == null || currentInventory == null) return;
 
-        // 1. ÖNCE LÝSTE KONTROLÜ (Boþ sandýða para ödeme!)
         if (possibleItems == null || possibleItems.Count == 0)
         {
-            Debug.LogError("HATA: Sandýðýn içi boþ! (possibleItems listesi 0). Prefab ayarlarýný kontrol et.");
+            Debug.LogError("HATA: Sandýðýn içi boþ!");
             return;
         }
 
         int cost = CalculateCost(currentStats.chestsOpened);
 
-        // 2. YETERLÝ PARA VAR MI?
         if (currentStats.currentGold >= cost)
         {
-            // 3. ÖNCE ÝTEMÝ BELÝRLE
             ItemData reward = GetWeightedRandomItem();
 
             if (reward != null)
             {
-                // 4. PARAYI ÞÝMDÝ HARCA
                 bool paymentSuccess = currentStats.SpendGold(cost);
 
                 if (paymentSuccess)
                 {
-                    // 5. HER ÞEY BAÞARILI, SANDIÐI AÇ
-                    isOpen = true; // Kilidi kapat
-                    currentStats.chestsOpened++; // Ýstatistik iþle
-
-                    // Ýtemi ver
+                    // --- BAÞARILI AÇILIÞ ---
+                    isOpen = true;
+                    currentStats.chestsOpened++;
                     currentInventory.AddItem(reward);
-                    Debug.Log($"<color=green>SANDIK BAÞARILI: {reward.itemName} kazanýldý. {cost} altýn harcandý.</color>");
 
                     OpenChestVisuals();
+
+                    // --- YENÝ: YOK OLMA SÜRECÝNÝ BAÞLAT ---
+                    StartCoroutine(DestroyChestRoutine());
                 }
-            }
-            else
-            {
-                Debug.LogError("HATA: Ýtem seçilemedi (Reward null döndü). Aðýrlýklar (Drop Weight) 0 olabilir mi?");
             }
         }
         else
         {
-            Debug.Log($"Yetersiz Bakiye! Gereken: {cost}, Olan: {currentStats.currentGold}");
-            // Yetersiz bakiye animasyonu vs. buraya
+            Debug.Log("Yetersiz Bakiye!");
         }
     }
 
@@ -132,23 +130,43 @@ public class Chest : MonoBehaviour
         if (openedMaterial != null && visualModel.GetComponent<MeshRenderer>())
             visualModel.GetComponent<MeshRenderer>().material = openedMaterial;
 
+        // UI'ý hemen kapat ki oyuncu tekrar basmaya çalýþmasýn
         if (interactionUI != null) interactionUI.SetActive(false);
 
-        // UI güncellemesi gerekmez çünkü UI kapandý, ama stats güncel kalsýn
         currentStats.UpdateAllUI();
     }
+
+    // --- YENÝ: KÜÇÜLEREK YOK OLMA KODU ---
+    private IEnumerator DestroyChestRoutine()
+    {
+        // 1. Belirlenen süre kadar bekle (Örn: 2 saniye)
+        yield return new WaitForSeconds(destroyDelay);
+
+        // 2. Küçülme Animasyonu
+        Vector3 originalScale = transform.localScale;
+        float timer = 0f;
+
+        while (timer < shrinkDuration)
+        {
+            timer += Time.deltaTime;
+            // Mevcut boyuttan 0'a doðru yavaþça küçült (Lerp)
+            transform.localScale = Vector3.Lerp(originalScale, Vector3.zero, timer / shrinkDuration);
+            yield return null; // Bir sonraki kareyi bekle
+        }
+
+        // 3. Tamamen yok et
+        Destroy(gameObject);
+    }
+    // -------------------------------------
 
     private ItemData GetWeightedRandomItem()
     {
         if (possibleItems.Count == 0) return null;
 
         int totalWeight = 0;
-        foreach (var item in possibleItems)
-        {
-            if (item != null) totalWeight += item.dropWeight;
-        }
+        foreach (var item in possibleItems) if (item != null) totalWeight += item.dropWeight;
 
-        if (totalWeight == 0) return possibleItems[0]; // Hepsinin aðýrlýðý 0 ise ilkini ver
+        if (totalWeight == 0) return possibleItems[0];
 
         int randomPoint = Random.Range(0, totalWeight);
         int currentSum = 0;

@@ -368,6 +368,8 @@ MonoBehaviour:
   costText: {fileID: 3562360448008595446}
   visualModel: {fileID: 8827443464613804446}
   openedMaterial: {fileID: 0}
+  destroyDelay: 0.5
+  shrinkDuration: 1
 --- !u!1001 &8520820245821850831
 PrefabInstance:
   m_ObjectHideFlags: 0
