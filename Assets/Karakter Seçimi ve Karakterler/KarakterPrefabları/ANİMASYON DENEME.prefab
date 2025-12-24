@@ -70,6 +70,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2978191492159677801, guid: 0dac92eb2d82753408269b5602fb5f3c, type: 3}
+      propertyPath: rotationSpeed
+      value: 15
+      objectReference: {fileID: 0}
     - target: {fileID: 3498419723311602114, guid: 0dac92eb2d82753408269b5602fb5f3c, type: 3}
       propertyPath: m_Name
       value: "AN\u0130MASYON DENEME"

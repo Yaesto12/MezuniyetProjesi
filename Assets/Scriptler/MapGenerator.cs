@@ -193,6 +193,8 @@ public class MapGenerator : MonoBehaviour
 
                     Rigidbody rb = player.GetComponent<Rigidbody>();
                     if (rb != null) { rb.linearVelocity = Vector3.zero; rb.angularVelocity = Vector3.zero; }
+
+               
                 }
             }
         }

@@ -10,35 +10,35 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float baseJumpHeight = 1.5f;
     [SerializeField] private float gravityValue = -9.81f;
 
+    // --- Hareket ve Dönüþ Ayarlarý (YENÝ) ---
+    [Header("Hareket Ayarlarý")]
+    [Tooltip("Karakterin dönme hýzý.")]
+    [SerializeField] private float rotationSpeed = 10f; // <<<--- YENÝ EKLENDÝ
+
     // --- Duvar Týrmanma Ayarlarý ---
     [Header("Duvara Týrmanma Ayarlarý")]
     [SerializeField] private float wallClimbSpeed = 3f;
     [SerializeField] private float wallClimbStrafeSpeed = 2f;
     [SerializeField] private float wallSlideSpeed = 1f;
     [SerializeField] private Vector2 wallJumpForce = new Vector2(7f, 14f);
-    [Tooltip("Karakterin önünde duvar aramasý için kullanýlacak mesafe.")]
     [SerializeField] private float wallCheckDistance = 0.5f;
     [SerializeField] private LayerMask wallLayer;
 
     // --- Köþe Aþma Ayarlarý ---
     [Header("Köþe Aþma (Vaulting) Ayarlarý")]
-    [Tooltip("Köþe tespiti için üst ýþýnýn yüksekliði.")]
     [SerializeField] private float vaultCheckOffsetY = 0.7f;
-    [Tooltip("Köþeyi aþmak için uygulanacak itme kuvveti.")]
     [SerializeField] private Vector2 vaultForce = new Vector2(4f, 8f);
 
     // --- Savrulma Ayarlarý ---
     [Header("Savrulma Ayarlarý")]
-    [Tooltip("Düþman çarptýðýnda karaktere uygulanacak anlýk itme kuvveti.")]
     [SerializeField] private float knockbackForce = 15f;
-    [Tooltip("Savrulma etkisinin ne kadar hýzlý azalacaðý.")]
     [SerializeField] private float knockbackDrag = 5f;
 
     // --- Referanslar ---
     private CharacterController controller;
     private PlayerInputActions playerInputActions;
     private PlayerStats playerStats;
-    private Animator animator; // <--- ANÝMASYON ÝÇÝN EKLENDÝ
+    private Transform cameraTransform; // <<<--- YENÝ: Kamerayý takip edeceðiz
 
     // --- Dahili Deðiþkenler ---
     private Vector3 playerVelocity;
@@ -58,18 +58,19 @@ public class PlayerController : MonoBehaviour
         playerStats = GetComponent<PlayerStats>();
         if (playerStats == null)
         {
-            Debug.LogError("PlayerController: PlayerStats bileþeni bulunamadý!", this);
+            Debug.LogError("PlayerController: PlayerStats bulunamadý!", this);
             enabled = false;
         }
 
-        // <--- ANÝMASYON ÝÇÝN EKLENDÝ (BAÞLANGIÇ) ---
-        // Animator bu objede mi yoksa alt objede (modelde) mi kontrol et
-        animator = GetComponent<Animator>();
-        if (animator == null)
+        // Ana kamerayý bul
+        if (Camera.main != null)
         {
-            animator = GetComponentInChildren<Animator>();
+            cameraTransform = Camera.main.transform;
         }
-        // <--- ANÝMASYON ÝÇÝN EKLENDÝ (BÝTÝÞ) ---
+        else
+        {
+            Debug.LogError("Sahnede Main Camera bulunamadý! Lütfen kameranýza 'MainCamera' tag'i verin.");
+        }
     }
 
     void Update()
@@ -80,8 +81,52 @@ public class PlayerController : MonoBehaviour
         HandlePlayerInputAndGravity();
         HandleImpactForce();
 
-        // Son Hareketi Uygula (Oyuncu hareketi + Dýþ etkenler)
+        // Son Hareketi Uygula
         controller.Move((playerVelocity + impactForce) * Time.deltaTime);
+
+        // --- YENÝ DÖNÜÞ MANTIÐI BURAYA EKLENDÝ (Duvar týrmanma harici) ---
+        if (!isWallClimbing)
+        {
+            HandleRotation();
+        }
+    }
+
+    // --- YENÝ EKLENEN DÖNÜÞ FONKSÝYONU ---
+    private void HandleRotation()
+    {
+        Vector2 inputVector = playerInputActions.Player.Move.ReadValue<Vector2>();
+
+        // (Ýyileþtirme) sqrMagnitude > 0.01f kontrolü:
+        // Oyun kollarýndaki çok ufak titremeleri (Stick Drift) yok saymak için
+        // Vector2.zero kontrolünden daha saðlýklýdýr.
+        if (inputVector.sqrMagnitude > 0.01f && cameraTransform != null)
+        {
+            // 1. Kameranýn yönlerini al ve yere paralel hale getir
+            Vector3 viewDir = cameraTransform.forward;
+            viewDir.y = 0;
+            viewDir.Normalize();
+
+            Vector3 rightDir = cameraTransform.right;
+            rightDir.y = 0;
+            rightDir.Normalize();
+
+            // 2. Hedef yönü hesapla
+            Vector3 targetDirection = viewDir * inputVector.y + rightDir * inputVector.x;
+
+            // (Ýyileþtirme) Normalizasyon:
+            // Çapraz basýnca (örn: W+D) vektörün boyunun 1'den büyük olmasýný engeller.
+            // LookRotation için daha temiz bir veri sunar.
+            targetDirection.Normalize();
+
+            if (targetDirection != Vector3.zero)
+            {
+                // 3. Hedef rotasyonu oluþtur
+                Quaternion targetRotation = Quaternion.LookRotation(targetDirection);
+
+                // 4. Yumuþakça dön
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+            }
+        }
     }
 
     private void HandlePlayerInputAndGravity()
@@ -89,29 +134,44 @@ public class PlayerController : MonoBehaviour
         Vector2 inputVector = playerInputActions.Player.Move.ReadValue<Vector2>();
         float currentSpeed = (playerStats != null) ? playerStats.CurrentMoveSpeed : 5f;
 
-        // <--- ANÝMASYON ÝÇÝN EKLENDÝ (BAÞLANGIÇ) ---
-        // Eðer input deðeri varsa (karakter hareket etmeye çalýþýyorsa) isWalking true olsun
-        if (animator != null)
-        {
-            bool isMoving = inputVector.sqrMagnitude > 0.01f;
-            animator.SetBool("isWalking", isMoving);
-        }
-        // <--- ANÝMASYON ÝÇÝN EKLENDÝ (BÝTÝÞ) ---
-
         Vector3 horizontalVelocity;
+
         if (isWallClimbing)
         {
+            // Týrmanýrken hala karakterin saðýna/soluna göre hareket etmeli
             Vector3 strafeMovement = transform.right * inputVector.x * wallClimbStrafeSpeed;
             Vector3 forwardMovement = transform.forward * (currentSpeed * 0.3f);
             horizontalVelocity = strafeMovement + forwardMovement;
         }
         else
         {
-            horizontalVelocity = (transform.forward * inputVector.y + transform.right * inputVector.x) * currentSpeed;
+            // --- DEÐÝÞÝKLÝK: ARTIK KAMERAYA GÖRE HAREKET EDÝYORUZ ---
+            if (cameraTransform != null)
+            {
+                // Kameranýn önünü ve saðýný al (Y eksenini sýfýrla ki havaya uçmayalým)
+                Vector3 camForward = cameraTransform.forward;
+                Vector3 camRight = cameraTransform.right;
+                camForward.y = 0;
+                camRight.y = 0;
+                camForward.Normalize();
+                camRight.Normalize();
+
+                // Girdiyi bu vektörlerle çarp
+                Vector3 moveDir = (camForward * inputVector.y + camRight * inputVector.x).normalized;
+
+                horizontalVelocity = moveDir * currentSpeed;
+            }
+            else
+            {
+                // Kamera yoksa eski usul devam et (Hata vermesin)
+                horizontalVelocity = (transform.forward * inputVector.y + transform.right * inputVector.x) * currentSpeed;
+            }
         }
+
         playerVelocity.x = horizontalVelocity.x;
         playerVelocity.z = horizontalVelocity.z;
 
+        // Yerçekimi ve Dikey Hareket
         if (isWallClimbing)
         {
             if (inputVector.y > 0) playerVelocity.y = wallClimbSpeed;
@@ -144,9 +204,6 @@ public class PlayerController : MonoBehaviour
 
                 Vector3 vaultVelocity = transform.forward * vaultForce.x + Vector3.up * vaultForce.y;
                 impactForce = vaultVelocity;
-
-                // Opsiyonel: Vault yaparken zýplama animasyonu çalýþtýrýlabilir
-                if (animator != null) animator.SetTrigger("Jump");
 
                 return;
             }
@@ -194,18 +251,12 @@ public class PlayerController : MonoBehaviour
             jumpCount = 1;
             Vector3 wallJumpVelocity = (wallHit.normal * wallJumpForce.x) + (Vector3.up * wallJumpForce.y);
             impactForce += wallJumpVelocity;
-
-            // <--- ANÝMASYON ÝÇÝN EKLENDÝ ---
-            if (animator != null) animator.SetTrigger("Jump");
         }
         else if (jumpCount < maxTotalJumps)
         {
             float currentJumpHeightApplied = baseJumpHeight * (playerStats.CurrentJumpHeightMultiplier / 100f);
             playerVelocity.y = Mathf.Sqrt(currentJumpHeightApplied * -2.0f * gravityValue);
             jumpCount++;
-
-            // <--- ANÝMASYON ÝÇÝN EKLENDÝ ---
-            if (animator != null) animator.SetTrigger("Jump");
         }
     }
 

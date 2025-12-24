@@ -45,8 +45,7 @@ public class CharacterSelectManager : MonoBehaviour
     /// </summary>
     void PopulateCharacterGrid()
     {
-        // 1. Önce eski butonlarý temizle (Editörde kalanlarý temizlemek için önemli)
-        // Transform.GetChild ile tersten dönerek silmek daha güvenlidir.
+        // 1. Önce eski butonlarý temizle
         for (int i = characterGridPanel.childCount - 1; i >= 0; i--)
         {
             Destroy(characterGridPanel.GetChild(i).gameObject);
@@ -58,24 +57,35 @@ public class CharacterSelectManager : MonoBehaviour
             GameObject buttonGO = Instantiate(characterButtonPrefab, characterGridPanel);
             Button button = buttonGO.GetComponent<Button>();
 
-            // ÝKONU BULMA:
-            // Yöntem A: Prefabýn içinde "Icon" adýnda bir obje varsa onu bul
-            // Transform iconTransform = buttonGO.transform.Find("Icon");
-            // Image iconImage = iconTransform != null ? iconTransform.GetComponent<Image>() : null;
+            // --- DEÐÝÞÝKLÝK BURADA ---
+            // "Tahmin etme" yöntemini sildik. Direkt isminden buluyoruz.
+            // Prefabýn içindeki objenin adýný "IconImage" yaptýðýndan emin ol!
+            Transform iconTransform = buttonGO.transform.Find("IconImage");
 
-            // Yöntem B (Daha genel): Butonun kendisindeki Image (arka plan) deðil, altýndaki ilk Image'i bul
-            Image[] images = buttonGO.GetComponentsInChildren<Image>();
-            Image iconImage = null;
-
-            // Genelde [0] butonun kendisi, [1] ise ikondur.
-            if (images.Length > 1) iconImage = images[1];
-            else if (images.Length == 1 && images[0].gameObject != buttonGO) iconImage = images[0];
-
-            if (iconImage != null && character.icon != null)
+            if (iconTransform != null)
             {
-                iconImage.sprite = character.icon;
-                iconImage.preserveAspect = true; // Ýkonun en-boy oranýný koru
+                Image iconImage = iconTransform.GetComponent<Image>();
+
+                // Eðer data dosyasýnda ikon varsa ata
+                if (iconImage != null && character.icon != null)
+                {
+                    iconImage.sprite = character.icon;
+                    iconImage.preserveAspect = true; // Resmi sündürme, oranýný koru
+                    iconImage.enabled = true; // Görünür olduðundan emin ol
+                }
+                else if (character.icon == null)
+                {
+                    // Ýkon yoksa beyaz kare görünmesin diye resmi kapat
+                    // (veya iconImage.color = Color.clear; yapabilirsin)
+                    iconImage.enabled = false;
+                }
             }
+            else
+            {
+                // Eðer ismi yanlýþ yazdýysan konsolda seni uyarýr
+                Debug.LogWarning($"DÝKKAT: '{character.name}' butonunda 'IconImage' isimli obje bulunamadý! Prefabý kontrol et.");
+            }
+            // -------------------------
 
             button.onClick.AddListener(() => SelectCharacter(character));
         }
