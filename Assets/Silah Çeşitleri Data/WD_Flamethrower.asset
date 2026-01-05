@@ -16,8 +16,8 @@ MonoBehaviour:
   description: "Alev makinesi ile her\u015Feyi k\xFCle \xE7evirin"
   icon: {fileID: 0}
   behaviorType: 4
-  baseDamage: 10
-  cooldown: 0.1
+  baseDamage: 20
+  cooldown: 0.2
   critChance: 5
   critMultiplier: 2
   projectilePrefab: {fileID: 0}
@@ -37,7 +37,7 @@ MonoBehaviour:
   explosionPrefab: {fileID: 0}
   explosionRadius: 2
   explosionCount: 1
-  wavePrefab: {fileID: 9034370386667333512, guid: 799d09d9b1404b249b00d6e61e50c9f2, type: 3}
+  wavePrefab: {fileID: 7798082371008008803, guid: d1f72b6267932e94a8f110fa2aecc4d7, type: 3}
   waveSpeed: 15
   waveWidth: 2
   waveLifetime: 4

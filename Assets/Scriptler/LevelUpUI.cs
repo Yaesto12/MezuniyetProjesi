@@ -3,9 +3,6 @@ using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
 
-// Yardýmcý sýnýflar (GeneratedUpgradeOption, StatModification)
-// artýk GameDefinitions.cs dosyasýnda tanýmlý.
-
 public class LevelUpUI : MonoBehaviour
 {
     [SerializeField] private GameObject panelObject; // Panelin kendisi
@@ -43,15 +40,23 @@ public class LevelUpUI : MonoBehaviour
     }
 
     /// <summary>
-    /// Paneli gösterir ve dinamik olarak oluþturulan seçenekleri butonlara atar.
+    /// Paneli gösterir, oyunu dondurur ve mouse'u serbest býrakýr.
     /// </summary>
     public void ShowOptions(List<GeneratedUpgradeOption> availableOptions)
     {
         if (panelObject == null) { Debug.LogError("LevelUpUI: Panel Object atanmamýþ!"); return; }
 
+        // 1. Paneli Aç
         panelObject.SetActive(true);
         this.currentOptions = availableOptions;
 
+        // --- YENÝ EKLENEN KISIM: ZAMAN VE MOUSE ---
+        //Time.timeScale = 0f; // Oyunu durdur ----------------------------------------------------------------------------
+        Cursor.lockState = CursorLockMode.None; // Mouse kilidini kaldýr
+        Cursor.visible = true; // Mouse'u görünür yap
+        // ------------------------------------------
+
+        // 2. Seçenekleri Butonlara Daðýt
         for (int i = 0; i < optionButtons.Length; i++)
         {
             if (optionButtons[i] == null || optionNameTexts[i] == null || optionDescriptionTexts[i] == null || optionIcons[i] == null)
@@ -86,7 +91,7 @@ public class LevelUpUI : MonoBehaviour
     }
 
     /// <summary>
-    /// Bir butona týklandýðýnda çaðrýlýr.
+    /// Seçim yapýldýðýnda oyunu devam ettirir ve mouse'u kilitler.
     /// </summary>
     private void SelectUpgrade(int optionIndex)
     {
@@ -99,6 +104,12 @@ public class LevelUpUI : MonoBehaviour
             Debug.LogError($"SelectUpgrade: Geçersiz seçim!");
         }
 
+        // --- YENÝ EKLENEN KISIM: EKRANI KAPAT VE DEVAM ET ---
         if (panelObject != null) panelObject.SetActive(false);
+
+        //Time.timeScale = 1f; // Oyunu devam ettir            -------------------------------------------------------------------------
+        Cursor.lockState = CursorLockMode.Locked; // Mouse'u tekrar kilitle (FPS/TPS modu)
+        Cursor.visible = false; // Mouse'u gizle
+        // ----------------------------------------------------
     }
 }

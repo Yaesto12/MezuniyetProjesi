@@ -47,6 +47,12 @@ public class CameraController : MonoBehaviour
 
     void LateUpdate()
     {
+        // --- EKLENEN KISIM (ÇÖZÜM 2) ---
+        // Eðer oyun durdurulmuþsa (Level Up ekraný vs. açýksa) kamerayý dondur.
+        // Bu, hem kameranýn saçmalamasýný engeller hem de mouse'u rahat býrakýr.
+        if (Time.timeScale == 0f) return;
+        // ------------------------------
+
         if (target == null)
         {
             FindPlayer();

@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fbd5dcd502437de4ca48894ed43fff67, type: 3}
   m_Name: Upgrade_Unlock_Flamethrower
   m_EditorClassIdentifier: Assembly-CSharp::UpgradeData
-  upgradeName: Flamethrower
-  description: "lav silah\u0131n\u0131n kilidini a\xE7ar"
+  upgradeName: 'Unlock: Flamethrower'
+  description: 
   icon: {fileID: 0}
   rarity: 0
   category: 0

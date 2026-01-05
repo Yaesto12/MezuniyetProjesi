@@ -14,6 +14,10 @@ public class EnemyStats : MonoBehaviour
     [SerializeField] private GameObject xpOrbPrefab;
     [SerializeField] private GameObject goldCoinPrefab;
 
+
+    [Header("Efektler")]
+    [SerializeField] private GameObject damagePopupPrefab;
+
     // --- HESAPLANMIÞ ÖZELLÝKLER ---
     public float Speed => (isFrozen ? 0 : moveSpeed) * grossedOutSpeedMult;
     public int Damage => Mathf.Max(1, Mathf.RoundToInt(damage * grossedOutDamageMult));
@@ -42,9 +46,28 @@ public class EnemyStats : MonoBehaviour
         currentHealth = maxHealth;
     }
 
-    public void TakeDamage(int damageAmount)
+    public void TakeDamage(int damageAmount, bool isCritical = false)
     {
         currentHealth -= damageAmount;
+
+        // --- HASAR YAZISI (POPUP) KISMI ---
+        if (damagePopupPrefab != null)
+        {
+            // Yazýyý düþmanýn kafasýnýn biraz üzerinde oluþtur (Yüksekliði duruma göre 1.5f veya 2f yapabilirsin)
+            Vector3 spawnPosition = transform.position + Vector3.up * 2f;
+
+            // Prefabý yarat
+            GameObject popupObj = Instantiate(damagePopupPrefab, spawnPosition, Quaternion.identity);
+
+            // DamagePopup scriptine ulaþ ve deðerleri gönder
+            DamagePopup popupScript = popupObj.GetComponent<DamagePopup>();
+            if (popupScript != null)
+            {
+                popupScript.Setup(damageAmount, isCritical);
+            }
+        }
+        // ----------------------------------
+
         if (currentHealth <= 0) Die();
     }
 

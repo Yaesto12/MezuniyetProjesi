@@ -120,7 +120,6 @@ GameObject:
   - component: {fileID: 604324217765627445}
   - component: {fileID: 2978191492159677801}
   - component: {fileID: 1501024894133615921}
-  - component: {fileID: 3587570450412607724}
   - component: {fileID: 3340624305519319892}
   - component: {fileID: 4599842359969438767}
   - component: {fileID: 3212575873610840833}
@@ -144,7 +143,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -13.56055, y: 1.12, z: -23.458914}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 3, y: 3, z: 3}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4934216608987096843}
@@ -273,23 +272,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 562ae7fd5146de942a89883c558abd95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
---- !u!114 &3587570450412607724
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3498419723311602114}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 86ebcbea595fdad45bc93b05ff879eb5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CameraOrbitController
-  cameraPivot: {fileID: 0}
-  mainCamera: {fileID: 0}
-  mouseSensitivity: 150
-  minVerticalAngle: -35
-  maxVerticalAngle: 70
 --- !u!114 &3340624305519319892
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -322,8 +304,14 @@ MonoBehaviour:
   xpMultiplierPerLevel: 1.2
   xpFillSpeed: 450
   upgradePool:
+  - {fileID: 11400000, guid: 143bc5f381a0ee34fbc13f0a622f1944, type: 2}
+  - {fileID: 11400000, guid: 902f964db601fd24ea3a1be58b10924b, type: 2}
   - {fileID: 11400000, guid: ae34c4212e6f50342ad040a7cca5a0e4, type: 2}
+  - {fileID: 11400000, guid: 6cd2a888cc1e3424c89e4869763a8fa3, type: 2}
+  - {fileID: 11400000, guid: 5893ce8017a69244d856ff94c89543da, type: 2}
+  - {fileID: 11400000, guid: 63024e75b727ea3439a0d674593d298a, type: 2}
   - {fileID: 11400000, guid: dd5fe94428254de4aaf78d8476101a8b, type: 2}
+  - {fileID: 11400000, guid: 9842bb474ebb60e4eb5784511ff1ca8d, type: 2}
   levelUpUI: {fileID: 0}
   commonMultiplier: 1
   rareMultiplier: 1.5

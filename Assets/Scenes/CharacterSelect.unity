@@ -175,7 +175,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 7f9af0f01bd154045b5e9c30d0748764, type: 2}
   - {fileID: 11400000, guid: 36598820a3a36ae48b1247986baa2b3a, type: 2}
   characterGridPanel: {fileID: 1334424133}
-  characterButtonPrefab: {fileID: 3304582429770092142, guid: b7c2d1e44493ea646a8659c740be9bec, type: 3}
+  characterButtonPrefab: {fileID: 1150991506891264760, guid: aa476067060d28c42a9295975f2ededa, type: 3}
   selectedCharacterIcon: {fileID: 0}
   selectedCharacterName: {fileID: 890909131}
   selectedCharacterDescription: {fileID: 591858248}
@@ -263,8 +263,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 3d45ce8f5f3197c4288752f2a9dbace5, type: 2}
+  m_sharedMaterial: {fileID: 6881335416297749847, guid: 3d45ce8f5f3197c4288752f2a9dbace5, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -553,8 +553,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 3d45ce8f5f3197c4288752f2a9dbace5, type: 2}
+  m_sharedMaterial: {fileID: 6881335416297749847, guid: 3d45ce8f5f3197c4288752f2a9dbace5, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1160,7 +1160,7 @@ RectTransform:
   m_AnchorMin: {x: 1, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
   m_AnchoredPosition: {x: -352.00012, y: -105}
-  m_SizeDelta: {x: 160, y: 30}
+  m_SizeDelta: {x: 180, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1829086531
 GameObject:
@@ -1189,14 +1189,14 @@ RectTransform:
   m_GameObject: {fileID: 1829086531}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.95122, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1612306888}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 4.3, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1829086533
@@ -1219,10 +1219,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Oyuna Ba\u015Fla"
+  m_text: Enter Level
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 3d45ce8f5f3197c4288752f2a9dbace5, type: 2}
+  m_sharedMaterial: {fileID: 6881335416297749847, guid: 3d45ce8f5f3197c4288752f2a9dbace5, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1284,7 +1284,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_margin: {x: -4.5026245, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0

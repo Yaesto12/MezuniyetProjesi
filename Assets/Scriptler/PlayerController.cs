@@ -10,10 +10,10 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float baseJumpHeight = 1.5f;
     [SerializeField] private float gravityValue = -9.81f;
 
-    // --- Hareket ve Dönüþ Ayarlarý (YENÝ) ---
+    // --- Hareket ve Dönüþ Ayarlarý ---
     [Header("Hareket Ayarlarý")]
     [Tooltip("Karakterin dönme hýzý.")]
-    [SerializeField] private float rotationSpeed = 10f; // <<<--- YENÝ EKLENDÝ
+    [SerializeField] private float rotationSpeed = 10f;
 
     // --- Duvar Týrmanma Ayarlarý ---
     [Header("Duvara Týrmanma Ayarlarý")]
@@ -38,7 +38,10 @@ public class PlayerController : MonoBehaviour
     private CharacterController controller;
     private PlayerInputActions playerInputActions;
     private PlayerStats playerStats;
-    private Transform cameraTransform; // <<<--- YENÝ: Kamerayý takip edeceðiz
+    private Transform cameraTransform;
+
+    // --- YENÝ: Animasyon Referansý ---
+    private Animator animator; // Animasyonlarý yönetecek deðiþken
 
     // --- Dahili Deðiþkenler ---
     private Vector3 playerVelocity;
@@ -69,7 +72,16 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            Debug.LogError("Sahnede Main Camera bulunamadý! Lütfen kameranýza 'MainCamera' tag'i verin.");
+            Debug.LogError("Sahnede Main Camera bulunamadý!");
+        }
+
+        // --- YENÝ: Animator'ý Child objelerden bul ---
+        // Bu sayede scripti hangi modele takarsan tak (Mage, Archer), 
+        // altýndaki Animator'ý otomatik bulur.
+        animator = GetComponentInChildren<Animator>();
+        if (animator == null)
+        {
+            Debug.LogWarning("PlayerController: Child objelerde Animator bulunamadý! Animasyonlar çalýþmayacak.");
         }
     }
 
@@ -84,24 +96,43 @@ public class PlayerController : MonoBehaviour
         // Son Hareketi Uygula
         controller.Move((playerVelocity + impactForce) * Time.deltaTime);
 
-        // --- YENÝ DÖNÜÞ MANTIÐI BURAYA EKLENDÝ (Duvar týrmanma harici) ---
         if (!isWallClimbing)
         {
             HandleRotation();
         }
+
+        // --- YENÝ: Animasyonlarý Güncelle ---
+        UpdateAnimations();
     }
 
-    // --- YENÝ EKLENEN DÖNÜÞ FONKSÝYONU ---
+    // --- YENÝ EKLENEN ANÝMASYON GÜNCELLEME FONKSÝYONU ---
+    private void UpdateAnimations()
+    {
+        if (animator == null) return;
+
+        // 1. Yatay Hýz (Speed)
+        // Karakterin sadece yataydaki hýzýný alýyoruz (Düþerkenki hýzý koþma animasyonunu bozmasýn diye)
+        Vector3 horizontalVelocity = new Vector3(controller.velocity.x, 0, controller.velocity.z);
+        float currentSpeed = horizontalVelocity.magnitude;
+
+        // Animator'daki "Speed" parametresini güncelle (Idle <-> Run geçiþi için)
+        animator.SetFloat("Speed", currentSpeed);
+
+        // 2. Yerde mi? (IsGrounded)
+        // Animator'daki "IsGrounded" parametresini güncelle (Fall -> Idle geçiþi için)
+        animator.SetBool("IsGrounded", isGrounded);
+
+        // 3. Dikey Hýz (VerticalSpeed)
+        // Yukarý mý çýkýyor aþaðý mý düþüyor? (Jump -> Fall geçiþi için)
+        animator.SetFloat("VerticalSpeed", playerVelocity.y);
+    }
+
     private void HandleRotation()
     {
         Vector2 inputVector = playerInputActions.Player.Move.ReadValue<Vector2>();
 
-        // (Ýyileþtirme) sqrMagnitude > 0.01f kontrolü:
-        // Oyun kollarýndaki çok ufak titremeleri (Stick Drift) yok saymak için
-        // Vector2.zero kontrolünden daha saðlýklýdýr.
         if (inputVector.sqrMagnitude > 0.01f && cameraTransform != null)
         {
-            // 1. Kameranýn yönlerini al ve yere paralel hale getir
             Vector3 viewDir = cameraTransform.forward;
             viewDir.y = 0;
             viewDir.Normalize();
@@ -110,20 +141,12 @@ public class PlayerController : MonoBehaviour
             rightDir.y = 0;
             rightDir.Normalize();
 
-            // 2. Hedef yönü hesapla
             Vector3 targetDirection = viewDir * inputVector.y + rightDir * inputVector.x;
-
-            // (Ýyileþtirme) Normalizasyon:
-            // Çapraz basýnca (örn: W+D) vektörün boyunun 1'den büyük olmasýný engeller.
-            // LookRotation için daha temiz bir veri sunar.
             targetDirection.Normalize();
 
             if (targetDirection != Vector3.zero)
             {
-                // 3. Hedef rotasyonu oluþtur
                 Quaternion targetRotation = Quaternion.LookRotation(targetDirection);
-
-                // 4. Yumuþakça dön
                 transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
             }
         }
@@ -138,17 +161,14 @@ public class PlayerController : MonoBehaviour
 
         if (isWallClimbing)
         {
-            // Týrmanýrken hala karakterin saðýna/soluna göre hareket etmeli
             Vector3 strafeMovement = transform.right * inputVector.x * wallClimbStrafeSpeed;
             Vector3 forwardMovement = transform.forward * (currentSpeed * 0.3f);
             horizontalVelocity = strafeMovement + forwardMovement;
         }
         else
         {
-            // --- DEÐÝÞÝKLÝK: ARTIK KAMERAYA GÖRE HAREKET EDÝYORUZ ---
             if (cameraTransform != null)
             {
-                // Kameranýn önünü ve saðýný al (Y eksenini sýfýrla ki havaya uçmayalým)
                 Vector3 camForward = cameraTransform.forward;
                 Vector3 camRight = cameraTransform.right;
                 camForward.y = 0;
@@ -156,14 +176,11 @@ public class PlayerController : MonoBehaviour
                 camForward.Normalize();
                 camRight.Normalize();
 
-                // Girdiyi bu vektörlerle çarp
                 Vector3 moveDir = (camForward * inputVector.y + camRight * inputVector.x).normalized;
-
                 horizontalVelocity = moveDir * currentSpeed;
             }
             else
             {
-                // Kamera yoksa eski usul devam et (Hata vermesin)
                 horizontalVelocity = (transform.forward * inputVector.y + transform.right * inputVector.x) * currentSpeed;
             }
         }
@@ -171,7 +188,6 @@ public class PlayerController : MonoBehaviour
         playerVelocity.x = horizontalVelocity.x;
         playerVelocity.z = horizontalVelocity.z;
 
-        // Yerçekimi ve Dikey Hareket
         if (isWallClimbing)
         {
             if (inputVector.y > 0) playerVelocity.y = wallClimbSpeed;
@@ -204,7 +220,6 @@ public class PlayerController : MonoBehaviour
 
                 Vector3 vaultVelocity = transform.forward * vaultForce.x + Vector3.up * vaultForce.y;
                 impactForce = vaultVelocity;
-
                 return;
             }
         }
@@ -251,12 +266,21 @@ public class PlayerController : MonoBehaviour
             jumpCount = 1;
             Vector3 wallJumpVelocity = (wallHit.normal * wallJumpForce.x) + (Vector3.up * wallJumpForce.y);
             impactForce += wallJumpVelocity;
+
+            // Duvardan zýplarken de animasyonu tetikle
+            if (animator != null) animator.SetTrigger("Jump");
         }
         else if (jumpCount < maxTotalJumps)
         {
             float currentJumpHeightApplied = baseJumpHeight * (playerStats.CurrentJumpHeightMultiplier / 100f);
             playerVelocity.y = Mathf.Sqrt(currentJumpHeightApplied * -2.0f * gravityValue);
             jumpCount++;
+
+            // --- YENÝ: Zýplama Animasyonunu Tetikle ---
+            if (animator != null)
+            {
+                animator.SetTrigger("Jump");
+            }
         }
     }
 

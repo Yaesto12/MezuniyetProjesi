@@ -10,7 +10,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3498419723311602114, guid: 0dac92eb2d82753408269b5602fb5f3c, type: 3}
       propertyPath: m_Name
-      value: Base_Character_Prefab
+      value: BuisnessMan_Variant
+      objectReference: {fileID: 0}
+    - target: {fileID: 6504686569449464439, guid: 0dac92eb2d82753408269b5602fb5f3c, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9130405156187345073, guid: 0dac92eb2d82753408269b5602fb5f3c, type: 3}
       propertyPath: m_LocalPosition.x
