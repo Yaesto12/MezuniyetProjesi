@@ -5,67 +5,59 @@ using TMPro;
 [RequireComponent(typeof(SphereCollider))]
 public class GraveStone : MonoBehaviour
 {
-    [Header("Ödül Ayarlarý")]
-    [Tooltip("Bu mezar taþý ne kadar XP verecek?")]
-    [SerializeField] private int xpAmount = 50;
+    [Header("Ödül Ayarlarý (XP Küresi)")]
+    [Tooltip("Düþmanlardan düþen XP Kristali prefabýný buraya sürükle.")]
+    [SerializeField] private GameObject xpOrbPrefab;
+
+    [Tooltip("Kaç tane küre düþsün?")]
+    [SerializeField] private int orbCount = 5;
+
+    [Tooltip("Küreler ne kadar geniþliðe saçýlsýn?")]
+    [SerializeField] private float scatterRadius = 2.0f;
 
     [Header("UI Ayarlarý")]
-    [SerializeField] private GameObject interactionUI; // "E - Ruhunu Al" yazýsý
-    [SerializeField] private TextMeshProUGUI infoText; // Ýstersen XP miktarýný yazdýrabilirsin
+    [SerializeField] private GameObject interactionUI;
+    [SerializeField] private TextMeshProUGUI infoText;
 
     [Header("Görsel & Efekt")]
     [SerializeField] private GameObject visualModel;
-    [Tooltip("Etkileþimden sonra kaç saniye sonra yok olmaya baþlasýn?")]
-    [SerializeField] private float destroyDelay = 1.0f;
-    [Tooltip("Küçülme süresi")]
+    [SerializeField] private float destroyDelay = 0.5f;
     [SerializeField] private float shrinkDuration = 1.0f;
 
     private bool isPlayerNearby = false;
     private bool isCollected = false;
-    private PlayerStats playerStats;
 
     void Awake()
     {
-        // Collider ayarýný garantiye alalým
         GetComponent<SphereCollider>().isTrigger = true;
-
         if (interactionUI != null) interactionUI.SetActive(false);
         if (visualModel == null) visualModel = gameObject;
     }
 
     void Start()
     {
-        // Baþlangýçta UI metnini güncelleyebiliriz
         if (infoText != null)
         {
-            infoText.text = $"<b>[E]</b> Ruhunu Al\n<color=cyan>+{xpAmount} XP</color>";
+            // Metni XP miktarý yerine "Ruhlarý Serbest Býrak" gibi genel bir þeye çevirdik
+            infoText.text = $"<b>[E]</b> Ruhlarý Serbest Býrak";
         }
     }
 
     void Update()
     {
-        // Oyuncu yakýndaysa, henüz alýnmadýysa ve E'ye basýldýysa
         if (isPlayerNearby && !isCollected && Input.GetKeyDown(KeyCode.E))
         {
-            CollectSoul();
+            ReleaseSouls();
         }
     }
 
     private void OnTriggerEnter(Collider other)
     {
         if (isCollected) return;
-
         if (other.CompareTag("Player"))
         {
-            // PlayerStats scriptini bul
-            playerStats = other.GetComponent<PlayerStats>();
-            if (playerStats == null) playerStats = other.GetComponentInParent<PlayerStats>();
-
-            if (playerStats != null)
-            {
-                isPlayerNearby = true;
-                if (interactionUI != null) interactionUI.SetActive(true);
-            }
+            isPlayerNearby = true;
+            if (interactionUI != null) interactionUI.SetActive(true);
         }
     }
 
@@ -74,30 +66,37 @@ public class GraveStone : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             isPlayerNearby = false;
-            playerStats = null;
             if (interactionUI != null) interactionUI.SetActive(false);
         }
     }
 
-    private void CollectSoul()
+    private void ReleaseSouls()
     {
-        if (playerStats == null) return;
-
-        // --- 1. XP ÖDÜLÜNÜ VER ---
-        // PlayerStats scriptinde "GainExperience" veya benzeri bir metodun olduðunu varsayýyoruz.
-        // Eðer yoksa, PlayerStats.cs içine aþaðýda verdiðim eklemeyi yapmalýsýn.
-
-        // Reflection kullanmadan direkt çaðýrmak en iyisidir ama scriptini görmediðim için SendMessage kullanýyorum
-        // Veya direkt: playerStats.GainExperience(xpAmount);
-        playerStats.SendMessage("GainExperience", xpAmount, SendMessageOptions.DontRequireReceiver);
-
-        Debug.Log($"<color=cyan>{xpAmount} XP Kazanýldý!</color>");
-
-        // --- 2. GÖRSEL ÝÞLEMLER ---
         isCollected = true;
-        if (interactionUI != null) interactionUI.SetActive(false); // Yazýyý hemen kapat
+        if (interactionUI != null) interactionUI.SetActive(false);
 
-        // --- 3. YOK OLMA SÜRECÝ ---
+        // --- ORB SAÇMA ÝÞLEMÝ (YENÝ) ---
+        if (xpOrbPrefab != null)
+        {
+            for (int i = 0; i < orbCount; i++)
+            {
+                // Mezar taþýnýn etrafýnda rastgele bir pozisyon bul
+                Vector3 randomOffset = Random.insideUnitSphere * scatterRadius;
+                randomOffset.y = 0.5f; // Yere gömülmesin, havada dursun
+
+                Vector3 spawnPos = transform.position + randomOffset;
+
+                // Küreyi oluþtur
+                Instantiate(xpOrbPrefab, spawnPos, Quaternion.identity);
+            }
+            Debug.Log($"{orbCount} adet XP Küresi saçýldý!");
+        }
+        else
+        {
+            Debug.LogError("GraveStone: XP Orb Prefabý atanmamýþ!");
+        }
+
+        // --- YOK OLMA ---
         StartCoroutine(DestroyRoutine());
     }
 

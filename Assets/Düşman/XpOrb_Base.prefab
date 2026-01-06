@@ -152,4 +152,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ddf5f35978de9a49838319357790437, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::XpOrb
-  moveSpeed: 10
+  xpValue: 10
+  moveSpeed: 25

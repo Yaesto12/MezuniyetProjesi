@@ -306,7 +306,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 026d82ef5dfc4ac4b8e2edb77c5585c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GraveStone
-  xpAmount: 50
+  xpOrbPrefab: {fileID: 4436064657191302726, guid: 8c8b7081d4cb6f74a8331d850d12b9e6, type: 3}
+  orbCount: 5
+  scatterRadius: 2
   interactionUI: {fileID: 3784093898275928596}
   infoText: {fileID: 1255936425463397367}
   visualModel: {fileID: 0}

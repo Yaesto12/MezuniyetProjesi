@@ -11,7 +11,7 @@ public class PlayerStats : MonoBehaviour
     public float xpToNextLevel = 100f;
     public float levelDifficultyMultiplier = 1.2f;
 
-    // YENÝ EKLENDÝ: Açýlan sandýk sayýsýný burada tutuyoruz
+    // Açýlan sandýk sayýsý
     public int chestsOpened = 0;
 
     // --- TEMEL STATLAR ---
@@ -134,6 +134,16 @@ public class PlayerStats : MonoBehaviour
         UpdateAllUI();
     }
 
+    // --- YENÝ EKLENEN XP KAZANMA METODU (GraveStone için) ---
+    public void GainExperience(int amount)
+    {
+        // Gelen int deðerini float'a çevirip AddXp'ye gönderiyoruz.
+        // AddXp zaten XP bonus çarpanlarýný uyguladýðý için burada ekstra iþlem yapmýyoruz.
+        AddXp((float)amount);
+        Debug.Log($"Dýþarýdan {amount} XP kazanýldý! Güncel XP: {currentXp}");
+    }
+    // -------------------------------------------------------
+
     // --- PARA KAZANMA ---
     public void AddGold(int amount)
     {
@@ -148,8 +158,7 @@ public class PlayerStats : MonoBehaviour
         }
     }
 
-    // --- PARA HARCAMA (YENÝ EKLENDÝ) ---
-    // Sandýk scripti bunu çaðýracak
+    // --- PARA HARCAMA ---
     public bool SpendGold(int amount)
     {
         if (currentGold >= amount)
@@ -169,9 +178,18 @@ public class PlayerStats : MonoBehaviour
 
         currentXp += finalAmount;
 
+        int safetyBreaker = 0;
+
         while (currentXp >= xpToNextLevel)
         {
             LevelUp();
+
+            safetyBreaker++;
+            if (safetyBreaker > 100)
+            {
+                Debug.LogError("HATA: Level atlama sonsuz döngüye girdi! Ýþlem durduruldu.");
+                break; // Oyunu çökmeden kurtarýr
+            }
         }
 
         if (UIManager.Instance != null)
@@ -191,6 +209,7 @@ public class PlayerStats : MonoBehaviour
             UIManager.Instance.UpdateLevelText(currentLevel);
             UIManager.Instance.UpdateXpBar(currentXp, xpToNextLevel);
         }
+        // Burada Level Up ekranýný açma kodu da olabilir
     }
 
     public void UpdateAllUI()
