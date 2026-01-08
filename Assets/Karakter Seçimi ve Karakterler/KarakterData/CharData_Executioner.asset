@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CharacterData
   characterName: Executioner
   description: "Karakter a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 1fea1cb65512ce743a331c7558a276d5, type: 3}
   characterPrefab: {fileID: 4529625059132695655, guid: ae934b28efb9da948a484d857dc9340f, type: 3}
   startingWeaponData: {fileID: 11400000, guid: a55ac71bf2eac2e4e82f800a5fd097cd, type: 2}

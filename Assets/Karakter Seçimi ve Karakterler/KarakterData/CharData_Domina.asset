@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CharacterData
   characterName: Domina
   description: "Karakter a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 74f953b5f7fe01943a8852845874ce16, type: 3}
   characterPrefab: {fileID: 8246819482891592488, guid: 11b781158e937e24ebd4fc278b1957b6, type: 3}
   startingWeaponData: {fileID: 11400000, guid: b34c979e1d40b2244a37c77eccbe5113, type: 2}

@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CharacterData
   characterName: Drunkard
   description: "Karakter a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 1d1945f0ccf72594a81898b5a873939e, type: 3}
   characterPrefab: {fileID: 1785601477646369214, guid: 011da77d2d3f5ac48a855518bb03423a, type: 3}
   startingWeaponData: {fileID: 11400000, guid: 1d51e99174da5664d8475de7f74a445a, type: 2}

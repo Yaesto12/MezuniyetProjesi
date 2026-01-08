@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UpgradeData
   upgradeName: 'Unlock: Aura'
   description: 
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: f8a0883d7297cbc488832b9aac17ebdb, type: 3}
   rarity: 0
   category: 0
   weaponDataToUnlock: {fileID: 11400000, guid: c1438593db5ec9049865eb8c39a94be3, type: 2}

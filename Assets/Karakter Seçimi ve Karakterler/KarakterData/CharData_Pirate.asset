@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CharacterData
   characterName: Pirate
   description: "Karakter a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 7e8c9b730be27fd499cf992029592871, type: 3}
   characterPrefab: {fileID: 1365207803290660517, guid: 0f1d6e47a0670ec409094fa05cc9351f, type: 3}
   startingWeaponData: {fileID: 11400000, guid: dbe1c4bf73a1d234caab4bc1a98dbf5c, type: 2}

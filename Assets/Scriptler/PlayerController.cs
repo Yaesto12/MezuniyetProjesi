@@ -40,8 +40,8 @@ public class PlayerController : MonoBehaviour
     private PlayerStats playerStats;
     private Transform cameraTransform;
 
-    // --- YENÝ: Animasyon Referansý ---
-    private Animator animator; // Animasyonlarý yönetecek deðiþken
+    // --- GENEL ANÝMASYON REFERANSI ---
+    private Animator animator;
 
     // --- Dahili Deðiþkenler ---
     private Vector3 playerVelocity;
@@ -65,23 +65,20 @@ public class PlayerController : MonoBehaviour
             enabled = false;
         }
 
-        // Ana kamerayý bul
         if (Camera.main != null)
         {
             cameraTransform = Camera.main.transform;
         }
-        else
-        {
-            Debug.LogError("Sahnede Main Camera bulunamadý!");
-        }
 
-        // --- YENÝ: Animator'ý Child objelerden bul ---
-        // Bu sayede scripti hangi modele takarsan tak (Mage, Archer), 
-        // altýndaki Animator'ý otomatik bulur.
+        // --- KRÝTÝK NOKTA: OTOMATÝK ANIMATOR BULMA ---
+        // Bu kod, scriptin takýlý olduðu objenin altýndaki (Child) modelleri tarar.
+        // Cyborg, Mage, Archer fark etmez, Animator kimdeyse onu bulur.
         animator = GetComponentInChildren<Animator>();
+
         if (animator == null)
         {
-            Debug.LogWarning("PlayerController: Child objelerde Animator bulunamadý! Animasyonlar çalýþmayacak.");
+            // Eðer modelde Animator yoksa hata vermesin ama uyarýsýn.
+            Debug.LogWarning($"{gameObject.name}: Alt objelerde Animator bulunamadý!");
         }
     }
 
@@ -93,7 +90,6 @@ public class PlayerController : MonoBehaviour
         HandlePlayerInputAndGravity();
         HandleImpactForce();
 
-        // Son Hareketi Uygula
         controller.Move((playerVelocity + impactForce) * Time.deltaTime);
 
         if (!isWallClimbing)
@@ -101,29 +97,23 @@ public class PlayerController : MonoBehaviour
             HandleRotation();
         }
 
-        // --- YENÝ: Animasyonlarý Güncelle ---
+        // Animasyonlarý her karede güncelle
         UpdateAnimations();
     }
 
-    // --- YENÝ EKLENEN ANÝMASYON GÜNCELLEME FONKSÝYONU ---
     private void UpdateAnimations()
     {
         if (animator == null) return;
 
-        // 1. Yatay Hýz (Speed)
-        // Karakterin sadece yataydaki hýzýný alýyoruz (Düþerkenki hýzý koþma animasyonunu bozmasýn diye)
+        // 1. Speed (Koþma/Durma)
         Vector3 horizontalVelocity = new Vector3(controller.velocity.x, 0, controller.velocity.z);
         float currentSpeed = horizontalVelocity.magnitude;
-
-        // Animator'daki "Speed" parametresini güncelle (Idle <-> Run geçiþi için)
         animator.SetFloat("Speed", currentSpeed);
 
-        // 2. Yerde mi? (IsGrounded)
-        // Animator'daki "IsGrounded" parametresini güncelle (Fall -> Idle geçiþi için)
+        // 2. IsGrounded (Düþme/Yerde Olma)
         animator.SetBool("IsGrounded", isGrounded);
 
-        // 3. Dikey Hýz (VerticalSpeed)
-        // Yukarý mý çýkýyor aþaðý mý düþüyor? (Jump -> Fall geçiþi için)
+        // 3. VerticalSpeed (Zýplama/Düþüþ harmanlamasý için opsiyonel)
         animator.SetFloat("VerticalSpeed", playerVelocity.y);
     }
 
@@ -267,7 +257,6 @@ public class PlayerController : MonoBehaviour
             Vector3 wallJumpVelocity = (wallHit.normal * wallJumpForce.x) + (Vector3.up * wallJumpForce.y);
             impactForce += wallJumpVelocity;
 
-            // Duvardan zýplarken de animasyonu tetikle
             if (animator != null) animator.SetTrigger("Jump");
         }
         else if (jumpCount < maxTotalJumps)
@@ -276,11 +265,7 @@ public class PlayerController : MonoBehaviour
             playerVelocity.y = Mathf.Sqrt(currentJumpHeightApplied * -2.0f * gravityValue);
             jumpCount++;
 
-            // --- YENÝ: Zýplama Animasyonunu Tetikle ---
-            if (animator != null)
-            {
-                animator.SetTrigger("Jump");
-            }
+            if (animator != null) animator.SetTrigger("Jump");
         }
     }
 

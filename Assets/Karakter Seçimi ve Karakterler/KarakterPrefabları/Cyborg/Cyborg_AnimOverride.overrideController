@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!221 &22100000
+AnimatorOverrideController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Cyborg_AnimOverride
+  m_Controller: {fileID: 9100000, guid: 9f1ebe0719e81334fa4eb70492fe65a4, type: 2}
+  m_Clips:
+  - m_OriginalClip: {fileID: 7400000, guid: 41239435624e7ec45852fd1feaf091ba, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 41239435624e7ec45852fd1feaf091ba, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: 30ff402951ef16e43a26e0b953bd3adb, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 30ff402951ef16e43a26e0b953bd3adb, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: e74c1f3b65edc574f9c80389c3189739, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: e74c1f3b65edc574f9c80389c3189739, type: 2}

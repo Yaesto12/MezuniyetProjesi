@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UpgradeData
   upgradeName: 'Upgrade: Briefcase'
   description: 
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 120e9a942d415174ca9e597f373dd901, type: 3}
   rarity: 0
   category: 1
   weaponDataToUnlock: {fileID: 0}
