@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
   weaponName: Saxophone
   description: "Notalar\u0131n ahengi"
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 8058a2ea81fcf1d4696d0be729eea28d, type: 3}
   behaviorType: 0
   baseDamage: 10
   cooldown: 1

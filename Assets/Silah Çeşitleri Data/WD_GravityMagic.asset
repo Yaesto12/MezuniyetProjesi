@@ -15,7 +15,7 @@ MonoBehaviour:
   weaponName: Gravity Magic
   description: "D\xFC\u015Fmanlar\u0131n\u0131za yer \xE7ekimi b\xFCy\xFCs\xFC yaparak
     onlara hasar verin ve yava\u015Flat\u0131n"
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 95b17ce7bf1408a4ba09daf15307c42f, type: 3}
   behaviorType: 3
   baseDamage: 10
   cooldown: 1
@@ -48,3 +48,4 @@ MonoBehaviour:
   mineLifetime: 3
   mineExplosionRadius: 2.5
   mineDropRadius: 1
+  availableStatUpgrades: 

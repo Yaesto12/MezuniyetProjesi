@@ -15,7 +15,7 @@ MonoBehaviour:
   weaponName: Claws
   description: "D\xFC\u015Fmanlar\u0131n\u0131z \xFCzerinde onlar\u0131 do\u011Fraya
     pen\xE7eler \xE7\u0131kart\u0131n."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: cdf458cfb0a1d8f4a8abb05dfc67feae, type: 3}
   behaviorType: 3
   baseDamage: 10
   cooldown: 1
@@ -48,3 +48,4 @@ MonoBehaviour:
   mineLifetime: 3
   mineExplosionRadius: 2.5
   mineDropRadius: 1
+  availableStatUpgrades: 

@@ -28,11 +28,13 @@ public class FlyingEnemyAI : MonoBehaviour
         stats = GetComponent<EnemyStats>();
 
         rb.useGravity = false;
-        rb.linearDamping = 1f;
+        // rb.linearDamping = 1f; // Unity sürümüne göre 'drag' veya 'linearDamping' olabilir. Hata verirse 'drag' yap.
+    }
 
+    void Start() // Player'ý Start'ta bulmak daha güvenlidir
+    {
         GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
         if (playerObject != null) player = playerObject.transform;
-        else enabled = false;
     }
 
     void FixedUpdate()
@@ -52,6 +54,9 @@ public class FlyingEnemyAI : MonoBehaviour
             targetPosition = player.position;
 
         Vector3 direction = (targetPosition - transform.position).normalized;
+
+        // Unity 6 öncesi için 'velocity', Unity 6 sonrasý için 'linearVelocity'
+        // Eðer hata alýrsan burayý rb.velocity = ... yap
         rb.linearVelocity = direction * stats.Speed;
 
         if (direction != Vector3.zero)
@@ -61,27 +66,36 @@ public class FlyingEnemyAI : MonoBehaviour
         }
     }
 
+    // Katý çarpýþmalar için
     private void OnCollisionStay(Collision collision)
     {
-        if (collision.gameObject.CompareTag("Player") && canAttack)
+        CheckAndAttack(collision.gameObject);
+    }
+
+    // Trigger çarpýþmalarý için (YENÝ EKLENDÝ)
+    private void OnTriggerStay(Collider other)
+    {
+        CheckAndAttack(other.gameObject);
+    }
+
+    // Ortak saldýrý fonksiyonu
+    private void CheckAndAttack(GameObject targetObj)
+    {
+        // Oyuncu mu ve saldýrý süresi doldu mu?
+        if (targetObj.CompareTag("Player") && canAttack)
         {
-            // 1. Hasar Ver (Health Script)
-            var health = collision.gameObject.GetComponent<PlayerHealth>();
+            // 1. Hasar Ver
+            var health = targetObj.GetComponent<PlayerHealth>();
             if (health != null)
             {
                 health.TakeDamage(stats.Damage);
             }
 
-            // 2. Knockback Uygula (Controller Script - YENÝ YÖNTEM)
-            // Karakterin hareket scriptine ulaþýyoruz
-            var moveController = collision.gameObject.GetComponent<PlayerController>();
-
+            // 2. Knockback Uygula
+            var moveController = targetObj.GetComponent<PlayerController>();
             if (moveController != null)
             {
-                // Kuþtan Oyuncuya doðru olan yönü bul
-                Vector3 pushDir = (collision.transform.position - transform.position).normalized;
-
-                // PlayerController içindeki yeni fonksiyonu çaðýr
+                Vector3 pushDir = (targetObj.transform.position - transform.position).normalized;
                 moveController.ApplyKnockback(pushDir, knockbackForce);
             }
 

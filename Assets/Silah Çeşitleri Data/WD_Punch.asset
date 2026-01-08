@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
   weaponName: Punch
   description: "D\xFC\u015Fmanlar\u0131n\u0131z\u0131 uzaktan yumruklay\u0131n"
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: e13a89313cea6f64299306474f65ff2b, type: 3}
   behaviorType: 3
   baseDamage: 10
   cooldown: 1
@@ -47,3 +47,4 @@ MonoBehaviour:
   mineLifetime: 3
   mineExplosionRadius: 2.5
   mineDropRadius: 1
+  availableStatUpgrades: 

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
   weaponName: Tank Cannon
   description: BOOM
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 6ae74692bb147bf409a9d0835eb2747a, type: 3}
   behaviorType: 0
   baseDamage: 10
   cooldown: 2
@@ -47,3 +47,4 @@ MonoBehaviour:
   mineLifetime: 3
   mineExplosionRadius: 2.5
   mineDropRadius: 1
+  availableStatUpgrades: 

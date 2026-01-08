@@ -15,7 +15,7 @@ MonoBehaviour:
   weaponName: Electrical Trap
   description: "F\u0131rlat\u0131ld\u0131ktan belli bir s\xFCre sonra patlayan elektrik
     bombalar\u0131."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: f2a2cc0a3e7422643859ef6c925b1fbb, type: 3}
   behaviorType: 5
   baseDamage: 10
   cooldown: 1
@@ -48,3 +48,4 @@ MonoBehaviour:
   mineLifetime: 3
   mineExplosionRadius: 2.5
   mineDropRadius: 5
+  availableStatUpgrades: 

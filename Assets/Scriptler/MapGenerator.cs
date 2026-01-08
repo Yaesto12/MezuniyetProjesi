@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.UI;
 
 [System.Serializable]
 public class WorldObjectData
@@ -9,19 +10,18 @@ public class WorldObjectData
     public string name;
     public GameObject prefab;
     public int count;
-    [Tooltip("Objeyi zeminden ne kadar yukarý kaldýralým?")]
     public float yOffset = 0f;
-
-    [Header("Rastgele Boyut (Scale)")]
-    [Tooltip("Objenin minimum boyutu (Örn: 0.8)")]
     public float minScale = 1f;
-    [Tooltip("Objenin maksimum boyutu (Örn: 1.2)")]
     public float maxScale = 1f;
 }
 
 public class MapGenerator : MonoBehaviour
 {
     public static MapGenerator Instance { get; private set; }
+
+    [Header("Layer Ayarlarý (YENÝ)")]
+    [Tooltip("Duvarlarýn ve zeminin atanacaðý Layer adý")]
+    [SerializeField] private string mapLayerName = "MapEnvironment";
 
     [Header("Harita Ayarlarý")]
     [SerializeField] private float tileSize = 30f;
@@ -46,16 +46,16 @@ public class MapGenerator : MonoBehaviour
 
     [Header("Duvar Ayarlarý")]
     [SerializeField] private bool createWalls = true;
-    [Tooltip("Start Tile seviyesinden kaç blok daha yukarý çýkýlsýn?")]
     [SerializeField] private int wallHeightAboveStart = 3;
-    [Tooltip("Duvar için kullanýlacak prefab (Boþ ise Filler Tile kullanýlýr)")]
     [SerializeField] private GameObject wallPrefab;
 
-    // --- YENÝ EKLENEN KISIM: ÖZEL OBJELER ---
+    [Header("Yükleme Ekraný Ayarlarý")]
+    [SerializeField] private GameObject loadingScreenPanel;
+    [SerializeField] private Slider loadingSlider;
+    [SerializeField] private Camera loadingCamera;
+
     [Header("Özel Objeler")]
-    [Tooltip("Sadece 1 tane spawn olacak Ejderha Çaðýrýcý (Altar)")]
     [SerializeField] private GameObject dragonSummonerPrefab;
-    // ----------------------------------------
 
     [Header("Prefablar")]
     [SerializeField] private GameObject startTile;
@@ -74,15 +74,50 @@ public class MapGenerator : MonoBehaviour
 
     private Dictionary<Vector2Int, int> heightMap = new Dictionary<Vector2Int, int>();
     private List<Vector3Int> activePoints = new List<Vector3Int>();
+    private int mapLayerIndex; // Layer numarasýný tutacak
 
     void Awake() { if (Instance != null && Instance != this) Destroy(gameObject); else Instance = this; }
-    void Start() { StartCoroutine(GenerateMap()); }
+
+    void Start()
+    {
+        // Layer numarasýný bul (Ýsimden ID'ye çevir)
+        mapLayerIndex = LayerMask.NameToLayer(mapLayerName);
+        if (mapLayerIndex == -1)
+        {
+            Debug.LogError($"HATA: '{mapLayerName}' adýnda bir Layer bulunamadý! Lütfen Unity'de Edit -> Layers kýsmýndan bu layerý oluþtur.");
+            // Hata çýkmasýn diye Default layer'a atayalým
+            mapLayerIndex = 0;
+        }
+
+        // Loading Kamerasý iþlemleri
+        if (loadingScreenPanel != null) loadingScreenPanel.SetActive(true);
+        if (loadingCamera != null)
+        {
+            loadingCamera.gameObject.SetActive(true);
+            var lListener = loadingCamera.GetComponent<AudioListener>();
+            if (lListener != null) lListener.enabled = true;
+        }
+
+        AudioListener[] allListeners = FindObjectsByType<AudioListener>(FindObjectsSortMode.None);
+        foreach (var listener in allListeners)
+        {
+            if (loadingCamera != null && listener.gameObject != loadingCamera.gameObject)
+            {
+                listener.enabled = false;
+            }
+        }
+
+        StartCoroutine(GenerateMap());
+    }
 
     enum MoveType { Flat, RampUpPair, RampDownPair }
     struct GenerationStep { public MoveType Type; public Vector2Int Direction; public Vector3Int CurrentPos; }
 
     IEnumerator GenerateMap()
     {
+        if (loadingScreenPanel != null) loadingScreenPanel.SetActive(true);
+        if (loadingCamera != null) loadingCamera.gameObject.SetActive(true);
+
         heightMap.Clear();
         activePoints.Clear();
         SpawnablePositions.Clear();
@@ -108,9 +143,8 @@ public class MapGenerator : MonoBehaviour
 
         yield return null;
 
-        Vector3Int startPos = Vector3Int.zero;
         CreateTile(startTile, new Vector2Int(0, 0), 0, Quaternion.identity, false);
-        activePoints.Add(startPos);
+        activePoints.Add(Vector3Int.zero);
 
         int tilesCreated = 1;
         int attempts = 0;
@@ -162,6 +196,12 @@ public class MapGenerator : MonoBehaviour
 
                 activePoints.Add(nextActivePoint);
                 if (generationSpeed > 0) yield return new WaitForSeconds(generationSpeed);
+
+                if (loadingSlider != null)
+                {
+                    float progress = (float)tilesCreated / targetTileCount * 0.8f;
+                    loadingSlider.value = progress;
+                }
             }
             else
             {
@@ -172,12 +212,14 @@ public class MapGenerator : MonoBehaviour
         if (fillGaps)
         {
             FillMapGaps();
+            if (loadingSlider != null) loadingSlider.value = 0.85f;
             yield return new WaitForSeconds(0.1f);
         }
 
         if (createWalls)
         {
             GenerateMapWalls();
+            if (loadingSlider != null) loadingSlider.value = 0.90f;
             yield return new WaitForSeconds(0.1f);
         }
 
@@ -191,19 +233,28 @@ public class MapGenerator : MonoBehaviour
         yield return new WaitForFixedUpdate();
         yield return new WaitForFixedUpdate();
 
-        // 1. Önce Oyuncuyu Iþýnla
-        if (SpawnablePositions.Count > 0)
-        {
-            Vector3 randomSpot = SpawnablePositions[Random.Range(0, SpawnablePositions.Count)];
-            Vector3 rayOrigin = new Vector3(randomSpot.x, 200f, randomSpot.z);
-            RaycastHit hit;
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
 
-            if (Physics.Raycast(rayOrigin, Vector3.down, out hit, 500f))
+        float waitTimer = 0f;
+        while (player == null && waitTimer < 5f)
+        {
+            player = GameObject.FindGameObjectWithTag("Player");
+            waitTimer += Time.deltaTime;
+            yield return null;
+        }
+
+        if (player != null)
+        {
+            if (SpawnablePositions.Count > 0)
             {
-                StartTilePosition = hit.point + Vector3.up * playerSpawnHeight;
-                PlayerStats player = FindAnyObjectByType<PlayerStats>();
-                if (player != null)
+                Vector3 randomSpot = SpawnablePositions[Random.Range(0, SpawnablePositions.Count)];
+                Vector3 rayOrigin = new Vector3(randomSpot.x, 200f, randomSpot.z);
+                RaycastHit hit;
+
+                if (Physics.Raycast(rayOrigin, Vector3.down, out hit, 500f))
                 {
+                    StartTilePosition = hit.point + Vector3.up * playerSpawnHeight;
+
                     CharacterController cc = player.GetComponent<CharacterController>();
                     if (cc != null) cc.enabled = false;
                     player.transform.position = StartTilePosition;
@@ -211,79 +262,78 @@ public class MapGenerator : MonoBehaviour
 
                     Rigidbody rb = player.GetComponent<Rigidbody>();
                     if (rb != null) { rb.linearVelocity = Vector3.zero; rb.angularVelocity = Vector3.zero; }
+
+                    AudioListener[] allListeners = FindObjectsByType<AudioListener>(FindObjectsSortMode.None);
+                    foreach (var listener in allListeners) listener.enabled = false;
+
+                    Camera playerCam = player.GetComponentInChildren<Camera>();
+                    if (playerCam == null) playerCam = Camera.main;
+
+                    if (playerCam != null)
+                    {
+                        playerCam.gameObject.SetActive(true);
+                        var playerListener = playerCam.GetComponent<AudioListener>();
+                        if (playerListener != null) playerListener.enabled = true;
+                        else playerCam.gameObject.AddComponent<AudioListener>();
+                    }
                 }
             }
         }
+        else
+        {
+            Debug.LogError("HATA: Player bulunamadý!");
+        }
 
-        // --- YENÝ EKLENEN KISIM: EJDERHA ÇAÐIRICIYI OLUÞTUR ---
-        // Diðer eþyalardan önce çaðýrýyoruz ki düzgün bir yer kapsýn.
         SpawnDragonSummoner();
-        // -----------------------------------------------------
-
-        // 2. Sonra diðer dekorasyon objelerini (aðaç, taþ vs.) oluþtur
         SpawnWorldObjects();
+
+        if (loadingSlider != null) loadingSlider.value = 1f;
+        yield return new WaitForSeconds(0.5f);
+
+        if (loadingCamera != null) loadingCamera.gameObject.SetActive(false);
+        if (loadingScreenPanel != null) loadingScreenPanel.SetActive(false);
+        IsMapGenerated = true;
     }
 
-    // --- YENÝ EKLENEN FONKSÝYON: EJDERHA ÇAÐIRICIYI SPAWN ET ---
+    // --- ÖZEL OBJELERDE LAYER DEÐÝÞMÝYOR (Kasten) ---
     void SpawnDragonSummoner()
     {
         if (dragonSummonerPrefab == null) return;
         if (SpawnablePositions.Count == 0) return;
-
-        // Rastgele bir düz zemin seç
         int randomIndex = Random.Range(0, SpawnablePositions.Count);
         Vector3 spawnPos = SpawnablePositions[randomIndex];
-
-        // Objeyi oluþtur (objectsParent içine)
         Instantiate(dragonSummonerPrefab, spawnPos, Quaternion.identity, objectsParent);
-
-        // ÖNEMLÝ: Bu noktayý listeden sil ki baþka aðaç/kutu bunun içine doðmasýn
         SpawnablePositions.RemoveAt(randomIndex);
-
-        Debug.Log("Dragon Summoner (Altar) haritaya yerleþtirildi!");
     }
-    // -----------------------------------------------------------
 
     void SpawnWorldObjects()
     {
         if (objectsToSpawn == null || objectsToSpawn.Count == 0) return;
         if (SpawnablePositions.Count == 0) return;
-
         Vector3 playerPosFlat = new Vector3(StartTilePosition.x, 0, StartTilePosition.z);
-
         foreach (var objData in objectsToSpawn)
         {
             if (objData.prefab == null) continue;
-
             for (int i = 0; i < objData.count; i++)
             {
-                // Eðer spawn edecek yer kalmadýysa döngüden çýk
                 if (SpawnablePositions.Count == 0) break;
-
                 int randomIndex = Random.Range(0, SpawnablePositions.Count);
                 Vector3 basePos = SpawnablePositions[randomIndex];
-
-                // Oyuncuya çok yakýnsa baþka yer dene
                 if (Vector3.Distance(new Vector3(basePos.x, 0, basePos.z), playerPosFlat) < tileSize)
                 {
                     randomIndex = Random.Range(0, SpawnablePositions.Count);
                     basePos = SpawnablePositions[randomIndex];
                 }
-
                 float jitter = tileSize / 3f;
                 float offsetX = Random.Range(-jitter, jitter);
                 float offsetZ = Random.Range(-jitter, jitter);
-
                 Vector3 rayOrigin = new Vector3(basePos.x + offsetX, 200f, basePos.z + offsetZ);
-
                 RaycastHit hit;
                 if (Physics.Raycast(rayOrigin, Vector3.down, out hit, 500f))
                 {
                     Vector3 finalPos = hit.point + Vector3.up * objData.yOffset;
                     Quaternion randomRot = Quaternion.Euler(0, Random.Range(0, 360), 0);
-
                     GameObject newObj = Instantiate(objData.prefab, finalPos, randomRot, objectsParent);
-
                     float randomScale = Random.Range(objData.minScale, objData.maxScale);
                     newObj.transform.localScale = Vector3.one * randomScale;
                 }
@@ -291,37 +341,39 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
+    // --- TILE (Zemin) OLUÞTURMA: LAYER ATAMASI EKLENDÝ ---
     void CreateTile(GameObject prefab, Vector2Int coord2D, int height, Quaternion rot, bool isRamp, bool isFoundation = false)
     {
         float yPos = (height * tileSize) + yOffsetCorrection;
         if (isRamp) yPos -= 15f;
-
         Vector3 worldPos = new Vector3(coord2D.x * tileSize, yPos, coord2D.y * tileSize);
-        Instantiate(prefab, worldPos, rot, transform);
+
+        GameObject newObj = Instantiate(prefab, worldPos, rot, transform);
+
+        // --- LAYER ATAMASI ---
+        newObj.layer = mapLayerIndex;
+        // Alt objeleri de (çocuklarý) ayný layer yap (önemli!)
+        foreach (Transform child in newObj.transform) child.gameObject.layer = mapLayerIndex;
 
         if (!isFoundation && !heightMap.ContainsKey(coord2D))
         {
             heightMap.Add(coord2D, height);
-
-            // --- DEÐÝÞÝKLÝK: Sadece RAMPA DEÐÝLSE listeye ekle ---
-            // Böylece Altar ve Aðaçlar eðimli yerlere konmaz.
-            if (!isRamp)
-            {
-                SpawnablePositions.Add(worldPos);
-            }
-            // ---------------------------------------------------
-
+            if (!isRamp) SpawnablePositions.Add(worldPos);
             if (fillerTile != null)
             {
                 float currentY = yPos - tileSize;
                 currentY -= foundationStartOffset;
                 currentY += 15f;
                 if (isRamp) currentY += 15f;
-
                 while (currentY >= foundationMinY)
                 {
                     Vector3 fillerPos = new Vector3(worldPos.x, currentY, worldPos.z);
-                    Instantiate(fillerTile, fillerPos, Quaternion.identity, transform);
+                    GameObject filler = Instantiate(fillerTile, fillerPos, Quaternion.identity, transform);
+
+                    // --- FILLER TILE LAYER ATAMASI ---
+                    filler.layer = mapLayerIndex;
+                    foreach (Transform child in filler.transform) child.gameObject.layer = mapLayerIndex;
+
                     currentY -= tileSize;
                 }
             }
@@ -334,9 +386,7 @@ public class MapGenerator : MonoBehaviour
         int minX = int.MaxValue, maxX = int.MinValue;
         int minZ = int.MaxValue, maxZ = int.MinValue;
         foreach (var key in heightMap.Keys) { if (key.x < minX) minX = key.x; if (key.x > maxX) maxX = key.x; if (key.y < minZ) minZ = key.y; if (key.y > maxZ) maxZ = key.y; }
-
         List<GenerationStep> gapsToFill = new List<GenerationStep>();
-
         for (int x = minX; x <= maxX; x++)
         {
             for (int z = minZ; z <= maxZ; z++)
@@ -357,7 +407,6 @@ public class MapGenerator : MonoBehaviour
                 }
             }
         }
-
         foreach (var gap in gapsToFill)
         {
             Vector2Int coord = new Vector2Int(gap.CurrentPos.x, gap.CurrentPos.z);
@@ -396,37 +445,37 @@ public class MapGenerator : MonoBehaviour
     bool IsOccupied(Vector2Int coord) { return heightMap.ContainsKey(coord); }
     bool IsInBounds(Vector2Int coord) { return Mathf.Abs(coord.x) <= mapRadius && Mathf.Abs(coord.y) <= mapRadius; }
 
+    // --- DUVAR OLUÞTURMA: LAYER ATAMASI EKLENDÝ ---
     void GenerateMapWalls()
     {
         HashSet<Vector2Int> wallCoordinates = new HashSet<Vector2Int>();
         Vector2Int[] directions = { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
-
         foreach (var kvp in heightMap)
         {
             Vector2Int currentCoord = kvp.Key;
             foreach (var dir in directions)
             {
                 Vector2Int neighborCoord = currentCoord + dir;
-                if (!heightMap.ContainsKey(neighborCoord))
-                {
-                    wallCoordinates.Add(neighborCoord);
-                }
+                if (!heightMap.ContainsKey(neighborCoord)) wallCoordinates.Add(neighborCoord);
             }
         }
-
         GameObject prefabToUse = wallPrefab != null ? wallPrefab : fillerTile;
         if (prefabToUse == null) return;
-
         foreach (var coord in wallCoordinates)
         {
             float topY = (wallHeightAboveStart * tileSize) + yOffsetCorrection;
             float bottomY = foundationMinY;
             float currentY = topY;
-
             while (currentY >= bottomY)
             {
                 Vector3 wallPos = new Vector3(coord.x * tileSize, currentY, coord.y * tileSize);
-                Instantiate(prefabToUse, wallPos, Quaternion.identity, transform);
+
+                GameObject wall = Instantiate(prefabToUse, wallPos, Quaternion.identity, transform);
+
+                // --- LAYER ATAMASI ---
+                wall.layer = mapLayerIndex;
+                foreach (Transform child in wall.transform) child.gameObject.layer = mapLayerIndex;
+
                 currentY -= tileSize;
             }
         }

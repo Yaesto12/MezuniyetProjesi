@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
   weaponName: Lazer Cannon
   description: "Lazer silah\u0131"
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 8d066f26a3766d9408ab3b49a9ec627d, type: 3}
   behaviorType: 0
   baseDamage: 10
   cooldown: 0.3
@@ -47,3 +47,4 @@ MonoBehaviour:
   mineLifetime: 3
   mineExplosionRadius: 2.5
   mineDropRadius: 1
+  availableStatUpgrades: 

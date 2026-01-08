@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
   weaponName: Sword & Pistol
   description: "Bir korsan\u0131n vazge\xE7ilmezleri"
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: f55a0a6bd6a94dd40a9dc691fad74b95, type: 3}
   behaviorType: 0
   baseDamage: 10
   cooldown: 1
@@ -47,3 +47,4 @@ MonoBehaviour:
   mineLifetime: 3
   mineExplosionRadius: 2.5
   mineDropRadius: 1
+  availableStatUpgrades: 
