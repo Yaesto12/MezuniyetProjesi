@@ -7,36 +7,49 @@ public enum RarityLevel { Common, Rare, Epic, Legendary }
 
 public enum PassiveStatType
 {
-    None,
-    // Temel
-    MaxHealth, HpRegen, Armor, Evasion,
-    // Saldýrý
-    Damage, CritChance, CritDamage, AttackSpeed,
-    ProjectileCount, Size, ProjectileSpeed,
-    Bleed,
-    CritBleed,
-    Pierce, ProjectileBounce,
-    CritHeal, // Kritik vuruþta gelen iyileþme
+    // --- Temel ---
+    MaxHealth,
+    HpRegen,
+    Armor,
+    Evasion,      // Hata veriyordu, eklendi
+    LifeSteal,
+    Thorns,
 
-    // --- YENÝ EKLENENLER (Eksik Olanlar) ---
-    DamageToMobs,       // Normal düþmanlara hasar çarpaný
-    DamageToElites,     // Elitlere hasar çarpaný
-    DamageToMiniBosses, // Mini Bosslara hasar çarpaný
-    DamageToBosses,     // Bosslara hasar çarpaný
-    // ---------------------------------------
-    MaxOverheal,
-    // Hareket
-    MoveSpeed, JumpHeight,
-    // Genel
-    Luck, Curse,
-    MagnetRange,
-    XpBonus, GoldBonus,
-    DropChance,
-    // Yetenek
-    SkillCooldown,
+    // --- Hareket ---
+    MoveSpeed,
+    ExtraJumps,   // Hata veriyordu, eklendi
+    JumpHeight,
+
+    // --- Saldýrý ---
+    Damage,
+    AttackSpeed,
+    CritChance,
+    CritDamage,
+
+    // --- Mermi / Alan ---
+    ProjectileCount,
+    ProjectileSpeed,
+    ProjectileBounce,
+    Pierce,
+    AreaSize,         // Hata veriyordu, eklendi
     Duration,
-    Revival, LifeSteal, Thorns
+    CooldownReduction, // Hata veriyordu, eklendi
+
+    // --- Ekonomi ve Þans ---
+    Luck,
+    MagnetRange,
+    XpBonus,
+    GoldBonus,
+    Curse,
+    DropChance,
+
+    // --- Meta / Oyun Ýçi ---
+    Revival,
+    Reroll,   // Hata veriyordu, eklendi
+    Skip,     // Hata veriyordu, eklendi
+    Banish    // Hata veriyordu, eklendi
 }
+
 
 public enum WeaponStatType
 {

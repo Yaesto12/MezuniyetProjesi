@@ -222,7 +222,7 @@ public class PlayerHealth : MonoBehaviour
 
     private void Die()
     {
-        Debug.LogWarning("OYUNCU ÖLDÜ!");
+        GameOverManager.Instance.ShowDeathScreen();
         // Oyun bitiþ ekraný veya mantýðý buraya
         gameObject.SetActive(false);
     }
