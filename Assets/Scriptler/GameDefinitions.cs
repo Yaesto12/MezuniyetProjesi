@@ -1,23 +1,25 @@
 using UnityEngine;
-using System.Collections.Generic; // List için
+using System.Collections.Generic;
 
-// --- BU DOSYA TÜM GLOBAL TANIMLAMALARI ÝÇERÝR ---
-
-public enum RarityLevel { Common, Rare, Epic, Legendary }
+// ============================================================================
+// --- ENUMLAR (SEÇENEK LÝSTELERÝ) ---
+// ============================================================================
 
 public enum PassiveStatType
 {
+    None = 0,
+
     // --- Temel ---
     MaxHealth,
     HpRegen,
     Armor,
-    Evasion,      // Hata veriyordu, eklendi
+    Evasion,
     LifeSteal,
     Thorns,
 
     // --- Hareket ---
     MoveSpeed,
-    ExtraJumps,   // Hata veriyordu, eklendi
+    ExtraJumps,
     JumpHeight,
 
     // --- Saldýrý ---
@@ -31,9 +33,9 @@ public enum PassiveStatType
     ProjectileSpeed,
     ProjectileBounce,
     Pierce,
-    AreaSize,         // Hata veriyordu, eklendi
+    AreaSize,
     Duration,
-    CooldownReduction, // Hata veriyordu, eklendi
+    CooldownReduction,
 
     // --- Ekonomi ve Þans ---
     Luck,
@@ -43,47 +45,105 @@ public enum PassiveStatType
     Curse,
     DropChance,
 
-    // --- Meta / Oyun Ýçi ---
+    // --- Meta ---
     Revival,
-    Reroll,   // Hata veriyordu, eklendi
-    Skip,     // Hata veriyordu, eklendi
-    Banish    // Hata veriyordu, eklendi
+    Reroll,
+    Skip,
+    Banish
 }
-
 
 public enum WeaponStatType
 {
-    Damage, Cooldown, Speed, Range, ProjectileCount, Size, Duration, Pierce, ProjectileBounce
+    Damage,
+    Cooldown,
+    Area,
+    Speed,
+    Duration,
+    Amount,
+    Pierce,
+    Knockback,
+
+    // --- Eksik Olanlar Eklendi ---
+    ProjectileCount,
+    Size,
+    ProjectileBounce,
+    Range
 }
 
-public enum WeaponBehaviorType { Projectile, Melee, AreaOfEffect, TargetedExplosion, Wave, ProximityMine }
+public enum WeaponBehaviorType
+{
+    Melee,
+    Projectile,
+    Aura,
+    Directional,
 
-public enum UpgradeCategory { WeaponUnlock, WeaponUpgrade, PassiveStat }
+    // --- Eksik Olanlar Eklendi ---
+    AreaOfEffect,
+    TargetedExplosion,
+    Wave,
+    ProximityMine
+}
 
+public enum UpgradeCategory
+{
+    StatUpgrade,
+    WeaponUpgrade,
+    NewWeapon,
+    NewItem,
+    Heal,
+
+    // --- Eksik Olan Eklendi ---
+    WeaponUnlock
+}
+
+public enum RarityLevel
+{
+    Common,
+    Rare,
+    Epic,
+    Legendary
+}
+
+// ============================================================================
+// --- YARDIMCI SINIFLAR ---
+// ============================================================================
+
+// PlayerExperience ve LevelUpUI'ýn kullandýðý yapý
 [System.Serializable]
-public struct ItemStatModifier
-{
-    public PassiveStatType statType;
-    public float baseAmount;
-    public float amountPerLevel;
-    public bool isPercentage;
-}
-
-public struct StatModification
-{
-    public WeaponStatType WeaponStat;
-    public PassiveStatType PassiveStat;
-    public float Value;
-    public bool IsPercentage;
-    public string Description;
-}
-
 public class GeneratedUpgradeOption
 {
+    // Senin kodlarýn Büyük Harf (PascalCase) arýyor, o yüzden isimleri deðiþtirdim.
     public string Name;
     public string Description;
     public Sprite Icon;
-    public UpgradeData BaseUpgradeData;
-    public RarityLevel RolledRarity;
-    public List<StatModification> Modifications;
+
+    public UpgradeCategory Category; // Küçük harf hata verirse 'category' yapabilirsin ama genelde Name büyükse bu da büyüktür.
+
+    public UpgradeData BaseUpgradeData; // Hata veren kýsým eklendi
+    public RarityLevel RolledRarity;    // Hata veren kýsým eklendi
+
+    public List<StatModification> Modifications = new List<StatModification>(); // Hata veren liste eklendi
+
+    // Eski uyumluluk için (Eðer inventory bunlarý kullanýyorsa)
+    public WeaponData weaponData;
+    public ItemData itemData;
+}
+
+// Stat deðiþimlerini tutan sýnýf
+[System.Serializable]
+public class StatModification
+{
+    public WeaponStatType WeaponStat;   // Hata veren eklendi
+    public PassiveStatType PassiveStat; // Hata veren eklendi
+    public float Value;                 // Hata veren eklendi
+    public bool IsPercentage;           // Hata veren eklendi
+    public string Description;          // Hata veren eklendi
+}
+
+// ItemData'nýn kullandýðý basit yapý (Bunu deðiþtirmedim, PlayerInventory kullanýyor)
+[System.Serializable]
+public class ItemStatModifier
+{
+    public PassiveStatType statType;
+    public float baseAmount;
 }

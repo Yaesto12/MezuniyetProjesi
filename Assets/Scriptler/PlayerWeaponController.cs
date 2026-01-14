@@ -1,108 +1,107 @@
 using UnityEngine;
-using System.Collections.Generic; // Listeler ve Dictionary için
-using System.Linq; // Find metodu için
+using System.Collections.Generic;
+using System.Linq;
 
-// Player objesinde TargetingSystem ve PlayerInventory olmasýný zorunlu kýlalým
 [RequireComponent(typeof(TargetingSystem))]
 [RequireComponent(typeof(PlayerInventory))]
-[RequireComponent(typeof(PlayerStats))] // PlayerStats da zorunlu
+[RequireComponent(typeof(PlayerStats))]
 public class PlayerWeaponController : MonoBehaviour
 {
     [Header("Genel Referanslar")]
-    [Tooltip("Mermilerin/Saldýrýlarýn baþlayacaðý nokta (Player prefab'ýnýn alt objesi).")]
+    [Tooltip("Mermilerin/Saldýrýlarýn baþlayacaðý nokta.")]
     [SerializeField] private Transform firePoint;
     [Tooltip("Silahlarýn hasar vereceði düþman katmaný.")]
     [SerializeField] private LayerMask enemyLayer;
 
-    // --- Dahili Referanslar (Awake içinde bulunur) ---
+    // --- Dahili Referanslar ---
     private TargetingSystem targetingSystem;
     private PlayerInventory playerInventory;
-    private PlayerStats playerStats; // <<<--- EKLENDÝ ---<<<
+    private PlayerStats playerStats;
 
     // --- Yönetilen Silahlar ---
-    // Aktif silah Handler script'lerini tutar
     private List<MonoBehaviour> activeWeaponHandlers = new List<MonoBehaviour>();
-    // Hangi Handler'ýn hangi (klonlanmýþ) WeaponData'yý kullandýðýný eþleþtirir
     private Dictionary<MonoBehaviour, WeaponData> handlerDataMap = new Dictionary<MonoBehaviour, WeaponData>();
 
     void Awake()
     {
-        // Gerekli bileþenleri al (RequireComponent sayesinde varlýklarý garantidir)
         targetingSystem = GetComponent<TargetingSystem>();
         playerInventory = GetComponent<PlayerInventory>();
-        playerStats = GetComponent<PlayerStats>(); // <<<--- PlayerStats referansýný al ---<<<
+        playerStats = GetComponent<PlayerStats>();
 
-        // FirePoint'i kontrol et (Bu manuel atanmalý veya bulunmalý)
         if (firePoint == null)
         {
-            firePoint = transform.Find("FirePoint"); // Çocuk objelerde ara
-            if (firePoint == null)
-            {
-                Debug.LogError("PlayerWeaponController: FirePoint atanmamýþ ve bulunamadý!", this);
-            }
+            firePoint = transform.Find("FirePoint");
+            if (firePoint == null) Debug.LogError("PlayerWeaponController: FirePoint bulunamadý!", this);
         }
-        // EnemyLayer atanmamýþsa uyarý ver
-        if (enemyLayer == 0) // LayerMask 0 ise atanmamýþ demektir
-        {
-            Debug.LogWarning("PlayerWeaponController: Enemy Layer atanmamýþ! Melee, AoE, Mine, Explosion hasar vermeyebilir.", this);
-            // Alternatif: Varsayýlan bir katman ata
-            // enemyLayer = LayerMask.GetMask("Enemy"); // Eðer "Enemy" katmanýnýz varsa
-        }
-        if (playerStats == null) Debug.LogError("FATAL ERROR: PlayerStats bulunamadý!", gameObject); // Ekstra kontrol
+
+        // Eðer EnemyLayer seçilmediyse otomatik ata (Varsayýlan olarak her þeye vurmasýn diye kontrol)
+        if (enemyLayer == 0) Debug.LogWarning("PlayerWeaponController: Enemy Layer atanmamýþ!", this);
     }
 
     void Start()
     {
-        // Oyun sahnesi baþladýðýnda, seçilen karakterin baþlangýç silahýný kur
         SetupStartingWeapon();
     }
 
-    /// <summary>
-    /// GameData'dan seçilen karakterin baþlangýç silahýný yükler ve uygun Handler'ý baþlatýr.
-    /// </summary>
     private void SetupStartingWeapon()
     {
-        // Karakter seçiminden gelen veriyi al
         CharacterData selectedCharData = GameData.SelectedCharacterDataForGame;
 
         if (selectedCharData != null && selectedCharData.startingWeaponData != null)
         {
-            Debug.Log($"Baþlangýç silahý kuruluyor: {selectedCharData.startingWeaponData.weaponName}");
-            // Baþlangýç silahýný klonla
+            // Baþlangýç silahýný klonla ve ekle
             WeaponData runtimeWeaponData = Instantiate(selectedCharData.startingWeaponData);
-            // Klonlanmýþ veriyi kullanarak silahý ekle ve baþlat
             AddAndInitializeWeapon(runtimeWeaponData);
 
-            // Baþlangýç silahýný (orijinal asset) envantere ekle
-            if (playerInventory != null)
+            // Envantere de kaydet (Eðer Inventory otomatik eklemiyorsa)
+            if (playerInventory != null && !playerInventory.HasWeaponData(selectedCharData.startingWeaponData))
             {
-                if (!playerInventory.HasWeaponData(selectedCharData.startingWeaponData))
-                {
-                    playerInventory.AddWeaponData(selectedCharData.startingWeaponData);
-                }
+                playerInventory.AddWeaponData(selectedCharData.startingWeaponData);
             }
-        }
-        else
-        {
-            Debug.LogWarning("PlayerWeaponController: GameData'da seçili karakter veya baþlangýç silahý verisi bulunamadý!");
         }
     }
 
-    /// <summary>
-    /// Verilen (genellikle klonlanmýþ) WeaponData'ya göre uygun Handler'ý Player'a ekler ve baþlatýr.
-    /// </summary>
-    public void AddAndInitializeWeapon(WeaponData weaponDataInstance) // Klonlanmýþ data'yý alýr
+    // ========================================================================
+    // --- PLAYER INVENTORY ÝLE ÝLETÝÞÝM ÝÇÝN EKLENEN KISIMLAR ---
+    // ========================================================================
+
+    // PlayerInventory "SendMessage('AddWeapon')" dediðinde burasý çalýþacak
+    public void AddWeapon(WeaponData weaponData)
     {
-        if (weaponDataInstance == null || playerStats == null) // PlayerStats kontrolü eklendi
+        // Envanterden gelen silah orijinaldir (Asset), onu klonlayýp oyuna dahil ediyoruz
+        WeaponData runtimeInstance = Instantiate(weaponData);
+        AddAndInitializeWeapon(runtimeInstance);
+    }
+
+    // PlayerInventory "SendMessage('LevelUpWeapon')" dediðinde burasý çalýþacak
+    public void LevelUpWeapon(WeaponData weaponData)
+    {
+        // Aktif handler'ý bul
+        MonoBehaviour handler = GetActiveWeaponHandler(weaponData);
+        if (handler != null)
         {
-            Debug.LogError($"AddAndInitializeWeapon: Geçersiz WeaponData ({weaponDataInstance == null}) veya PlayerStats ({playerStats == null})!", this);
-            return;
+            // Handler'a "Seviye Atladýn, deðerlerini güncelle" mesajý gönderiyoruz
+            // Not: Handler scriptlerinde "OnLevelUp" fonksiyonu olmalý
+            handler.SendMessage("OnLevelUp", SendMessageOptions.DontRequireReceiver);
+            Debug.Log($"{weaponData.weaponName} seviye atladý!");
+        }
+    }
+
+    // ========================================================================
+
+    public void AddAndInitializeWeapon(WeaponData weaponDataInstance)
+    {
+        if (weaponDataInstance == null || playerStats == null) return;
+
+        // Ayný silahtan zaten varsa tekrar ekleme (Level atlatma mantýðý ayrýdýr)
+        // Not: Bazý oyunlarda ayný silahtan 2 tane olabilir, öyleyse bu kontrolü kaldýr.
+        foreach (var pair in handlerDataMap)
+        {
+            if (pair.Value.name == weaponDataInstance.name) return;
         }
 
-        MonoBehaviour weaponHandler = null;
         System.Type handlerType = null;
 
-        // WeaponData'daki türe göre doðru Handler script'ini belirle
         switch (weaponDataInstance.behaviorType)
         {
             case WeaponBehaviorType.Projectile: handlerType = typeof(ProjectileWeaponHandler); break;
@@ -111,94 +110,75 @@ public class PlayerWeaponController : MonoBehaviour
             case WeaponBehaviorType.TargetedExplosion: handlerType = typeof(TargetedExplosionHandler); break;
             case WeaponBehaviorType.Wave: handlerType = typeof(WaveWeaponHandler); break;
             case WeaponBehaviorType.ProximityMine: handlerType = typeof(ProximityMineHandler); break;
-            default:
-                Debug.LogError($"Bilinmeyen silah türü: {weaponDataInstance.behaviorType}");
-                return;
+            default: Debug.LogError($"Bilinmeyen silah türü: {weaponDataInstance.behaviorType}"); return;
         }
 
-        // Bu türde bir Handler zaten Player üzerinde var mý?
-        weaponHandler = (MonoBehaviour)GetComponent(handlerType);
+        MonoBehaviour weaponHandler = (MonoBehaviour)gameObject.AddComponent(handlerType);
 
-        if (weaponHandler == null) // Yoksa ekle
+        bool initialized = false;
+        // Burada Initialize çaðrýlarýný yapýyoruz. Handler scriptlerinde bu metodun imzasý
+        // (WeaponData, Transform/TargetingSystem, PlayerStats) þeklinde olmalý.
+        switch (weaponDataInstance.behaviorType)
         {
-            weaponHandler = (MonoBehaviour)gameObject.AddComponent(handlerType);
-            Debug.Log($"{handlerType.Name} bileþeni Player'a eklendi.");
+            case WeaponBehaviorType.Projectile:
+                ((ProjectileWeaponHandler)weaponHandler).Initialize(weaponDataInstance, firePoint, targetingSystem, playerStats);
+                initialized = true;
+                break;
+            case WeaponBehaviorType.Melee:
+                ((MeleeWeaponHandler)weaponHandler).Initialize(weaponDataInstance, enemyLayer, playerStats);
+                initialized = true;
+                break;
+            case WeaponBehaviorType.AreaOfEffect:
+                ((AreaEffectWeaponHandler)weaponHandler).Initialize(weaponDataInstance, enemyLayer, playerStats);
+                initialized = true;
+                break;
+            case WeaponBehaviorType.TargetedExplosion:
+                ((TargetedExplosionHandler)weaponHandler).Initialize(weaponDataInstance, targetingSystem, playerStats);
+                initialized = true;
+                break;
+            case WeaponBehaviorType.Wave:
+                ((WaveWeaponHandler)weaponHandler).Initialize(weaponDataInstance, firePoint, targetingSystem, playerStats);
+                initialized = true;
+                break;
+            case WeaponBehaviorType.ProximityMine:
+                ((ProximityMineHandler)weaponHandler).Initialize(weaponDataInstance, targetingSystem, playerStats);
+                initialized = true;
+                break;
+        }
 
-            // Eklenen Handler'ý baþlat (Initialize metodu ile ve PlayerStats göndererek)
-            bool initialized = false;
-            switch (weaponDataInstance.behaviorType)
-            {
-                case WeaponBehaviorType.Projectile:
-                    ((ProjectileWeaponHandler)weaponHandler).Initialize(weaponDataInstance, firePoint, targetingSystem, playerStats); // playerStats eklendi
-                    initialized = true;
-                    break;
-                case WeaponBehaviorType.Melee:
-                    ((MeleeWeaponHandler)weaponHandler).Initialize(weaponDataInstance, enemyLayer, playerStats); // playerStats eklendi
-                    initialized = true;
-                    break;
-                case WeaponBehaviorType.AreaOfEffect:
-                    ((AreaEffectWeaponHandler)weaponHandler).Initialize(weaponDataInstance, enemyLayer, playerStats); // playerStats eklendi
-                    initialized = true;
-                    break;
-                case WeaponBehaviorType.TargetedExplosion:
-                    ((TargetedExplosionHandler)weaponHandler).Initialize(weaponDataInstance, targetingSystem, playerStats); // playerStats eklendi
-                    initialized = true;
-                    break;
-                case WeaponBehaviorType.Wave:
-                    ((WaveWeaponHandler)weaponHandler).Initialize(weaponDataInstance, firePoint, targetingSystem, playerStats); // playerStats eklendi
-                    initialized = true;
-                    break;
-                case WeaponBehaviorType.ProximityMine:
-                    ((ProximityMineHandler)weaponHandler).Initialize(weaponDataInstance, targetingSystem, playerStats); // playerStats eklendi
-                    initialized = true;
-                    break;
-                    // Yeni Handler'lar için Initialize çaðrýlarýný ekle...
-            }
-
-            if (initialized)
-            {
-                activeWeaponHandlers.Add(weaponHandler);
-                handlerDataMap.Add(weaponHandler, weaponDataInstance);
-                Debug.Log($"{weaponDataInstance.weaponName} silahý baþlatýldý.");
-            }
-            else
-            {
-                Debug.LogError($"{handlerType.Name} eklendi ama Initialize edilemedi!");
-                Destroy(weaponHandler);
-            }
+        if (initialized)
+        {
+            activeWeaponHandlers.Add(weaponHandler);
+            handlerDataMap.Add(weaponHandler, weaponDataInstance);
         }
         else
         {
-            Debug.LogWarning($"{handlerType.Name} zaten mevcut. Tekrar eklenmedi veya baþlatýlmadý.");
+            Destroy(weaponHandler);
         }
     }
 
-    /// <summary>
-    /// Belirtilen Orijinal WeaponData asset'ine karþýlýk gelen AKTÝF Handler script'ini bulur.
-    /// </summary>
     public MonoBehaviour GetActiveWeaponHandler(WeaponData originalWeaponData)
     {
         if (originalWeaponData == null) return null;
+
+        // Ýsim kontrolü ile (Clone) ekini görmezden gelerek eþleþtirme yapýyoruz
+        string searchName = originalWeaponData.name;
+
         foreach (var kvp in handlerDataMap)
         {
-            if (kvp.Value != null && kvp.Value.name.StartsWith(originalWeaponData.name))
+            // Klonlanan verinin adý "Sword(Clone)" olabilir, orijinali "Sword"
+            if (kvp.Value != null && kvp.Value.name.Contains(searchName))
             {
-                if (kvp.Key != null && kvp.Key.enabled && kvp.Key.gameObject == this.gameObject)
-                {
-                    return kvp.Key;
-                }
+                return kvp.Key;
             }
         }
         return null;
     }
 
-    // Oyun Bittiðinde Handler'larý Temizleme
     void OnDestroy()
     {
-        foreach (var handler in activeWeaponHandlers)
-        {
-            if (handler != null) Destroy(handler);
-        }
+        // Handler'lar zaten Player'ýn üzerinde component olduðu için Player yok olunca onlar da gider.
+        // Ama listeleri temizlemek iyidir.
         activeWeaponHandlers.Clear();
         handlerDataMap.Clear();
     }

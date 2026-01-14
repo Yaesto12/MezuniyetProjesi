@@ -1,9 +1,6 @@
 using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
 using System.Collections.Generic;
 using System.Linq;
-using System.Collections;
 using System.Text;
 
 [RequireComponent(typeof(PlayerInventory))]
@@ -11,15 +8,6 @@ using System.Text;
 [RequireComponent(typeof(PlayerStats))]
 public class PlayerExperience : MonoBehaviour
 {
-    // --- Inspector Ayarlarý ---
-    [Header("Seviye Ayarlarý")]
-    [SerializeField] private int currentLevel = 1;
-    [SerializeField] private int xpToNextLevel = 100;
-    [SerializeField] private float xpMultiplierPerLevel = 1.2f;
-
-    [Header("Animasyon Ayarlarý")]
-    [SerializeField] private float xpFillSpeed = 150f;
-
     [Header("Yükseltme Sistemi (SÝLAH)")]
     [Tooltip("Tüm olasý 'Yükseltme Fýrsatlarý'nýn bulunduðu liste.")]
     [SerializeField] private List<UpgradeData> upgradePool;
@@ -40,11 +28,6 @@ public class PlayerExperience : MonoBehaviour
     private PlayerWeaponController weaponController;
     private PlayerStats playerStats;
 
-    // --- Dahili Deðiþkenler ---
-    private int targetXp = 0;
-    private float animatingXp = 0;
-    private bool isLevelUpSequenceActive = false;
-
     void Awake()
     {
         playerInventory = GetComponent<PlayerInventory>();
@@ -57,43 +40,49 @@ public class PlayerExperience : MonoBehaviour
         }
     }
 
-    void Start()
-    {
-        UpdateLevelTextInternal();
-        UpdateXpBarInternal();
-    }
-
-    void Update()
-    {
-        if (isLevelUpSequenceActive || animatingXp >= targetXp) return;
-        animatingXp += xpFillSpeed * Time.deltaTime;
-        animatingXp = Mathf.Min(animatingXp, targetXp);
-        if (animatingXp >= xpToNextLevel) { StartLevelUpSequence(); }
-        else { UpdateXpBarInternal(); }
-    }
-
+    // ========================================================================
+    // --- HATA ÇÖZÜCÜ KISIM (KÖPRÜ) ---
+    // ========================================================================
+    // PlayerHurtbox veya diðer scriptler hala buraya XP göndermeye çalýþýyor.
+    // Biz de gelen bu isteði asýl patron olan PlayerStats'a iletiyoruz.
     public void GainXp(int amount)
     {
-        if (!isLevelUpSequenceActive && amount > 0)
+        if (playerStats != null)
         {
-            float bonusMultiplier = (playerStats != null) ? playerStats.CurrentXpBonus / 100f : 1f;
-            int finalXp = Mathf.FloorToInt(amount * bonusMultiplier);
-            targetXp += finalXp;
+            playerStats.GainExperience(amount);
         }
     }
+    // ========================================================================
 
-    private void StartLevelUpSequence()
+    // PlayerStats level atladýðýnda burayý çaðýracak.
+    public void StartLevelUpSequence()
     {
-        if (levelUpUI == null) { Debug.LogError("LevelUpUI bulunamadý!"); ResumeGame(); return; }
+        if (levelUpUI == null)
+        {
+            Debug.LogError("PlayerExperience: LevelUpUI bulunamadý, ekran açýlamýyor!");
+            return;
+        }
 
-        isLevelUpSequenceActive = true;
+        Debug.Log("Level Up Ekraný Tetiklendi!");
+
+        // Oyunu durdur
         Time.timeScale = 0f;
+
+        // Mouse'u aç
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
-        PerformLevelUpCalculations();
-
+        // Seçenekleri oluþtur
         List<UpgradeData> possibleOpportunities = GetFilteredUpgradeOpportunities();
+
+        // Eðer havuzda hiç upgrade kalmadýysa (bütün silahlar max ise) boþ geç
+        if (possibleOpportunities.Count == 0)
+        {
+            Debug.Log("Alýnacak upgrade kalmadý!");
+            ResumeGame();
+            return;
+        }
+
         List<UpgradeData> chosenOpportunities = ChooseRandomOpportunities(possibleOpportunities, 3);
         List<GeneratedUpgradeOption> finalOptions = GenerateOptionsFromOpportunities(chosenOpportunities);
 
@@ -103,23 +92,7 @@ public class PlayerExperience : MonoBehaviour
         }
         else
         {
-            ApplyGeneratedUpgrade(null);
-        }
-    }
-
-    private void PerformLevelUpCalculations()
-    {
-        float remainingXp = animatingXp - xpToNextLevel;
-        currentLevel++;
-        xpToNextLevel = Mathf.RoundToInt(xpToNextLevel * xpMultiplierPerLevel);
-        targetXp = Mathf.Max(0, (int)remainingXp);
-        animatingXp = 0;
-        UpdateLevelTextInternal();
-        UpdateXpBarInternal();
-
-        if (GameEventManager.Instance != null)
-        {
-            GameEventManager.Instance.TriggerPlayerLevelUp(currentLevel);
+            ResumeGame();
         }
     }
 
@@ -135,12 +108,17 @@ public class PlayerExperience : MonoBehaviour
             switch (upgrade.category)
             {
                 case UpgradeCategory.WeaponUnlock:
+                    // Silah bizde yoksa listeye ekle
                     if (upgrade.weaponDataToUnlock != null && !playerInventory.HasWeaponData(upgrade.weaponDataToUnlock))
                         canAdd = true;
                     break;
                 case UpgradeCategory.WeaponUpgrade:
+                    // Silah bizde varsa upgrade edilebilir
                     if (upgrade.targetWeaponData != null && playerInventory.HasWeaponData(upgrade.targetWeaponData))
                         canAdd = true;
+                    break;
+                default:
+                    canAdd = true;
                     break;
             }
             if (canAdd) availableUpgrades.Add(upgrade);
@@ -165,17 +143,25 @@ public class PlayerExperience : MonoBehaviour
             option.BaseUpgradeData = opportunity;
             option.Icon = opportunity.icon;
             option.Modifications = new List<StatModification>();
+            option.Category = opportunity.category;
 
-            RarityLevel rolledRarity = RollForRarity(opportunity.rarity, playerStats.CurrentLuck);
+            // Nadirlik Belirle
+            float luck = (playerStats != null) ? playerStats.CurrentLuck : 0;
+            RarityLevel rolledRarity = RollForRarity(opportunity.rarity, luck);
             option.RolledRarity = rolledRarity;
 
             StringBuilder descBuilder = new StringBuilder();
-            option.Name = $"[{rolledRarity}] {opportunity.upgradeName}";
-            descBuilder.AppendLine(opportunity.description);
-            descBuilder.AppendLine("--------------------");
 
-            if (opportunity.category == UpgradeCategory.WeaponUpgrade)
+            // Renkli baþlýk
+            string rarityColor = GetRarityColorHex(rolledRarity);
+            option.Name = $"<color={rarityColor}>{opportunity.upgradeName}</color>";
+
+            descBuilder.AppendLine(opportunity.description);
+
+            // Silah Upgrade Detaylarý
+            if (opportunity.category == UpgradeCategory.WeaponUpgrade && opportunity.targetWeaponData != null)
             {
+                descBuilder.AppendLine("--------------------");
                 int statsToUpgrade = GetStatCountForRarity(rolledRarity);
                 List<WeaponStatType> availableStats = new List<WeaponStatType>(opportunity.targetWeaponData.availableStatUpgrades);
 
@@ -190,13 +176,20 @@ public class PlayerExperience : MonoBehaviour
                         float baseValue = GetBaseValueForWeaponStat(stat);
                         float finalValue = GetValueForRarity(baseValue, rolledRarity);
                         bool isPercent = IsWeaponStatPercentage(stat);
-                        string desc = $"{stat}: +{finalValue}{(isPercent ? "%" : "")}";
+
+                        string desc = $"+ {finalValue}{(isPercent ? "%" : "")} {stat}";
                         option.Modifications.Add(new StatModification { WeaponStat = stat, PassiveStat = PassiveStatType.None, Value = finalValue, IsPercentage = isPercent, Description = desc });
-                        descBuilder.Append(desc);
-                        if (i < chosenStats.Count - 1) descBuilder.Append("\n");
+
+                        descBuilder.AppendLine(desc);
                     }
                 }
             }
+            // Silah Açma Detaylarý
+            else if (opportunity.category == UpgradeCategory.WeaponUnlock)
+            {
+                descBuilder.AppendLine("<color=yellow>YENÝ SÝLAH!</color>");
+            }
+
             option.Description = descBuilder.ToString();
             finalOptions.Add(option);
         }
@@ -215,15 +208,12 @@ public class PlayerExperience : MonoBehaviour
             if (opportunity.weaponDataToUnlock != null && !playerInventory.HasWeaponData(opportunity.weaponDataToUnlock))
             {
                 playerInventory.AddWeaponData(opportunity.weaponDataToUnlock);
-                WeaponData runtimeData = Instantiate(opportunity.weaponDataToUnlock);
-                weaponController.AddAndInitializeWeapon(runtimeData);
             }
         }
         else if (opportunity.category == UpgradeCategory.WeaponUpgrade)
         {
             if (opportunity.targetWeaponData != null)
             {
-                // DÜZELTÝLEN KISIM: WeaponData gönderiyoruz
                 playerInventory.IncrementUpgradeLevel(opportunity.targetWeaponData);
             }
 
@@ -232,6 +222,7 @@ public class PlayerExperience : MonoBehaviour
                 ApplyStatModification(opportunity.targetWeaponData, mod);
             }
         }
+
         ResumeGame();
     }
 
@@ -240,8 +231,6 @@ public class PlayerExperience : MonoBehaviour
         Time.timeScale = 1f;
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-        isLevelUpSequenceActive = false;
-        UpdateXpBarInternal();
     }
 
     private void ApplyStatModification(WeaponData targetWeapon, StatModification modification)
@@ -349,17 +338,16 @@ public class PlayerExperience : MonoBehaviour
 
     private float GetValueForRarity(float baseValue, RarityLevel rarity)
     {
-        float multiplier;
+        float multiplier = 1f;
         switch (rarity)
         {
             case RarityLevel.Common: multiplier = commonMultiplier; break;
             case RarityLevel.Rare: multiplier = rareMultiplier; break;
             case RarityLevel.Epic: multiplier = epicMultiplier; break;
             case RarityLevel.Legendary: multiplier = legendaryMultiplier; break;
-            default: multiplier = 1f; break;
         }
         float finalValue = baseValue * multiplier;
-        if (Mathf.Approximately(finalValue % 1, 0)) return Mathf.RoundToInt(finalValue);
+        if (Mathf.Abs(finalValue % 1) < 0.01f) return Mathf.Round(finalValue);
         return Mathf.Round(finalValue * 100f) / 100f;
     }
 
@@ -371,9 +359,9 @@ public class PlayerExperience : MonoBehaviour
             case WeaponStatType.Cooldown: return 5f;
             case WeaponStatType.ProjectileCount: return 1f;
             case WeaponStatType.Size: return 10f;
-            case WeaponStatType.Speed: return 15f;
-            case WeaponStatType.Range: return 15f;
-            case WeaponStatType.Duration: return 20f;
+            case WeaponStatType.Speed: return 10f;
+            case WeaponStatType.Range: return 10f;
+            case WeaponStatType.Duration: return 15f;
             case WeaponStatType.Pierce: return 1f;
             case WeaponStatType.ProjectileBounce: return 1f;
             default: return 5f;
@@ -384,19 +372,23 @@ public class PlayerExperience : MonoBehaviour
     {
         switch (stat)
         {
-            case WeaponStatType.ProjectileCount: return false;
-            case WeaponStatType.Pierce: return false;
-            case WeaponStatType.ProjectileBounce: return false;
+            case WeaponStatType.ProjectileCount:
+            case WeaponStatType.Pierce:
+            case WeaponStatType.ProjectileBounce:
+                return false;
             default: return true;
         }
     }
 
-    private void UpdateLevelTextInternal()
+    private string GetRarityColorHex(RarityLevel rarity)
     {
-        if (UIManager.Instance != null) { UIManager.Instance.UpdateLevelText(currentLevel); }
-    }
-    private void UpdateXpBarInternal()
-    {
-        if (UIManager.Instance != null && xpToNextLevel > 0) { UIManager.Instance.UpdateXpBar(animatingXp, xpToNextLevel); }
+        switch (rarity)
+        {
+            case RarityLevel.Common: return "#FFFFFF";
+            case RarityLevel.Rare: return "#00FFFF";
+            case RarityLevel.Epic: return "#FF00FF";
+            case RarityLevel.Legendary: return "#FFA500";
+            default: return "#FFFFFF";
+        }
     }
 }

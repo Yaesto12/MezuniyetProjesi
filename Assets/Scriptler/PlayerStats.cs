@@ -91,6 +91,8 @@ public class PlayerStats : MonoBehaviour
     [field: SerializeField] public float CurrentSizeMultiplier { get; private set; }
     [field: SerializeField] public float CurrentDurationMultiplier { get; private set; }
     [field: SerializeField] public float CurrentBleedPercent { get; private set; }
+    // --- HATA DÜZELTME: Bu deðiþken eksikti, eklendi ---
+    [field: SerializeField] public float CurrentCritBleedPercent { get; private set; }
 
     [field: SerializeField] public float CurrentLifeSteal { get; private set; }
     [field: SerializeField] public float CurrentThorns { get; private set; }
@@ -191,6 +193,8 @@ public class PlayerStats : MonoBehaviour
         {
             UIManager.Instance.UpdateLevelText(currentLevel);
             UIManager.Instance.UpdateXpBar(currentXp, xpToNextLevel);
+
+            GetComponent<PlayerExperience>().StartLevelUpSequence();
         }
     }
 
@@ -225,6 +229,9 @@ public class PlayerStats : MonoBehaviour
         CurrentSizeMultiplier = baseSizeMultiplier;
         CurrentDurationMultiplier = baseDurationMultiplier;
         CurrentBleedPercent = baseBleedPercent;
+
+        // --- HATA DÜZELTME: Bu deðiþken sýfýrlanmalý ---
+        CurrentCritBleedPercent = 0f;
 
         CurrentLifeSteal = Mathf.Clamp(baseLifeSteal, 0f, 300f);
         CurrentThorns = baseThorns;
@@ -271,7 +278,7 @@ public class PlayerStats : MonoBehaviour
     }
 
     // ========================================================================
-    // --- STAT ARTTIRMA FONKSÝYONLARI (HEPSÝ EKLENDÝ) ---
+    // --- STAT ARTTIRMA FONKSÝYONLARI ---
     // ========================================================================
 
     // Temel

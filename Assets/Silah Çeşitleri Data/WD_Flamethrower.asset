@@ -15,7 +15,7 @@ MonoBehaviour:
   weaponName: Flamethrower
   description: "Alev makinesi ile her\u015Feyi k\xFCle \xE7evirin"
   icon: {fileID: 21300000, guid: 3e6c62a71e45b1d4ba63151020ed5f4f, type: 3}
-  behaviorType: 4
+  behaviorType: 6
   baseDamage: 20
   cooldown: 0.2
   critChance: 5

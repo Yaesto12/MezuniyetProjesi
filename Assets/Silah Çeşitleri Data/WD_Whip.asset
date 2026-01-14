@@ -15,7 +15,7 @@ MonoBehaviour:
   weaponName: Whip
   description: "Rakiplerinizi K\u0131rba\xE7lay\u0131n"
   icon: {fileID: 21300000, guid: 6303d4e78a63c4e4c8b65f78cdd0ec70, type: 3}
-  behaviorType: 1
+  behaviorType: 0
   baseDamage: 10
   cooldown: 1
   critChance: 5
