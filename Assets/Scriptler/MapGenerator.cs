@@ -243,6 +243,10 @@ public class MapGenerator : MonoBehaviour
             yield return null;
         }
 
+        // --- LAYER MASK OLUÞTURUYORUZ ---
+        // Sadece harita layerýna (ör: Layer 6) çarpmasý için bit mask oluþturuyoruz.
+        int layerMask = 1 << mapLayerIndex;
+
         if (player != null)
         {
             if (SpawnablePositions.Count > 0)
@@ -251,7 +255,8 @@ public class MapGenerator : MonoBehaviour
                 Vector3 rayOrigin = new Vector3(randomSpot.x, 200f, randomSpot.z);
                 RaycastHit hit;
 
-                if (Physics.Raycast(rayOrigin, Vector3.down, out hit, 500f))
+                // DÜZELTME: Raycast sadece 'layerMask' (MapEnvironment) ile çarpýþacak.
+                if (Physics.Raycast(rayOrigin, Vector3.down, out hit, 500f, layerMask))
                 {
                     StartTilePosition = hit.point + Vector3.up * playerSpawnHeight;
 
@@ -284,8 +289,8 @@ public class MapGenerator : MonoBehaviour
             Debug.LogError("HATA: Player bulunamadý!");
         }
 
-        SpawnDragonSummoner();
-        SpawnWorldObjects();
+        SpawnDragonSummoner(layerMask); // LayerMask gönderiyoruz
+        SpawnWorldObjects(layerMask);   // LayerMask gönderiyoruz
 
         if (loadingSlider != null) loadingSlider.value = 1f;
         yield return new WaitForSeconds(0.5f);
@@ -295,22 +300,37 @@ public class MapGenerator : MonoBehaviour
         IsMapGenerated = true;
     }
 
-    // --- ÖZEL OBJELERDE LAYER DEÐÝÞMÝYOR (Kasten) ---
-    void SpawnDragonSummoner()
+    // --- ÖZEL OBJELERDE LAYER MASK EKLENDÝ ---
+    void SpawnDragonSummoner(int layerMask)
     {
         if (dragonSummonerPrefab == null) return;
         if (SpawnablePositions.Count == 0) return;
         int randomIndex = Random.Range(0, SpawnablePositions.Count);
         Vector3 spawnPos = SpawnablePositions[randomIndex];
-        Instantiate(dragonSummonerPrefab, spawnPos, Quaternion.identity, objectsParent);
+
+        // Burada da zemine tam oturtmak için Raycast atabiliriz
+        Vector3 rayOrigin = new Vector3(spawnPos.x, 200f, spawnPos.z);
+        RaycastHit hit;
+
+        // Varsayýlan pozisyon (Eðer raycast baþarýsýz olursa)
+        Vector3 finalPos = spawnPos;
+
+        // DÜZELTME: Sadece zemine çarp.
+        if (Physics.Raycast(rayOrigin, Vector3.down, out hit, 500f, layerMask))
+        {
+            finalPos = hit.point;
+        }
+
+        Instantiate(dragonSummonerPrefab, finalPos, Quaternion.identity, objectsParent);
         SpawnablePositions.RemoveAt(randomIndex);
     }
 
-    void SpawnWorldObjects()
+    void SpawnWorldObjects(int layerMask)
     {
         if (objectsToSpawn == null || objectsToSpawn.Count == 0) return;
         if (SpawnablePositions.Count == 0) return;
         Vector3 playerPosFlat = new Vector3(StartTilePosition.x, 0, StartTilePosition.z);
+
         foreach (var objData in objectsToSpawn)
         {
             if (objData.prefab == null) continue;
@@ -329,7 +349,10 @@ public class MapGenerator : MonoBehaviour
                 float offsetZ = Random.Range(-jitter, jitter);
                 Vector3 rayOrigin = new Vector3(basePos.x + offsetX, 200f, basePos.z + offsetZ);
                 RaycastHit hit;
-                if (Physics.Raycast(rayOrigin, Vector3.down, out hit, 500f))
+
+                // DÜZELTME: Sadece 'MapEnvironment' layerýna sahip objelere çarp.
+                // Oyuncuya veya diðer objelere çarpma.
+                if (Physics.Raycast(rayOrigin, Vector3.down, out hit, 500f, layerMask))
                 {
                     Vector3 finalPos = hit.point + Vector3.up * objData.yOffset;
                     Quaternion randomRot = Quaternion.Euler(0, Random.Range(0, 360), 0);
@@ -341,7 +364,7 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
-    // --- TILE (Zemin) OLUÞTURMA: LAYER ATAMASI EKLENDÝ ---
+    // --- TILE (Zemin) OLUÞTURMA ---
     void CreateTile(GameObject prefab, Vector2Int coord2D, int height, Quaternion rot, bool isRamp, bool isFoundation = false)
     {
         float yPos = (height * tileSize) + yOffsetCorrection;
@@ -350,9 +373,8 @@ public class MapGenerator : MonoBehaviour
 
         GameObject newObj = Instantiate(prefab, worldPos, rot, transform);
 
-        // --- LAYER ATAMASI ---
+        // Layer atamasý (Daha önce yaptýðýnýz gibi, doðru çalýþýyor)
         newObj.layer = mapLayerIndex;
-        // Alt objeleri de (çocuklarý) ayný layer yap (önemli!)
         foreach (Transform child in newObj.transform) child.gameObject.layer = mapLayerIndex;
 
         if (!isFoundation && !heightMap.ContainsKey(coord2D))
@@ -370,7 +392,6 @@ public class MapGenerator : MonoBehaviour
                     Vector3 fillerPos = new Vector3(worldPos.x, currentY, worldPos.z);
                     GameObject filler = Instantiate(fillerTile, fillerPos, Quaternion.identity, transform);
 
-                    // --- FILLER TILE LAYER ATAMASI ---
                     filler.layer = mapLayerIndex;
                     foreach (Transform child in filler.transform) child.gameObject.layer = mapLayerIndex;
 
@@ -445,7 +466,6 @@ public class MapGenerator : MonoBehaviour
     bool IsOccupied(Vector2Int coord) { return heightMap.ContainsKey(coord); }
     bool IsInBounds(Vector2Int coord) { return Mathf.Abs(coord.x) <= mapRadius && Mathf.Abs(coord.y) <= mapRadius; }
 
-    // --- DUVAR OLUÞTURMA: LAYER ATAMASI EKLENDÝ ---
     void GenerateMapWalls()
     {
         HashSet<Vector2Int> wallCoordinates = new HashSet<Vector2Int>();
@@ -472,7 +492,6 @@ public class MapGenerator : MonoBehaviour
 
                 GameObject wall = Instantiate(prefabToUse, wallPos, Quaternion.identity, transform);
 
-                // --- LAYER ATAMASI ---
                 wall.layer = mapLayerIndex;
                 foreach (Transform child in wall.transform) child.gameObject.layer = mapLayerIndex;
 

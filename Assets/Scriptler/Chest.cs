@@ -191,7 +191,7 @@ public class Chest : MonoBehaviour
 
         int cost = CalculateCost(currentStats.chestsOpened);
         string color = (currentStats.currentGold >= cost) ? "yellow" : "red";
-        costText.text = $"<b>[E]</b> AÇ\n<color={color}>{cost} G</color>";
+        costText.text = $"<b>[E]</b> Open\n<color={color}>{cost} G</color>";
     }
 
 #if UNITY_EDITOR

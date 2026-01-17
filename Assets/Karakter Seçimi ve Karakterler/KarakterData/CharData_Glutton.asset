@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: CharData_Glutton
   m_EditorClassIdentifier: Assembly-CSharp::CharacterData
   characterName: Glutton
-  description: "Karakter a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 0}
+  description: Coming Soon...
+  icon: {fileID: 21300000, guid: fcba84c4f4304784e84b2a7ce06d4f2e, type: 3}
   characterPrefab: {fileID: 4027061838099321950, guid: ee151f587e15f134cbf1a347b6c4a8c8, type: 3}
   startingWeaponData: {fileID: 11400000, guid: cb786ab7ec25e864a8d0d5d33bc70c47, type: 2}

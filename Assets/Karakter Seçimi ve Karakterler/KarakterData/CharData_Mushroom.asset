@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: CharData_Mushroom
   m_EditorClassIdentifier: Assembly-CSharp::CharacterData
   characterName: Mushroom
-  description: "Karakter a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 0}
+  description: Coming Soon...
+  icon: {fileID: 21300000, guid: fcba84c4f4304784e84b2a7ce06d4f2e, type: 3}
   characterPrefab: {fileID: 2791107105845222405, guid: d7c52f3427c71f340a1e4c2cc805e656, type: 3}
   startingWeaponData: {fileID: 11400000, guid: ba75628b2e54013458ecc1f58c0dc1ad, type: 2}

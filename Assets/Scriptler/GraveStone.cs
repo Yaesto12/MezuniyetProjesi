@@ -39,7 +39,7 @@ public class GraveStone : MonoBehaviour
         if (infoText != null)
         {
             // Metni XP miktarý yerine "Ruhlarý Serbest Býrak" gibi genel bir þeye çevirdik
-            infoText.text = $"<b>[E]</b> Ruhlarý Serbest Býrak";
+            infoText.text = $"<b>[E]</b> Free the Souls";
         }
     }
 

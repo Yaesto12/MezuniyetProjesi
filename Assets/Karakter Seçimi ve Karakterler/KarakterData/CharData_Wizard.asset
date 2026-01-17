@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: CharData_Wizard
   m_EditorClassIdentifier: Assembly-CSharp::CharacterData
   characterName: Wizard
-  description: "Karakter a\xE7\u0131klamas\u0131..."
+  description: 
   icon: {fileID: 21300000, guid: 0fc465f05ae74d34a8efcb83b6b11e9d, type: 3}
   characterPrefab: {fileID: 2447504792135517538, guid: 769ed64aa027a664fbe12dd591717a51, type: 3}
   startingWeaponData: {fileID: 11400000, guid: f5b4be3d5aab1084eb6abc09a7a06f06, type: 2}

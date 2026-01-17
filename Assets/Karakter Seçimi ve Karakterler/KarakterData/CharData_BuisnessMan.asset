@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: CharData_BuisnessMan
   m_EditorClassIdentifier: Assembly-CSharp::CharacterData
   characterName: Buisness Man
-  description: "Karakter a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 21300000, guid: 2f48a4af1d540c34aa1bd29028bbd1fc, type: 3}
+  description: Coming Soon...
+  icon: {fileID: 21300000, guid: fcba84c4f4304784e84b2a7ce06d4f2e, type: 3}
   characterPrefab: {fileID: 9021488017884228616, guid: bd7b641979929d648897a3ee9af9ac58, type: 3}
   startingWeaponData: {fileID: 11400000, guid: a06ad0aea32668248b91115f499b5a5f, type: 2}

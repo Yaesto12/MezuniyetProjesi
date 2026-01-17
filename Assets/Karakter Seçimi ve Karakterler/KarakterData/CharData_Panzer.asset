@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: CharData_Panzer
   m_EditorClassIdentifier: Assembly-CSharp::CharacterData
   characterName: Panzer
-  description: "Karakter a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 0}
+  description: Coming Soon...
+  icon: {fileID: 21300000, guid: fcba84c4f4304784e84b2a7ce06d4f2e, type: 3}
   characterPrefab: {fileID: 4999761767556294027, guid: 555ed1a9169f6f54b8ca3709c41982e9, type: 3}
   startingWeaponData: {fileID: 11400000, guid: a1b28ac6d16452d429dc3bf3aa535b7d, type: 2}

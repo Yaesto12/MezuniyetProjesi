@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: CharData_Android
   m_EditorClassIdentifier: Assembly-CSharp::CharacterData
   characterName: Android
-  description: "Karakter a\xE7\u0131klamas\u0131..."
+  description: 
   icon: {fileID: 21300000, guid: 2e681cecb3853e54d9c6cc6bdc3baaa5, type: 3}
   characterPrefab: {fileID: 3449647289176196734, guid: 4df38e696818a204fb2a5a66893b1711, type: 3}
   startingWeaponData: {fileID: 11400000, guid: fad5e67121937334ab7ee13acd477ef5, type: 2}

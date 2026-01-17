@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: CharData_Werewolf
   m_EditorClassIdentifier: Assembly-CSharp::CharacterData
   characterName: Werewolf
-  description: "Karakter a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 0}
+  description: Coming Soon...
+  icon: {fileID: 21300000, guid: fcba84c4f4304784e84b2a7ce06d4f2e, type: 3}
   characterPrefab: {fileID: 6390119994613547698, guid: 63e7dbd914c35154a85bc278552cbe1d, type: 3}
   startingWeaponData: {fileID: 11400000, guid: 4aded39a8380ab2479b25c5b36e6b140, type: 2}

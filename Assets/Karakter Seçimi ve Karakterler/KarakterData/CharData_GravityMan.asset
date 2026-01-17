@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: CharData_GravityMan
   m_EditorClassIdentifier: Assembly-CSharp::CharacterData
   characterName: Gravity Man
-  description: "Karakter a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 0}
+  description: Coming Soon...
+  icon: {fileID: 21300000, guid: fcba84c4f4304784e84b2a7ce06d4f2e, type: 3}
   characterPrefab: {fileID: 4131981066329963653, guid: 69456bfe8c50619448a91cd1ea8f3e7f, type: 3}
   startingWeaponData: {fileID: 11400000, guid: cfa54e9fb9064f04590743b88d6a8c2a, type: 2}

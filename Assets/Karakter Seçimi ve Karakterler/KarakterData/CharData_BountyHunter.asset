@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: CharData_BountyHunter
   m_EditorClassIdentifier: Assembly-CSharp::CharacterData
   characterName: Bounty Hunter
-  description: "Karakter a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 0}
+  description: Coming Soon...
+  icon: {fileID: 21300000, guid: fcba84c4f4304784e84b2a7ce06d4f2e, type: 3}
   characterPrefab: {fileID: 71391442597893698, guid: 45ad90cd85095c240aae79d265c8b694, type: 3}
   startingWeaponData: {fileID: 11400000, guid: 18f3b3e3c4ff34d42a9d03ff95b5e22d, type: 2}

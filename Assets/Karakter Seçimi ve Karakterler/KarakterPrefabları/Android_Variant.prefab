@@ -120,6 +120,10 @@ PrefabInstance:
       propertyPath: baseJumpHeight
       value: 5
       objectReference: {fileID: 0}
+    - target: {fileID: 3340624305519319892, guid: 0dac92eb2d82753408269b5602fb5f3c, type: 3}
+      propertyPath: groundIndicatorSizeMultiplier
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 3498419723311602114, guid: 0dac92eb2d82753408269b5602fb5f3c, type: 3}
       propertyPath: m_Name
       value: Android_Variant

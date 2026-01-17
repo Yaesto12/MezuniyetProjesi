@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: CharData_MrPain
   m_EditorClassIdentifier: Assembly-CSharp::CharacterData
   characterName: Mr Pain
-  description: "Karakter a\xE7\u0131klamas\u0131..."
-  icon: {fileID: 0}
+  description: Coming Soon...
+  icon: {fileID: 21300000, guid: fcba84c4f4304784e84b2a7ce06d4f2e, type: 3}
   characterPrefab: {fileID: 8196370359777754029, guid: 19951658494792245ac9d3551b945861, type: 3}
   startingWeaponData: {fileID: 11400000, guid: 4c22e9f9f63c587409020935627cdad5, type: 2}

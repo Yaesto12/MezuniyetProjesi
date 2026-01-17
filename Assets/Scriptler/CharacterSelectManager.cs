@@ -15,8 +15,10 @@ public class CharacterSelectManager : MonoBehaviour
     [SerializeField] private Transform characterGridPanel;
     [Tooltip("Oluþturulacak karakter butonu prefab'ý.")]
     [SerializeField] private GameObject characterButtonPrefab;
-    [Tooltip("Seçilen karakterin ikonunu gösteren Image.")]
-    [SerializeField] private Image selectedCharacterIcon;
+
+    [Header("Seçilen Karakter Detaylarý")]
+    [Tooltip("Seçilen karakterin BÜYÜK ikonunu gösteren Image.")]
+    [SerializeField] private Image selectedCharacterIcon; // <-- Ýþte fotoðrafýn görüneceði yer burasý
     [Tooltip("Seçilen karakterin adýný gösteren Text.")]
     [SerializeField] private TextMeshProUGUI selectedCharacterName;
     [Tooltip("Seçilen karakterin açýklamasýný gösteren Text.")]
@@ -26,7 +28,7 @@ public class CharacterSelectManager : MonoBehaviour
 
     [Header("Sahne Adý")]
     [Tooltip("Yüklenecek olan ana oyun sahnesinin adý.")]
-    [SerializeField] private string gameSceneName = "GameScene"; // KENDÝ SAHNENÝZÝN ADINI YAZIN
+    [SerializeField] private string gameSceneName = "GameScene";
 
     // Dahili
     private CharacterData currentlySelectedCharacter = null;
@@ -34,10 +36,12 @@ public class CharacterSelectManager : MonoBehaviour
     void Start()
     {
         PopulateCharacterGrid();
-        // Baþlangýçta hiçbir karakter seçili deðil, bilgileri temizle ve baþlat butonunu kapat
+
+        // Baþlangýçta hiçbir karakter seçili deðil, bilgileri temizle
         UpdateSelectedCharacterInfo(null);
+
         startGameButton.interactable = false;
-        startGameButton.onClick.AddListener(StartGame); // Butonun týklama olayýný ayarla
+        startGameButton.onClick.AddListener(StartGame);
     }
 
     /// <summary>
@@ -57,35 +61,24 @@ public class CharacterSelectManager : MonoBehaviour
             GameObject buttonGO = Instantiate(characterButtonPrefab, characterGridPanel);
             Button button = buttonGO.GetComponent<Button>();
 
-            // --- DEÐÝÞÝKLÝK BURADA ---
-            // "Tahmin etme" yöntemini sildik. Direkt isminden buluyoruz.
-            // Prefabýn içindeki objenin adýný "IconImage" yaptýðýndan emin ol!
+            // Butonun üzerindeki küçük ikon görseli
             Transform iconTransform = buttonGO.transform.Find("IconImage");
 
             if (iconTransform != null)
             {
                 Image iconImage = iconTransform.GetComponent<Image>();
 
-                // Eðer data dosyasýnda ikon varsa ata
                 if (iconImage != null && character.icon != null)
                 {
                     iconImage.sprite = character.icon;
-                    iconImage.preserveAspect = true; // Resmi sündürme, oranýný koru
-                    iconImage.enabled = true; // Görünür olduðundan emin ol
+                    iconImage.preserveAspect = true; // Resmi oranlý tut
+                    iconImage.enabled = true;
                 }
-                else if (character.icon == null)
+                else
                 {
-                    // Ýkon yoksa beyaz kare görünmesin diye resmi kapat
-                    // (veya iconImage.color = Color.clear; yapabilirsin)
-                    iconImage.enabled = false;
+                    if (iconImage != null) iconImage.enabled = false;
                 }
             }
-            else
-            {
-                // Eðer ismi yanlýþ yazdýysan konsolda seni uyarýr
-                Debug.LogWarning($"DÝKKAT: '{character.name}' butonunda 'IconImage' isimli obje bulunamadý! Prefabý kontrol et.");
-            }
-            // -------------------------
 
             button.onClick.AddListener(() => SelectCharacter(character));
         }
@@ -97,57 +90,69 @@ public class CharacterSelectManager : MonoBehaviour
     public void SelectCharacter(CharacterData character)
     {
         currentlySelectedCharacter = character;
-        UpdateSelectedCharacterInfo(character);
-        startGameButton.interactable = true; // Karakter seçildi, butonu aktif et
+        UpdateSelectedCharacterInfo(character); // <--- Fotoðraf burada güncelleniyor
+        startGameButton.interactable = true;
         Debug.Log("Karakter Seçildi: " + character.characterName);
     }
 
     /// <summary>
-    /// Seçilen karakterin bilgilerini UI'da gösterir.
+    /// Seçilen karakterin bilgilerini UI'da (Büyük Resim, Ýsim, Açýklama) gösterir.
     /// </summary>
     void UpdateSelectedCharacterInfo(CharacterData character)
     {
         if (character != null)
         {
+            // --- FOTOÐRAF GÜNCELLEME KISMI ---
             if (selectedCharacterIcon != null)
             {
-                selectedCharacterIcon.sprite = character.icon;
-                selectedCharacterIcon.enabled = (character.icon != null);
+                if (character.icon != null)
+                {
+                    selectedCharacterIcon.sprite = character.icon;
+                    selectedCharacterIcon.preserveAspect = true; // ÖNEMLÝ: Resmin kare/dikdörtgen oranýný korur, yamulmasýný engeller.
+                    selectedCharacterIcon.enabled = true;
+
+                    // Görünürlüðü (Alpha) tam yap (eðer baþlangýçta þeffafsa)
+                    Color c = selectedCharacterIcon.color;
+                    c.a = 1f;
+                    selectedCharacterIcon.color = c;
+                }
+                else
+                {
+                    // Ýkon yoksa gizle
+                    selectedCharacterIcon.enabled = false;
+                }
             }
+            // ----------------------------------
+
             if (selectedCharacterName != null) selectedCharacterName.text = character.characterName;
             if (selectedCharacterDescription != null) selectedCharacterDescription.text = character.description;
         }
-        else // Hiçbir karakter seçili deðilse
+        else // Hiçbir karakter seçili deðilse (Oyun baþý)
         {
-            if (selectedCharacterIcon != null) selectedCharacterIcon.enabled = false;
+            if (selectedCharacterIcon != null)
+            {
+                selectedCharacterIcon.enabled = false; // Resmi gizle
+                selectedCharacterIcon.sprite = null;
+            }
+
             if (selectedCharacterName != null) selectedCharacterName.text = "Karakter Seç";
             if (selectedCharacterDescription != null) selectedCharacterDescription.text = "";
         }
     }
 
-    /// <summary>
-    /// "Oyuna Baþla" butonuna týklandýðýnda çaðrýlýr.
-    /// </summary>
     public void StartGame()
     {
         if (currentlySelectedCharacter != null && currentlySelectedCharacter.characterPrefab != null)
         {
-            // Seçilen karakterin prefab'ýný GameData'ya kaydet
             GameData.SelectedCharacterPrefab = currentlySelectedCharacter.characterPrefab;
-
-            // --- BU SATIR ÇOK ÖNEMLÝ ---
-            // Seçilen karakterin CharacterData asset'ini de GameData'ya kaydet
             GameData.SelectedCharacterDataForGame = currentlySelectedCharacter;
-            // --------------------------
 
-            Debug.Log($"Oyuna baþlanýyor. Seçilen Karakter: {currentlySelectedCharacter.characterName}, Prefab: {currentlySelectedCharacter.characterPrefab.name}");
-
-            // Ana oyun sahnesini yükle
+            Debug.Log($"Oyuna baþlanýyor. Seçilen: {currentlySelectedCharacter.characterName}");
             SceneManager.LoadScene(gameSceneName);
         }
         else
         {
-            Debug.LogError("Oyuna baþlanamýyor! Geçerli bir karakter seçilmedi veya karakterin prefab'ý atanmamýþ.");
+            Debug.LogError("Hata: Karakter seçilmedi veya Prefab eksik!");
         }
     }
 }
