@@ -48,4 +48,4 @@ MonoBehaviour:
   mineLifetime: 3
   mineExplosionRadius: 2.5
   mineDropRadius: 1
-  availableStatUpgrades: 000000000500000001000000
+  availableStatUpgrades: 000000000100000002000000090000000b000000

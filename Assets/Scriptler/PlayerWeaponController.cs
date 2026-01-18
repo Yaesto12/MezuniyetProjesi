@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.Collections.Generic;
-using System.Linq;
 
 [RequireComponent(typeof(TargetingSystem))]
 [RequireComponent(typeof(PlayerInventory))]
@@ -34,7 +33,6 @@ public class PlayerWeaponController : MonoBehaviour
             if (firePoint == null) Debug.LogError("PlayerWeaponController: FirePoint bulunamadý!", this);
         }
 
-        // Eðer EnemyLayer seçilmediyse otomatik ata (Varsayýlan olarak her þeye vurmasýn diye kontrol)
         if (enemyLayer == 0) Debug.LogWarning("PlayerWeaponController: Enemy Layer atanmamýþ!", this);
     }
 
@@ -49,55 +47,70 @@ public class PlayerWeaponController : MonoBehaviour
 
         if (selectedCharData != null && selectedCharData.startingWeaponData != null)
         {
-            // Baþlangýç silahýný klonla ve ekle
-            WeaponData runtimeWeaponData = Instantiate(selectedCharData.startingWeaponData);
-            AddAndInitializeWeapon(runtimeWeaponData);
+            // Silahý ekle (Bu fonksiyon zaten klonlama yapýyor)
+            AddWeapon(selectedCharData.startingWeaponData);
 
-            // Envantere de kaydet (Eðer Inventory otomatik eklemiyorsa)
+            // Envantere de kaydet (Görünürlük için)
             if (playerInventory != null && !playerInventory.HasWeaponData(selectedCharData.startingWeaponData))
             {
-                playerInventory.AddWeaponData(selectedCharData.startingWeaponData);
+                // NOT: PlayerInventory'ye eklerken sonsuz döngüye girmemesi için
+                // oradaki AddWeaponData fonksiyonunda WeaponController'a haber verme kýsmýný
+                // "HasWeaponData" kontrolü ile engellediðinden emin olmalýsýn.
+                // Þimdilik burayý pasif býrakýyorum, Inventory kendi halletsin.
+                // playerInventory.AddWeaponData(selectedCharData.startingWeaponData);
             }
         }
     }
 
     // ========================================================================
-    // --- PLAYER INVENTORY ÝLE ÝLETÝÞÝM ÝÇÝN EKLENEN KISIMLAR ---
+    // --- PLAYER INVENTORY ÝLE ÝLETÝÞÝM ---
     // ========================================================================
 
-    // PlayerInventory "SendMessage('AddWeapon')" dediðinde burasý çalýþacak
     public void AddWeapon(WeaponData weaponData)
     {
-        // Envanterden gelen silah orijinaldir (Asset), onu klonlayýp oyuna dahil ediyoruz
+        if (weaponData == null) return;
+
+        Debug.Log($"WeaponController: {weaponData.name} ekleniyor...");
+
+        // 1. Orijinal veriyi klonla
         WeaponData runtimeInstance = Instantiate(weaponData);
+
+        // 2. "(Clone)" ekini sil ki isim kontrolleri bozulmasýn
+        runtimeInstance.name = weaponData.name;
+
+        // 3. Baþlat
         AddAndInitializeWeapon(runtimeInstance);
     }
 
-    // PlayerInventory "SendMessage('LevelUpWeapon')" dediðinde burasý çalýþacak
     public void LevelUpWeapon(WeaponData weaponData)
     {
-        // Aktif handler'ý bul
         MonoBehaviour handler = GetActiveWeaponHandler(weaponData);
         if (handler != null)
         {
-            // Handler'a "Seviye Atladýn, deðerlerini güncelle" mesajý gönderiyoruz
-            // Not: Handler scriptlerinde "OnLevelUp" fonksiyonu olmalý
             handler.SendMessage("OnLevelUp", SendMessageOptions.DontRequireReceiver);
             Debug.Log($"{weaponData.weaponName} seviye atladý!");
+        }
+        else
+        {
+            Debug.LogWarning($"LevelUpWeapon Hatasý: {weaponData.name} için aktif handler bulunamadý!");
         }
     }
 
     // ========================================================================
 
-    public void AddAndInitializeWeapon(WeaponData weaponDataInstance)
+    private void AddAndInitializeWeapon(WeaponData weaponDataInstance)
     {
         if (weaponDataInstance == null || playerStats == null) return;
 
-        // Ayný silahtan zaten varsa tekrar ekleme (Level atlatma mantýðý ayrýdýr)
-        // Not: Bazý oyunlarda ayný silahtan 2 tane olabilir, öyleyse bu kontrolü kaldýr.
+        // Zaten var mý kontrolü
         foreach (var pair in handlerDataMap)
         {
-            if (pair.Value.name == weaponDataInstance.name) return;
+            // Ýsimleri eþlerken artýk (Clone) sorunu olmayacak
+            if (pair.Value.name == weaponDataInstance.name)
+            {
+                Debug.LogWarning($"{weaponDataInstance.name} zaten ekli, tekrar eklenmedi.");
+                return;
+            }
         }
 
         System.Type handlerType = null;
@@ -113,11 +126,12 @@ public class PlayerWeaponController : MonoBehaviour
             default: Debug.LogError($"Bilinmeyen silah türü: {weaponDataInstance.behaviorType}"); return;
         }
 
+        // Component'i ekle
         MonoBehaviour weaponHandler = (MonoBehaviour)gameObject.AddComponent(handlerType);
 
         bool initialized = false;
-        // Burada Initialize çaðrýlarýný yapýyoruz. Handler scriptlerinde bu metodun imzasý
-        // (WeaponData, Transform/TargetingSystem, PlayerStats) þeklinde olmalý.
+
+        // Initialize çaðrýlarý
         switch (weaponDataInstance.behaviorType)
         {
             case WeaponBehaviorType.Projectile:
@@ -150,9 +164,11 @@ public class PlayerWeaponController : MonoBehaviour
         {
             activeWeaponHandlers.Add(weaponHandler);
             handlerDataMap.Add(weaponHandler, weaponDataInstance);
+            Debug.Log($"<color=cyan>SÝLAH AKTÝF EDÝLDÝ: {weaponDataInstance.name}</color>");
         }
         else
         {
+            Debug.LogError($"SÝLAH BAÞLATILAMADI: {weaponDataInstance.name}");
             Destroy(weaponHandler);
         }
     }
@@ -160,14 +176,11 @@ public class PlayerWeaponController : MonoBehaviour
     public MonoBehaviour GetActiveWeaponHandler(WeaponData originalWeaponData)
     {
         if (originalWeaponData == null) return null;
-
-        // Ýsim kontrolü ile (Clone) ekini görmezden gelerek eþleþtirme yapýyoruz
         string searchName = originalWeaponData.name;
 
         foreach (var kvp in handlerDataMap)
         {
-            // Klonlanan verinin adý "Sword(Clone)" olabilir, orijinali "Sword"
-            if (kvp.Value != null && kvp.Value.name.Contains(searchName))
+            if (kvp.Value != null && kvp.Value.name == searchName)
             {
                 return kvp.Key;
             }
@@ -177,8 +190,6 @@ public class PlayerWeaponController : MonoBehaviour
 
     void OnDestroy()
     {
-        // Handler'lar zaten Player'ýn üzerinde component olduðu için Player yok olunca onlar da gider.
-        // Ama listeleri temizlemek iyidir.
         activeWeaponHandlers.Clear();
         handlerDataMap.Clear();
     }

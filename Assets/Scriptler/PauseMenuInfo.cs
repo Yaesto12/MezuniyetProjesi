@@ -8,11 +8,22 @@ public class PauseMenuInfo : MonoBehaviour
 {
     public static PauseMenuInfo Instance; // Singleton eriþimi için
 
+    [Header("--- RENK AYARLARI ---")]
+    [Tooltip("Stat Ýsimlerinin Rengi (Örn: 'Max Health', 'Armor')")]
+    [SerializeField] private Color titleColor = Color.yellow; // Baþlýk Rengi
+
+    [Tooltip("Stat Deðerlerinin Rengi (Örn: '100', '%50')")]
+    [SerializeField] private Color valueColor = Color.white; // Deðer Rengi
+
+    // Hex kodlarý
+    private string titleHex;
+    private string valueHex;
+
     // =========================================================
     // --- 1. SAÐ TARAF: STATLAR (TEXT REFERANSLARI) ---
     // =========================================================
 
-    [Header("--- SAVUNMA STATLARI ---")]
+    [Header("--- DEFENSE STATS ---")]
     public TextMeshProUGUI maxHealthText;   // Max Health
     public TextMeshProUGUI hpRegenText;     // HP Regen
     public TextMeshProUGUI armorText;       // Armor
@@ -20,44 +31,44 @@ public class PauseMenuInfo : MonoBehaviour
     public TextMeshProUGUI lifestealText;   // Lifesteal
     public TextMeshProUGUI thornsText;      // Thorns
 
-    [Header("--- SALDIRI STATLARI ---")]
+    [Header("--- OFFENSE STATS ---")]
     public TextMeshProUGUI damageText;      // Damage Multiplier
     public TextMeshProUGUI critChanceText;  // Crit Chance
     public TextMeshProUGUI critDamageText;  // Crit Damage
     public TextMeshProUGUI attackSpeedText; // Attack Speed
 
-    [Header("--- MERMÝ / PROJEKTÝL ---")]
+    [Header("--- WEAPON STATS ---")]
     public TextMeshProUGUI projCountText;   // Projectile Count
     public TextMeshProUGUI projBounceText;  // Projectile Bounce
     public TextMeshProUGUI sizeText;        // Size
     public TextMeshProUGUI durationText;    // Duration
 
-    [Header("--- HAREKET VE FÝZÝK ---")]
+    [Header("--- MOVEMENT ---")]
     public TextMeshProUGUI moveSpeedText;   // Move Speed
     public TextMeshProUGUI extraJumpsText;  // Extra Jumps
 
-    [Header("--- EKONOMÝ VE ÞANS ---")]
+    [Header("--- MISC ---")]
     public TextMeshProUGUI luckText;        // Luck
     public TextMeshProUGUI curseText;       // Curse
     public TextMeshProUGUI magnetText;      // Magnet Range
     public TextMeshProUGUI xpBonusText;     // XP Bonus
     public TextMeshProUGUI goldBonusText;   // Gold Bonus
 
-    [Header("--- YETENEK VE DÝÐER ---")]
+    [Header("--- ABILITIES ---")]
     public TextMeshProUGUI cooldownText;    // Cooldown Reduction
     public TextMeshProUGUI revivalsText;    // Revivals
 
     // =========================================================
     // --- 2. SOL TARAF: ENVANTER (ITEMLER) ---
     // =========================================================
-    [Header("--- ENVANTER AYARLARI ---")]
-    public Transform itemsGridParent; // Grid Layout Group olan obje
-    public GameObject itemIconPrefab; // Ýkon Prefabý
+    [Header("--- INVENTORY SETTINGS ---")]
+    public Transform itemsGridParent;
+    public GameObject itemIconPrefab;
 
-    [Header("--- TOOLTIP AYARLARI (YENÝ) ---")]
-    public GameObject tooltipPanel;       // Açýlacak küçük pencere
-    public TextMeshProUGUI tooltipName;   // Ýtem ismi texti
-    public TextMeshProUGUI tooltipDesc;   // Açýklama texti
+    [Header("--- TOOLTIP SETTINGS ---")]
+    public GameObject tooltipPanel;
+    public TextMeshProUGUI tooltipName;
+    public TextMeshProUGUI tooltipDesc;
 
     // Script Referanslarý
     private PlayerStats stats;
@@ -65,26 +76,25 @@ public class PauseMenuInfo : MonoBehaviour
 
     void Awake()
     {
-        // TooltipTrigger'ýn bu scripte ulaþabilmesi için Singleton yapýyoruz
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
+
+        // Renkleri Hex koduna çeviriyoruz
+        titleHex = "#" + ColorUtility.ToHtmlStringRGB(titleColor);
+        valueHex = "#" + ColorUtility.ToHtmlStringRGB(valueColor);
     }
 
     void OnEnable()
     {
-        // Scriptleri bul
         if (stats == null) stats = FindAnyObjectByType<PlayerStats>();
         if (inventory == null) inventory = FindAnyObjectByType<PlayerInventory>();
 
-        // Güncellemeleri yap
         if (stats != null) UpdateStatsUI();
         if (inventory != null) UpdateItemsUI();
 
-        // Menü açýldýðýnda tooltip kapalý baþlasýn
         HideTooltip();
     }
 
-    // --- TOOLTIP FONKSÝYONLARI ---
     public void ShowTooltip(string name, string desc)
     {
         if (tooltipPanel != null)
@@ -102,44 +112,48 @@ public class PauseMenuInfo : MonoBehaviour
             tooltipPanel.SetActive(false);
         }
     }
-    // -----------------------------
+
+    private string FormatStat(string title, string value)
+    {
+        return $"<color={titleHex}>{title}:</color> <color={valueHex}>{value}</color>";
+    }
 
     void UpdateStatsUI()
     {
-        // SAVUNMA
-        if (maxHealthText) maxHealthText.text = $"Can: {Mathf.Round(stats.CurrentMaxHealth)}";
-        if (hpRegenText) hpRegenText.text = $"Yenileme: {stats.CurrentHpRegen:F1}/sn";
-        if (armorText) armorText.text = $"Zýrh: {Mathf.Round(stats.CurrentArmor)}";
-        if (evasionText) evasionText.text = $"Kaçýnma: %{stats.CurrentEvasion:F1}";
-        if (lifestealText) lifestealText.text = $"Can Çalma: %{stats.CurrentLifeSteal}";
-        if (thornsText) thornsText.text = $"Diken: {stats.CurrentThorns}";
+        // DEFENSE
+        if (maxHealthText) maxHealthText.text = FormatStat("Max Health", Mathf.Round(stats.CurrentMaxHealth).ToString());
+        if (hpRegenText) hpRegenText.text = FormatStat("Recovery", $"{stats.CurrentHpRegen:F1}/s");
+        if (armorText) armorText.text = FormatStat("Armor", Mathf.Round(stats.CurrentArmor).ToString());
+        if (evasionText) evasionText.text = FormatStat("Evasion", $"%{stats.CurrentEvasion:F1}");
+        if (lifestealText) lifestealText.text = FormatStat("Lifesteal", $"%{stats.CurrentLifeSteal}");
+        if (thornsText) thornsText.text = FormatStat("Thorns", stats.CurrentThorns.ToString());
 
-        // SALDIRI
-        if (damageText) damageText.text = $"Hasar: %{Mathf.Round(stats.CurrentDamageMultiplier)}";
-        if (critChanceText) critChanceText.text = $"Kritik Þans: %{stats.CurrentCritChance:F1}";
-        if (critDamageText) critDamageText.text = $"Kritik Hasar: %{Mathf.Round(stats.CurrentCritDamage)}";
-        if (attackSpeedText) attackSpeedText.text = $"Saldýrý Hýzý: %{Mathf.Round(stats.CurrentAttackSpeedMultiplier)}";
+        // OFFENSE
+        if (damageText) damageText.text = FormatStat("Might", $"%{Mathf.Round(stats.CurrentDamageMultiplier)}"); // "Hasar" yerine Might (Güç) havalý durur, istersen "Damage" yapabilirsin.
+        if (critChanceText) critChanceText.text = FormatStat("Crit Rate", $"%{stats.CurrentCritChance:F1}");
+        if (critDamageText) critDamageText.text = FormatStat("Crit DMG", $"%{Mathf.Round(stats.CurrentCritDamage)}");
+        if (attackSpeedText) attackSpeedText.text = FormatStat("Cooldown", $"%{Mathf.Round(stats.CurrentAttackSpeedMultiplier)}"); // Attack Speed genelde Cooldown olarak geçer ama "Attack Speed" de olur.
 
-        // MERMÝ
-        if (projCountText) projCountText.text = $"Ekstra Mermi: +{stats.CurrentProjectileCountBonus}";
-        if (projBounceText) projBounceText.text = $"Sekme: +{stats.CurrentProjectileBounce}";
-        if (sizeText) sizeText.text = $"Alan Boyutu: %{Mathf.Round(stats.CurrentSizeMultiplier)}";
-        if (durationText) durationText.text = $"Süre: %{Mathf.Round(stats.CurrentDurationMultiplier)}";
+        // WEAPON
+        if (projCountText) projCountText.text = FormatStat("Amount", $"+{stats.CurrentProjectileCountBonus}");
+        if (projBounceText) projBounceText.text = FormatStat("Bounce", $"+{stats.CurrentProjectileBounce}");
+        if (sizeText) sizeText.text = FormatStat("Area", $"%{Mathf.Round(stats.CurrentSizeMultiplier)}");
+        if (durationText) durationText.text = FormatStat("Duration", $"%{Mathf.Round(stats.CurrentDurationMultiplier)}");
 
-        // HAREKET
-        if (moveSpeedText) moveSpeedText.text = $"Hýz: {stats.CurrentMoveSpeed:F1}";
-        if (extraJumpsText) extraJumpsText.text = $"Zýplama: +{stats.CurrentExtraJumps}";
+        // MOVEMENT
+        if (moveSpeedText) moveSpeedText.text = FormatStat("Speed", $"{stats.CurrentMoveSpeed:F1}");
+        if (extraJumpsText) extraJumpsText.text = FormatStat("Extra Jumps", $"+{stats.CurrentExtraJumps}");
 
-        // EKONOMÝ / ÞANS
-        if (luckText) luckText.text = $"Þans: {stats.CurrentLuck}";
-        if (curseText) curseText.text = $"Lanet: {stats.CurrentCurse}";
-        if (magnetText) magnetText.text = $"Mýknatýs: {stats.CurrentMagnetRange:F1}m";
-        if (xpBonusText) xpBonusText.text = $"XP Bonusu: %{Mathf.Round(stats.CurrentXpBonus)}";
-        if (goldBonusText) goldBonusText.text = $"Altýn Bonusu: %{Mathf.Round(stats.CurrentGoldBonus)}";
+        // MISC
+        if (luckText) luckText.text = FormatStat("Luck", stats.CurrentLuck.ToString());
+        if (curseText) curseText.text = FormatStat("Curse", stats.CurrentCurse.ToString());
+        if (magnetText) magnetText.text = FormatStat("Magnet", $"{stats.CurrentMagnetRange:F1}m");
+        if (xpBonusText) xpBonusText.text = FormatStat("Growth", $"%{Mathf.Round(stats.CurrentXpBonus)}"); // Growth = XP Bonus
+        if (goldBonusText) goldBonusText.text = FormatStat("Greed", $"%{Mathf.Round(stats.CurrentGoldBonus)}"); // Greed = Gold Bonus
 
-        // DÝÐER
-        if (cooldownText) cooldownText.text = $"Bekleme Süresi: -%{Mathf.Round(stats.CurrentSkillCooldownReduction)}";
-        if (revivalsText) revivalsText.text = $"Dirilme Hakký: {stats.CurrentRevivals}";
+        // ABILITIES
+        if (cooldownText) cooldownText.text = FormatStat("Cooldown", $"-%{Mathf.Round(stats.CurrentSkillCooldownReduction)}");
+        if (revivalsText) revivalsText.text = FormatStat("Revival", stats.CurrentRevivals.ToString());
     }
 
     void UpdateItemsUI()
@@ -148,7 +162,6 @@ public class PauseMenuInfo : MonoBehaviour
 
         foreach (Transform child in itemsGridParent) Destroy(child.gameObject);
 
-        // Listeyi benzersiz itemlere göre grupla (LINQ kullanarak)
         var groupedItems = inventory.ownedItems
             .GroupBy(i => i.itemName)
             .Select(group => new { Data = group.First(), Count = group.Count() });
@@ -158,19 +171,15 @@ public class PauseMenuInfo : MonoBehaviour
             GameObject newIconObj = Instantiate(itemIconPrefab, itemsGridParent);
             Image imgComponent = newIconObj.GetComponent<Image>();
 
-            // Eðer ItemData'da deðiþken adý 'Icon' ise burayý 'itemGroup.Data.Icon' yapýn
             if (itemGroup.Data.icon != null)
                 imgComponent.sprite = itemGroup.Data.icon;
 
-            // Sayaç Yazýsý
             TextMeshProUGUI qText = newIconObj.GetComponentInChildren<TextMeshProUGUI>();
             if (qText != null)
             {
                 qText.text = itemGroup.Count > 1 ? $"x{itemGroup.Count}" : "";
             }
 
-            // TOOLTIP SÝSTEMÝ
-            // ItemTooltipTrigger scriptinin projenizde var olduðundan emin olun
             ItemTooltipTrigger tooltip = newIconObj.AddComponent<ItemTooltipTrigger>();
             tooltip.description = itemGroup.Data.description;
             tooltip.itemName = itemGroup.Data.itemName;

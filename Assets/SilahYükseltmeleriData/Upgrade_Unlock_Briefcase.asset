@@ -16,6 +16,6 @@ MonoBehaviour:
   description: 
   icon: {fileID: 21300000, guid: 120e9a942d415174ca9e597f373dd901, type: 3}
   rarity: 0
-  category: 0
+  category: 5
   weaponDataToUnlock: {fileID: 11400000, guid: a06ad0aea32668248b91115f499b5a5f, type: 2}
   targetWeaponData: {fileID: 0}
