@@ -11,17 +11,16 @@ public class PlayerHealth : MonoBehaviour
 
     // --- MEKANÝK DEÐÝÞKENLERÝ ---
 
-    // 1. Caný Dýþarýdan Okuma (Scarred Heart vb. için)
+    // 1. Caný Dýþarýdan Okuma
     public float CurrentHealth => currentHealth;
 
-    // 2. Overheal (Overflowing Goblet vb. için)
+    // 2. Overheal
     public float CurrentOverheal { get; private set; }
 
-    // 3. Kalkan / Hasar Yok Sayma (Soul Shield vb. için)
-    // Bu deðiþken true ise alýnan hasar tamamen engellenir ve false yapýlýr.
+    // 3. Kalkan / Hasar Yok Sayma
     public bool IsShielded { get; set; } = false;
 
-    // 4. Can Deðiþim Olayý (UI ve Itemlerin dinlemesi için)
+    // 4. Can Deðiþim Olayý
     public event Action OnHealthChanged;
 
     // ----------------------------
@@ -55,7 +54,7 @@ public class PlayerHealth : MonoBehaviour
 
             isInitialized = true;
             UpdateHealthUI();
-            OnHealthChanged?.Invoke(); // Baþlangýç durumunu bildir
+            OnHealthChanged?.Invoke();
         }
     }
 
@@ -68,7 +67,6 @@ public class PlayerHealth : MonoBehaviour
     {
         if (!isInitialized || playerStats == null || playerStats.CurrentHpRegen <= 0) return;
 
-        // Eðer Can ve Overheal doluysa regen yapma (Boþuna iþlem yapmasýn)
         if (currentHealth >= playerStats.CurrentMaxHealth && CurrentOverheal >= playerStats.CurrentMaxOverheal) return;
 
         regenTimer += Time.deltaTime;
@@ -79,9 +77,6 @@ public class PlayerHealth : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Ýyileþtirme fonksiyonu. Can dolarsa fazlalýk Overheal'e akar.
-    /// </summary>
     public void Heal(float amount)
     {
         if (!isInitialized || amount <= 0) return;
@@ -91,7 +86,7 @@ public class PlayerHealth : MonoBehaviour
         float healToHealth = Mathf.Min(amount, missingHealth);
 
         currentHealth += healToHealth;
-        amount -= healToHealth; // Kalan iyileþtirme miktarý
+        amount -= healToHealth;
 
         // 2. Artan Miktar Varsa Overheal'e Ekle
         if (amount > 0 && playerStats.CurrentMaxOverheal > 0)
@@ -102,12 +97,9 @@ public class PlayerHealth : MonoBehaviour
         }
 
         UpdateHealthUI();
-        OnHealthChanged?.Invoke(); // Deðiþikliði bildir
+        OnHealthChanged?.Invoke();
     }
 
-    /// <summary>
-    /// Hasar alma fonksiyonu.
-    /// </summary>
     public void TakeDamage(int damageAmount, EnemyStats attacker = null)
     {
         if (!isInitialized || damageAmount <= 0) return;
@@ -115,12 +107,10 @@ public class PlayerHealth : MonoBehaviour
         // --- 1. SOUL SHIELD KONTROLÜ ---
         if (IsShielded)
         {
-            IsShielded = false; // Kalkaný kýr
-            // Debug.Log("PlayerHealth: Soul Shield hasarý engelledi!");
-            OnHealthChanged?.Invoke(); // UI güncellemesi için tetikleyelim
-            return; // Hasarý tamamen yok say ve çýk
+            IsShielded = false;
+            OnHealthChanged?.Invoke();
+            return;
         }
-        // -------------------------------
 
         // Evasion (Kaçýnma)
         if (playerStats.CurrentEvasion > 0 && UnityEngine.Random.value * 100 < playerStats.CurrentEvasion) return;
@@ -140,7 +130,7 @@ public class PlayerHealth : MonoBehaviour
             finalDamage -= Mathf.RoundToInt(dmgToOverheal);
         }
 
-        // 2. Sonra Kalkan'dan (Shield Stat) Düþ
+        // 2. Sonra Kalkan'dan Düþ
         if (finalDamage > 0 && currentShield > 0)
         {
             float dmgToShield = Mathf.Min(currentShield, finalDamage);
@@ -148,12 +138,19 @@ public class PlayerHealth : MonoBehaviour
             finalDamage -= Mathf.RoundToInt(dmgToShield);
         }
 
-        // 3. En Son Can'dan Düþ
+        // 3. En Son Can'dan Düþ (GERÇEK HASAR BURADA)
         if (finalDamage > 0)
         {
             currentHealth -= finalDamage;
 
-            // Hasar alýndý eventi (Metronom vb. için)
+            // --- YENÝ EKLENEN KISIM: EKRAN KIZARMASI ---
+            // Sadece gerçek can azaldýðýnda ekran kýzarýr.
+            if (DamageFlash.Instance != null)
+            {
+                DamageFlash.Instance.TriggerFlash();
+            }
+            // -------------------------------------------
+
             if (GameEventManager.Instance != null)
                 GameEventManager.Instance.TriggerPlayerTakeDamage(finalDamage, attacker);
         }
@@ -170,8 +167,7 @@ public class PlayerHealth : MonoBehaviour
             currentHealth = 0;
             if (playerStats.UseRevival())
             {
-                InitializeHealth(); // Canlanma
-                // Belki küçük bir ölümsüzlük süresi veya efekt eklenebilir
+                InitializeHealth();
             }
             else
             {
@@ -180,23 +176,16 @@ public class PlayerHealth : MonoBehaviour
         }
 
         UpdateHealthUI();
-        OnHealthChanged?.Invoke(); // Deðiþikliði bildir (Scarred Heart vb. için önemli)
+        OnHealthChanged?.Invoke();
     }
 
-    /// <summary>
-    /// Statlar deðiþtiðinde (örn: Max Can arttýðýnda) deðerleri günceller.
-    /// </summary>
     public void UpdateMaxValues(float newMaxHealth, float newMaxShield)
     {
         if (!isInitialized) return;
 
-        // Mevcut can, yeni max caný geçmesin
         currentHealth = Mathf.Min(currentHealth, newMaxHealth);
-
-        // Kalkan mantýðý (oyun tasarýmýna göre deðiþebilir, genelde max'a çekilmez ama burada limitliyoruz)
         currentShield = Mathf.Min(currentShield, newMaxShield);
 
-        // Overheal limit kontrolü
         if (playerStats != null)
             CurrentOverheal = Mathf.Min(CurrentOverheal, playerStats.CurrentMaxOverheal);
 
@@ -204,12 +193,8 @@ public class PlayerHealth : MonoBehaviour
         OnHealthChanged?.Invoke();
     }
 
-    /// <summary>
-    /// Blood Payment gibi itemlerin "Caným buna yeter mi?" diye sormasý için.
-    /// </summary>
     public bool CanAffordHealthCost(float cost)
     {
-        // Bedeli ödeyince can 0'ýn üstünde kalmalý
         return currentHealth > cost;
     }
 
@@ -222,14 +207,27 @@ public class PlayerHealth : MonoBehaviour
 
     private void Die()
     {
-        GameOverManager.Instance.ShowDeathScreen();
-        // Oyun bitiþ ekraný veya mantýðý buraya
+        if (GameOverManager.Instance != null)
+        {
+            GameOverManager.Instance.ShowDeathScreen();
+        }
+        else
+        {
+            Debug.LogError("GameOverManager sahnede bulunamadý!");
+        }
+
+        // Karakteri kapatmadan önce scriptleri devre dýþý býrakmak daha güvenlidir, 
+        // ama direkt kapatmak da çalýþýr.
         gameObject.SetActive(false);
     }
 
     private void UpdateHealthUI()
     {
-        // Eðer bir UIManager varsa burada slider'larý güncelleyebilirsin.
-        // Örn: UIManager.Instance.UpdateHealthBar(currentHealth, playerStats.CurrentMaxHealth, CurrentOverheal);
+        if (UIManager.Instance != null)
+        {
+            // UIManager'daki fonksiyon adýn neyse onu kullanmalýsýn.
+            // Örneðin: UpdateHealth(float current, float max)
+            // UIManager.Instance.UpdateHealth(currentHealth, playerStats.CurrentMaxHealth);
+        }
     }
 }

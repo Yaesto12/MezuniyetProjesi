@@ -22,14 +22,20 @@ public class Chest : MonoBehaviour
     [SerializeField] private GameObject visualModel;
     [SerializeField] private Material openedMaterial;
 
-    // --- YENÝ EKLENEN KISIM: YOK OLMA AYARLARI ---
     [Header("Yok Olma Ayarlarý")]
     [Tooltip("Sandýk açýldýktan kaç saniye sonra yok olmaya baþlasýn?")]
     [SerializeField] private float destroyDelay = 2.0f;
-
     [Tooltip("Küçülerek yok olma animasyonu ne kadar sürsün?")]
     [SerializeField] private float shrinkDuration = 1.0f;
-    // ---------------------------------------------
+
+    // --- YENÝ EKLENEN KISIM: EFEKTLER ---
+    [Header("Efektler")]
+    [Tooltip("Hazýrladýðýn FloatingItemCanvas prefabýný buraya sürükle.")]
+    [SerializeField] private GameObject floatingItemPrefab;
+
+    [Tooltip("Ýkon tam olarak nerede çýksýn? (Boþ býrakýrsan sandýðýn üstünde çýkar)")]
+    [SerializeField] private Transform popupSpawnPoint;
+    // ------------------------------------
 
     private bool isPlayerNearby = false;
     private bool isOpen = false;
@@ -112,9 +118,25 @@ public class Chest : MonoBehaviour
                     currentStats.chestsOpened++;
                     currentInventory.AddItem(reward);
 
-                    OpenChestVisuals();
+                    // --- YENÝ: EFEKTÝ OLUÞTURMA ---
+                    if (floatingItemPrefab != null)
+                    {
+                        // Pozisyon belirle (Spawn point yoksa sandýðýn 1.5 birim yukarýsý)
+                        Vector3 spawnPos = popupSpawnPoint != null ? popupSpawnPoint.position : transform.position + Vector3.up * 1.5f;
 
-                    // --- YENÝ: YOK OLMA SÜRECÝNÝ BAÞLAT ---
+                        // Efekti yarat
+                        GameObject popupObj = Instantiate(floatingItemPrefab, spawnPos, Quaternion.identity);
+
+                        // Scripti al ve ikonu gönder
+                        FloatingItemPopup popupScript = popupObj.GetComponent<FloatingItemPopup>();
+                        if (popupScript != null)
+                        {
+                            popupScript.Initialize(reward.icon);
+                        }
+                    }
+                    // -----------------------------
+
+                    OpenChestVisuals();
                     StartCoroutine(DestroyChestRoutine());
                 }
             }
@@ -130,34 +152,27 @@ public class Chest : MonoBehaviour
         if (openedMaterial != null && visualModel.GetComponent<MeshRenderer>())
             visualModel.GetComponent<MeshRenderer>().material = openedMaterial;
 
-        // UI'ý hemen kapat ki oyuncu tekrar basmaya çalýþmasýn
         if (interactionUI != null) interactionUI.SetActive(false);
 
         currentStats.UpdateAllUI();
     }
 
-    // --- YENÝ: KÜÇÜLEREK YOK OLMA KODU ---
     private IEnumerator DestroyChestRoutine()
     {
-        // 1. Belirlenen süre kadar bekle (Örn: 2 saniye)
         yield return new WaitForSeconds(destroyDelay);
 
-        // 2. Küçülme Animasyonu
         Vector3 originalScale = transform.localScale;
         float timer = 0f;
 
         while (timer < shrinkDuration)
         {
             timer += Time.deltaTime;
-            // Mevcut boyuttan 0'a doðru yavaþça küçült (Lerp)
             transform.localScale = Vector3.Lerp(originalScale, Vector3.zero, timer / shrinkDuration);
-            yield return null; // Bir sonraki kareyi bekle
+            yield return null;
         }
 
-        // 3. Tamamen yok et
         Destroy(gameObject);
     }
-    // -------------------------------------
 
     private ItemData GetWeightedRandomItem()
     {

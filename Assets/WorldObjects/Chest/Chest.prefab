@@ -383,6 +383,8 @@ MonoBehaviour:
   openedMaterial: {fileID: 0}
   destroyDelay: 0.5
   shrinkDuration: 1
+  floatingItemPrefab: {fileID: 4885046596974488861, guid: 999457e06c1392b45ae7ab10bbf9e7f1, type: 3}
+  popupSpawnPoint: {fileID: 0}
 --- !u!1001 &8520820245821850831
 PrefabInstance:
   m_ObjectHideFlags: 0

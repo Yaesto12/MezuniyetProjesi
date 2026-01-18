@@ -18,8 +18,6 @@ public class PlayerInventory : MonoBehaviour
     private PlayerWeaponController weaponController;
 
     // --- ÖZEL ITEMLER ÝÇÝN OLAY SÝSTEMÝ ---
-    // Bir düþman öldüðünde bu event tetiklenecek. 
-    // Özel scriptler buna abone olup kendi statlarýný arttýracak.
     public event Action OnEnemyKilled;
 
     private void Awake()
@@ -29,15 +27,20 @@ public class PlayerInventory : MonoBehaviour
     }
 
     // --- BU FONKSÝYONU DÜÞMAN ÖLDÜÐÜNDE ÇAÐIRMALISIN ---
-    // EnemyAI scriptinde öldüðü yere: 
-    // GameObject.FindWithTag("Player").GetComponent<PlayerInventory>().RegisterKill(isElite);
     public void RegisterKill(bool isElite)
     {
         TotalKills++;
         if (isElite) EliteKills++;
 
-        // Özel itemlere haber ver: "Düþman öldü, yapacaðýný yap!"
+        // Özel itemlere haber ver
         OnEnemyKilled?.Invoke();
+
+        // --- YENÝ EKLENEN KISIM: UI GÜNCELLEME ---
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.UpdateKillCount(TotalKills);
+        }
+        // ----------------------------------------
     }
 
     public void AddEliteKill()
@@ -45,6 +48,9 @@ public class PlayerInventory : MonoBehaviour
         EliteKills++;
         // Geriye dönük uyumluluk için RegisterKill'i buradan da çaðýrabiliriz
         OnEnemyKilled?.Invoke();
+
+        // EliteKill de bir kill olduðu için UI güncellensin (isteðe baðlý)
+        if (UIManager.Instance != null) UIManager.Instance.UpdateKillCount(TotalKills);
     }
 
     // ========================================================================
@@ -58,7 +64,7 @@ public class PlayerInventory : MonoBehaviour
         ownedItems.Add(item);
         Debug.Log($"<color=green>ENVANTERE EKLENDÝ: {item.itemName}</color>");
 
-        // --- STAT GÜNCELLEME (Switch-Case Tamamlandý) ---
+        // --- STAT GÜNCELLEME ---
         if (item.modifiers != null && playerStats != null)
         {
             foreach (var mod in item.modifiers)
@@ -112,7 +118,7 @@ public class PlayerInventory : MonoBehaviour
             }
             playerStats.RecalculateStats();
 
-            // UI Güncelleme (PauseMenuInfo singleton'ý varsa)
+            // UI Güncelleme
             if (PauseMenuInfo.Instance != null && PauseMenuInfo.Instance.gameObject.activeInHierarchy)
             {
                 PauseMenuInfo.Instance.gameObject.SetActive(false);
@@ -135,7 +141,6 @@ public class PlayerInventory : MonoBehaviour
                 var effectScript = effectObj.GetComponent<MonoBehaviour>();
                 if (effectScript != null)
                 {
-                    // Özel scripte "Takýldýn!" haberini veriyoruz
                     effectScript.SendMessage("OnEquip", new object[] { playerStats, this }, SendMessageOptions.DontRequireReceiver);
                 }
             }

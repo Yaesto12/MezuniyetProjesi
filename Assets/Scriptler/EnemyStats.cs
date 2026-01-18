@@ -8,6 +8,10 @@ public class EnemyStats : MonoBehaviour
     [SerializeField] private int damage = 10;
     [SerializeField] private float moveSpeed = 3.0f;
 
+    // --- YENÝ EKLENDÝ: Bu düþman Elite mi? ---
+    [Tooltip("Eðer bu bir Boss veya güçlü düþmansa bunu iþaretle.")]
+    [SerializeField] private bool isElite = false;
+
     [Header("Ödül")]
     [SerializeField] private int xpValue = 10;
     [SerializeField] private int goldValue = 5;
@@ -53,13 +57,9 @@ public class EnemyStats : MonoBehaviour
         // --- HASAR YAZISI (POPUP) KISMI ---
         if (damagePopupPrefab != null)
         {
-            // Yazýyý düþmanýn kafasýnýn biraz üzerinde oluþtur (Yüksekliði duruma göre 1.5f veya 2f yapabilirsin)
             Vector3 spawnPosition = transform.position + Vector3.up * 2f;
-
-            // Prefabý yarat
             GameObject popupObj = Instantiate(damagePopupPrefab, spawnPosition, Quaternion.identity);
 
-            // DamagePopup scriptine ulaþ ve deðerleri gönder
             DamagePopup popupScript = popupObj.GetComponent<DamagePopup>();
             if (popupScript != null)
             {
@@ -105,10 +105,26 @@ public class EnemyStats : MonoBehaviour
         {
             GameEventManager.Instance.TriggerEnemyKilled(this);
         }
+
+        // ============================================================
+        // --- KILL SAYACI ÝÇÝN EKLENEN KISIM ---
+        // ============================================================
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player != null)
+        {
+            PlayerInventory inventory = player.GetComponent<PlayerInventory>();
+            if (inventory != null)
+            {
+                // Düþmanýn Elite olup olmadýðýný buradan gönderiyoruz
+                inventory.RegisterKill(isElite);
+            }
+        }
         else
         {
-            // Debug.LogWarning("GameEventManager sahnede bulunamadý! (Oyun devam ediyor)");
+            // Eðer Player tag'i unutulduysa konsolda uyarý verelim
+            Debug.LogWarning("EnemyStats: Player bulunamadý! 'Player' Tag'ini kontrol et.");
         }
+        // ============================================================
 
         int finalXp = IsGolden ? xpValue * 10 : xpValue;
         int finalGold = IsGolden ? goldValue * 10 : goldValue;
@@ -127,20 +143,16 @@ public class EnemyStats : MonoBehaviour
             Instantiate(xpOrbPrefab, transform.position, Quaternion.identity);
         }
 
-        // B) ALTIN (DEBUG EKLENDÝ)
+        // B) ALTIN
         if (goldAmount > 0)
         {
+            // PlayerStats'ý bulmak için Player Inventory'de bulduðumuz referansý da kullanabilirdik 
+            // ama garanti olsun diye tekrar aratýyoruz.
             PlayerStats playerStats = FindAnyObjectByType<PlayerStats>();
 
             if (playerStats != null)
             {
-                Debug.Log($"Düþman öldü. Oyuncu bulundu. {goldAmount} altýn ekleniyor.");
                 playerStats.AddGold(goldAmount);
-            }
-            else
-            {
-                // BURASI ÖNEMLÝ: Eðer bunu görüyorsan karakter sahnede yok demektir.
-                Debug.LogError("KRÝTÝK HATA: Düþman öldü ama para verilecek 'PlayerStats' sahnede bulunamadý!");
             }
 
             // Görsel efekt
@@ -148,6 +160,4 @@ public class EnemyStats : MonoBehaviour
                 Instantiate(goldCoinPrefab, transform.position + Vector3.up * 1.5f, Quaternion.identity);
         }
     }
-
-   
 }
