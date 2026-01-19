@@ -6106,23 +6106,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SpawnManager
   minSpawnRadius: 15
   maxSpawnRadius: 30
-  spawnInterval: 2
-  minSpawnAmount: 3
-  maxSpawnAmount: 5
+  spawnInterval: 3
+  minSpawnAmount: 5
+  maxSpawnAmount: 7
   enemyList:
-  - enemyPrefab: {fileID: 3839346997816619853, guid: f293dd735e0a9bb468a45a20db673c80, type: 3}
-    spawnWeight: 100
-  - enemyPrefab: {fileID: 3839346997816619853, guid: f22589b3dfc617c4498e1dda0adb6f9f, type: 3}
-    spawnWeight: 20
   - enemyPrefab: {fileID: 6182833306345873395, guid: 249655f646f828d46b33a87ec9508b1e, type: 3}
-    spawnWeight: 20
+    spawnWeight: 100
   - enemyPrefab: {fileID: 3950449805446626402, guid: 57a9d13957397c94badef2ad891af28d, type: 3}
-    spawnWeight: 20
+    spawnWeight: 100
   - enemyPrefab: {fileID: 5437466265359287463, guid: cd2055779c8e8844f9e1da9627a3697a, type: 3}
     spawnWeight: 100
   groundLayer:
     serializedVersion: 2
-    m_Bits: 1
+    m_Bits: 1024
 --- !u!4 &1110720539
 Transform:
   m_ObjectHideFlags: 0

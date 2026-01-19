@@ -20,11 +20,11 @@ MonoBehaviour:
   cooldown: 1
   critChance: 5
   critMultiplier: 2
-  projectilePrefab: {fileID: 3543884131338767735, guid: 122b46fdae5d4ac4c91495583b4ba81b, type: 3}
-  projectileSpeed: 20
+  projectilePrefab: {fileID: 3543884131338767735, guid: a81e233e1df3c47438ce348b526b20c0, type: 3}
+  projectileSpeed: 50
   projectileCount: 1
   spreadAngle: 0
-  projectileScale: 1
+  projectileScale: 0.1
   projectileLifetime: 5
   timeBetweenProjectiles: 0.05
   attackRange: 1.5

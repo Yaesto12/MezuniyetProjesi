@@ -357,9 +357,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9769640e218ff2c44b3b29d85ddfde31, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyStats
-  maxHealth: 900
-  damage: 80
+  maxHealth: 1800
+  damage: 50
   moveSpeed: 8
+  isElite: 0
   xpValue: 1000
   goldValue: 1000
   xpOrbPrefab: {fileID: 4436064657191302726, guid: 8c8b7081d4cb6f74a8331d850d12b9e6, type: 3}
@@ -378,8 +379,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 587312b675efb424181a12f688a02628, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlyingEnemyAI
-  hoverHeight: 8
-  attackStartDistance: 6
+  hoverHeight: 15
+  attackStartDistance: 8
   attackCooldown: 2
   knockbackForce: 30
 --- !u!114 &-3845887591146016107

@@ -297,11 +297,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9769640e218ff2c44b3b29d85ddfde31, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyStats
-  maxHealth: 100
-  damage: 10
+  maxHealth: 150
+  damage: 20
   moveSpeed: 10
-  xpValue: 10
-  goldValue: 5
+  isElite: 0
+  xpValue: 20
+  goldValue: 35
   xpOrbPrefab: {fileID: 4436064657191302726, guid: 8c8b7081d4cb6f74a8331d850d12b9e6, type: 3}
   goldCoinPrefab: {fileID: 602042671775650862, guid: 3e7ef9007e562924e81a8659f1b158b7, type: 3}
   damagePopupPrefab: {fileID: 8964141167071234925, guid: cd2fa89e4ea5489448479393788d3c04, type: 3}

@@ -25,7 +25,7 @@ MonoBehaviour:
   projectileSpeed: 40
   projectileCount: 1
   spreadAngle: 0
-  projectileScale: 1
+  projectileScale: 5
   projectileLifetime: 5
   timeBetweenProjectiles: 0.05
   attackRange: 1.5
