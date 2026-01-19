@@ -24,6 +24,13 @@ public class GraveStone : MonoBehaviour
     [SerializeField] private float destroyDelay = 0.5f;
     [SerializeField] private float shrinkDuration = 1.0f;
 
+    // --- YENÝ EKLENEN KISIM: SES AYARLARI ---
+    [Header("Ses Ayarlarý")]
+    [Tooltip("Ruhlar serbest kalýrken çalacak sesi buraya sürükle.")]
+    [SerializeField] private AudioClip soulSound;
+    [Range(0f, 1f)][SerializeField] private float soundVolume = 1f;
+    // ----------------------------------------
+
     private bool isPlayerNearby = false;
     private bool isCollected = false;
 
@@ -38,7 +45,6 @@ public class GraveStone : MonoBehaviour
     {
         if (infoText != null)
         {
-            // Metni XP miktarý yerine "Ruhlarý Serbest Býrak" gibi genel bir þeye çevirdik
             infoText.text = $"<b>[E]</b> Free the Souls";
         }
     }
@@ -75,21 +81,25 @@ public class GraveStone : MonoBehaviour
         isCollected = true;
         if (interactionUI != null) interactionUI.SetActive(false);
 
-        // --- ORB SAÇMA ÝÞLEMÝ (YENÝ) ---
+        // --- YENÝ EKLENEN KISIM: SESÝ ÇAL ---
+        if (soulSound != null)
+        {
+            // Obje yok olacaðý için sesi uzayda o noktaya býrakýyoruz
+            AudioSource.PlayClipAtPoint(soulSound, transform.position, soundVolume);
+        }
+        // -------------------------------------
+
+        // --- ORB SAÇMA ÝÞLEMÝ ---
         if (xpOrbPrefab != null)
         {
             for (int i = 0; i < orbCount; i++)
             {
-                // Mezar taþýnýn etrafýnda rastgele bir pozisyon bul
                 Vector3 randomOffset = Random.insideUnitSphere * scatterRadius;
-                randomOffset.y = 0.5f; // Yere gömülmesin, havada dursun
+                randomOffset.y = 0.5f;
 
                 Vector3 spawnPos = transform.position + randomOffset;
-
-                // Küreyi oluþtur
                 Instantiate(xpOrbPrefab, spawnPos, Quaternion.identity);
             }
-            Debug.Log($"{orbCount} adet XP Küresi saçýldý!");
         }
         else
         {

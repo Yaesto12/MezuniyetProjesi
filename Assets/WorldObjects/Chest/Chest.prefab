@@ -385,6 +385,8 @@ MonoBehaviour:
   shrinkDuration: 1
   floatingItemPrefab: {fileID: 4885046596974488861, guid: 999457e06c1392b45ae7ab10bbf9e7f1, type: 3}
   popupSpawnPoint: {fileID: 0}
+  openSound: {fileID: 8300000, guid: 8a70a10aa73736c41acee97961b2700c, type: 3}
+  soundVolume: 0.5
 --- !u!1001 &8520820245821850831
 PrefabInstance:
   m_ObjectHideFlags: 0

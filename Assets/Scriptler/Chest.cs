@@ -1,5 +1,5 @@
 using UnityEngine;
-using System.Collections; // Coroutine için gerekli
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 
@@ -28,14 +28,17 @@ public class Chest : MonoBehaviour
     [Tooltip("Küçülerek yok olma animasyonu ne kadar sürsün?")]
     [SerializeField] private float shrinkDuration = 1.0f;
 
-    // --- YENÝ EKLENEN KISIM: EFEKTLER ---
     [Header("Efektler")]
     [Tooltip("Hazýrladýðýn FloatingItemCanvas prefabýný buraya sürükle.")]
     [SerializeField] private GameObject floatingItemPrefab;
-
-    [Tooltip("Ýkon tam olarak nerede çýksýn? (Boþ býrakýrsan sandýðýn üstünde çýkar)")]
     [SerializeField] private Transform popupSpawnPoint;
-    // ------------------------------------
+
+    // --- YENÝ EKLENEN KISIM: SES ---
+    [Header("Ses Ayarlarý")]
+    [Tooltip("Sandýk açýlma sesini buraya sürükle.")]
+    [SerializeField] private AudioClip openSound;
+    [Range(0f, 1f)][SerializeField] private float soundVolume = 1f;
+    // -------------------------------
 
     private bool isPlayerNearby = false;
     private bool isOpen = false;
@@ -118,23 +121,27 @@ public class Chest : MonoBehaviour
                     currentStats.chestsOpened++;
                     currentInventory.AddItem(reward);
 
-                    // --- YENÝ: EFEKTÝ OLUÞTURMA ---
+                    // --- YENÝ EKLENEN KISIM: SESÝ ÇAL ---
+                    if (openSound != null)
+                    {
+                        // PlayClipAtPoint: Sandýk yok olsa bile ses o noktada çalmaya devam eder.
+                        // Geçici bir "One shot audio" objesi oluþturur.
+                        AudioSource.PlayClipAtPoint(openSound, transform.position, soundVolume);
+                    }
+                    // -------------------------------------
+
+                    // Efekti yarat
                     if (floatingItemPrefab != null)
                     {
-                        // Pozisyon belirle (Spawn point yoksa sandýðýn 1.5 birim yukarýsý)
                         Vector3 spawnPos = popupSpawnPoint != null ? popupSpawnPoint.position : transform.position + Vector3.up * 1.5f;
-
-                        // Efekti yarat
                         GameObject popupObj = Instantiate(floatingItemPrefab, spawnPos, Quaternion.identity);
 
-                        // Scripti al ve ikonu gönder
                         FloatingItemPopup popupScript = popupObj.GetComponent<FloatingItemPopup>();
                         if (popupScript != null)
                         {
                             popupScript.Initialize(reward.icon);
                         }
                     }
-                    // -----------------------------
 
                     OpenChestVisuals();
                     StartCoroutine(DestroyChestRoutine());
@@ -147,6 +154,7 @@ public class Chest : MonoBehaviour
         }
     }
 
+    // ... (Scriptin geri kalaný ayný, deðiþtirmeye gerek yok) ...
     private void OpenChestVisuals()
     {
         if (openedMaterial != null && visualModel.GetComponent<MeshRenderer>())
@@ -208,7 +216,6 @@ public class Chest : MonoBehaviour
         string color = (currentStats.currentGold >= cost) ? "yellow" : "red";
         costText.text = $"<b>[E]</b> Open\n<color={color}>{cost} G</color>";
     }
-
 #if UNITY_EDITOR
     [ContextMenu("Tüm Itemleri Otomatik Bul")]
     private void FillItemsAutomatically()

@@ -154,6 +154,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::XpOrb
   xpValue: 10
+  collectSound: {fileID: 8300000, guid: 3cbe7e8055aeb194ebda73d268547336, type: 3}
+  soundVolume: 0.3
   moveSpeed: 25
 --- !u!1001 &7833588199108970106
 PrefabInstance:

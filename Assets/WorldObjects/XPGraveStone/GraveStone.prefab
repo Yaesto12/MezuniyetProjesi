@@ -327,6 +327,8 @@ MonoBehaviour:
   visualModel: {fileID: 0}
   destroyDelay: 1
   shrinkDuration: 1
+  soulSound: {fileID: 8300000, guid: cb6405f2d1c2ae946bc8ce4d36b52018, type: 3}
+  soundVolume: 1
 --- !u!1001 &6769214676232528254
 PrefabInstance:
   m_ObjectHideFlags: 0
