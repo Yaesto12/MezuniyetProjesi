@@ -12,12 +12,20 @@ public class EnemyStats : MonoBehaviour
     [Tooltip("Eðer bu bir Boss veya güçlü düþmansa bunu iþaretle.")]
     [SerializeField] private bool isElite = false;
 
+    // --- SES AYARLARI (YENÝ) ---
+    [Header("Ses Ayarlarý")]
+    [Tooltip("Düþman öldüðünde çalacak ses.")]
+    [SerializeField] private AudioClip deathSound;
+    [Tooltip("Hasar aldýðýnda çalacak ses (Opsiyonel).")]
+    [SerializeField] private AudioClip hurtSound;
+    [Range(0f, 1f)][SerializeField] private float soundVolume = 0.6f;
+    // ----------------------------
+
     [Header("Ödül")]
     [SerializeField] private int xpValue = 10;
     [SerializeField] private int goldValue = 5;
     [SerializeField] private GameObject xpOrbPrefab;
     [SerializeField] private GameObject goldCoinPrefab;
-
 
     [Header("Efektler")]
     [SerializeField] private GameObject damagePopupPrefab;
@@ -45,14 +53,31 @@ public class EnemyStats : MonoBehaviour
     private Coroutine freezeCoroutine;
     private Coroutine bleedCoroutine;
 
+    // Ses için yardýmcý hoparlör
+    private AudioSource audioSource;
+
     private void Start()
     {
         currentHealth = maxHealth;
+
+        // Hurt sesi için audio source ekle
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.playOnAwake = false;
+        audioSource.spatialBlend = 1f; // 3D Ses
     }
 
     public void TakeDamage(int damageAmount, bool isCritical = false)
     {
         currentHealth -= damageAmount;
+
+        // --- HURT SESÝ ---
+        if (hurtSound != null && currentHealth > 0)
+        {
+            // Sadece ölmediyse hurt sesi çal
+            audioSource.pitch = Random.Range(0.9f, 1.1f);
+            audioSource.PlayOneShot(hurtSound, soundVolume);
+        }
+        // -----------------
 
         // --- HASAR YAZISI (POPUP) KISMI ---
         if (damagePopupPrefab != null)
@@ -115,16 +140,21 @@ public class EnemyStats : MonoBehaviour
             PlayerInventory inventory = player.GetComponent<PlayerInventory>();
             if (inventory != null)
             {
-                // Düþmanýn Elite olup olmadýðýný buradan gönderiyoruz
                 inventory.RegisterKill(isElite);
             }
         }
         else
         {
-            // Eðer Player tag'i unutulduysa konsolda uyarý verelim
             Debug.LogWarning("EnemyStats: Player bulunamadý! 'Player' Tag'ini kontrol et.");
         }
         // ============================================================
+
+        // --- DEATH SESÝ (Obje yok olsa bile çalar) ---
+        if (deathSound != null)
+        {
+            AudioSource.PlayClipAtPoint(deathSound, transform.position, soundVolume);
+        }
+        // ---------------------------------------------
 
         int finalXp = IsGolden ? xpValue * 10 : xpValue;
         int finalGold = IsGolden ? goldValue * 10 : goldValue;
@@ -140,16 +170,15 @@ public class EnemyStats : MonoBehaviour
         // A) XP ORB
         if (xpOrbPrefab != null)
         {
-            Instantiate(xpOrbPrefab, transform.position, Quaternion.identity);
+            GameObject xpOrb = Instantiate(xpOrbPrefab, transform.position, Quaternion.identity);
+            XpOrb orbScript = xpOrb.GetComponent<XpOrb>();
+            if (orbScript != null) orbScript.Setup(xpAmount); // XP deðerini aktar
         }
 
         // B) ALTIN
         if (goldAmount > 0)
         {
-            // PlayerStats'ý bulmak için Player Inventory'de bulduðumuz referansý da kullanabilirdik 
-            // ama garanti olsun diye tekrar aratýyoruz.
             PlayerStats playerStats = FindAnyObjectByType<PlayerStats>();
-
             if (playerStats != null)
             {
                 playerStats.AddGold(goldAmount);

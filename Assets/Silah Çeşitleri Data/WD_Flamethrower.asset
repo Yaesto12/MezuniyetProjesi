@@ -16,7 +16,9 @@ MonoBehaviour:
   description: "Alev makinesi ile her\u015Feyi k\xFCle \xE7evirin"
   icon: {fileID: 21300000, guid: 3e6c62a71e45b1d4ba63151020ed5f4f, type: 3}
   behaviorType: 6
-  baseDamage: 10
+  fireSound: {fileID: 8300000, guid: 5c13b1149122cfc479677dcd3215e99c, type: 3}
+  soundVolume: 0.5
+  baseDamage: 20
   cooldown: 1.5
   critChance: 5
   critMultiplier: 2

@@ -12,6 +12,13 @@ public class FlyingEnemyAI : MonoBehaviour
     [Header("Saldýrý Ayarlarý")]
     [SerializeField] private float attackCooldown = 2.0f;
 
+    // --- SES AYARLARI (YENÝ) ---
+    [Header("Ses Ayarlarý")]
+    [Tooltip("Uçan düþman saldýrdýðýnda çalacak ses.")]
+    [SerializeField] private AudioClip attackSound;
+    [Range(0f, 1f)][SerializeField] private float attackVolume = 0.6f;
+    // ----------------------------
+
     [Header("Fizik Ayarlarý")]
     [Tooltip("Kuþ vurduðunda karakteri ne kadar geriye fýrlatsýn?")]
     [SerializeField] private float knockbackForce = 15f;
@@ -19,6 +26,7 @@ public class FlyingEnemyAI : MonoBehaviour
     private Rigidbody rb;
     private Transform player;
     private EnemyStats stats;
+    private AudioSource audioSource;
 
     private bool canAttack = true;
 
@@ -27,11 +35,15 @@ public class FlyingEnemyAI : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         stats = GetComponent<EnemyStats>();
 
+        // Ses için hoparlör ekle
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.playOnAwake = false;
+        audioSource.spatialBlend = 1f; // 3D Ses
+
         rb.useGravity = false;
-        // rb.linearDamping = 1f; // Unity sürümüne göre 'drag' veya 'linearDamping' olabilir. Hata verirse 'drag' yap.
     }
 
-    void Start() // Player'ý Start'ta bulmak daha güvenlidir
+    void Start()
     {
         GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
         if (playerObject != null) player = playerObject.transform;
@@ -55,8 +67,7 @@ public class FlyingEnemyAI : MonoBehaviour
 
         Vector3 direction = (targetPosition - transform.position).normalized;
 
-        // Unity 6 öncesi için 'velocity', Unity 6 sonrasý için 'linearVelocity'
-        // Eðer hata alýrsan burayý rb.velocity = ... yap
+        // Unity 6 uyumlu linearVelocity
         rb.linearVelocity = direction * stats.Speed;
 
         if (direction != Vector3.zero)
@@ -72,7 +83,7 @@ public class FlyingEnemyAI : MonoBehaviour
         CheckAndAttack(collision.gameObject);
     }
 
-    // Trigger çarpýþmalarý için (YENÝ EKLENDÝ)
+    // Trigger çarpýþmalarý için
     private void OnTriggerStay(Collider other)
     {
         CheckAndAttack(other.gameObject);
@@ -84,6 +95,14 @@ public class FlyingEnemyAI : MonoBehaviour
         // Oyuncu mu ve saldýrý süresi doldu mu?
         if (targetObj.CompareTag("Player") && canAttack)
         {
+            // --- SALDIRI SESÝ ---
+            if (attackSound != null)
+            {
+                audioSource.pitch = Random.Range(0.9f, 1.1f);
+                audioSource.PlayOneShot(attackSound, attackVolume);
+            }
+            // --------------------
+
             // 1. Hasar Ver
             var health = targetObj.GetComponent<PlayerHealth>();
             if (health != null)

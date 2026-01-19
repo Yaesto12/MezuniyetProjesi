@@ -9,6 +9,18 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 0ab2de384bb6fdb4fa68f2b9055b8591, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0ab2de384bb6fdb4fa68f2b9055b8591, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0ab2de384bb6fdb4fa68f2b9055b8591, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0ab2de384bb6fdb4fa68f2b9055b8591, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
@@ -269,10 +281,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9769640e218ff2c44b3b29d85ddfde31, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyStats
-  maxHealth: 250
+  maxHealth: 100
   damage: 13
   moveSpeed: 8
   isElite: 0
+  deathSound: {fileID: 8300000, guid: 6f4d027e19394a44c94eb49ebcf1b586, type: 3}
+  hurtSound: {fileID: 0}
+  soundVolume: 0.1
   xpValue: 10
   goldValue: 30
   xpOrbPrefab: {fileID: 4436064657191302726, guid: 8c8b7081d4cb6f74a8331d850d12b9e6, type: 3}
@@ -294,4 +309,6 @@ MonoBehaviour:
   hoverHeight: 3.5
   attackStartDistance: 5
   attackCooldown: 2
+  attackSound: {fileID: 8300000, guid: a57921116eea4634aacdcd1118e5188d, type: 3}
+  attackVolume: 0.1
   knockbackForce: 15

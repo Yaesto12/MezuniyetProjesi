@@ -8,15 +8,29 @@ public class EnemyAI : MonoBehaviour
     [Header("Saldýrý Ayarlarý")]
     [SerializeField] private float attackCooldown = 2.0f;
 
+    // --- SES AYARLARI (YENÝ) ---
+    [Header("Ses Ayarlarý")]
+    [Tooltip("Düþman oyuncuya saldýrdýðýnda çalacak ses.")]
+    [SerializeField] private AudioClip attackSound;
+    [Range(0f, 1f)][SerializeField] private float attackVolume = 0.6f;
+    // ----------------------------
+
     private Rigidbody rb;
     private Transform player;
     private EnemyStats stats;
     private bool canAttack = true;
+    private AudioSource audioSource;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
         stats = GetComponent<EnemyStats>();
+
+        // Ses için hoparlör ekle
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.playOnAwake = false;
+        audioSource.spatialBlend = 1f; // 3D Ses
+
         GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
         if (playerObject != null)
         {
@@ -42,15 +56,11 @@ public class EnemyAI : MonoBehaviour
 
         Vector3 targetVelocity = directionToPlayer * stats.Speed;
 
-        // --- BU SATIR DEÐÝÞTÝRÝLDÝ ---
-        // Mevcut dikey hýzý (yer çekiminden gelen) koru.
+        // Mevcut dikey hýzý koru
         targetVelocity.y = rb.linearVelocity.y;
-        // -----------------------------
 
-        // --- BU SATIR DEÐÝÞTÝRÝLDÝ ---
-        // Son hýzý Rigidbody'ye ata.
+        // Hýzý uygula
         rb.linearVelocity = targetVelocity;
-        // -----------------------------
 
         if (directionToPlayer != Vector3.zero)
         {
@@ -63,6 +73,14 @@ public class EnemyAI : MonoBehaviour
     {
         if (canAttack)
         {
+            // --- SALDIRI SESÝ ---
+            if (attackSound != null)
+            {
+                audioSource.pitch = Random.Range(0.9f, 1.1f);
+                audioSource.PlayOneShot(attackSound, attackVolume);
+            }
+            // --------------------
+
             PlayerHealth playerHealth = FindFirstObjectByType<PlayerHealth>();
             if (playerHealth != null)
             {
@@ -88,9 +106,8 @@ public class EnemyAI : MonoBehaviour
             if (ph != null)
             {
                 ph.TakeDamage(stats.Damage);
-                NotifyPlayerContact(); // Bu fonksiyon zaten cooldown baþlatýyordu
+                NotifyPlayerContact(); // Bu fonksiyon zaten sesi çalýp cooldown baþlatýyor
             }
         }
     }
-
 }

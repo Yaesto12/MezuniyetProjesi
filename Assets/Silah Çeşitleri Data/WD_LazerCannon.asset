@@ -16,7 +16,9 @@ MonoBehaviour:
   description: "Lazer silah\u0131"
   icon: {fileID: 21300000, guid: 8d066f26a3766d9408ab3b49a9ec627d, type: 3}
   behaviorType: 1
-  baseDamage: 300
+  fireSound: {fileID: 8300000, guid: fdebebd71c01eac4bbaff3396465ebea, type: 3}
+  soundVolume: 0.5
+  baseDamage: 50
   cooldown: 1
   critChance: 10
   critMultiplier: 2

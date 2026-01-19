@@ -301,6 +301,9 @@ MonoBehaviour:
   damage: 20
   moveSpeed: 10
   isElite: 0
+  deathSound: {fileID: 8300000, guid: 6f4d027e19394a44c94eb49ebcf1b586, type: 3}
+  hurtSound: {fileID: 0}
+  soundVolume: 0.1
   xpValue: 20
   goldValue: 35
   xpOrbPrefab: {fileID: 4436064657191302726, guid: 8c8b7081d4cb6f74a8331d850d12b9e6, type: 3}
@@ -320,3 +323,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI
   attackCooldown: 2
+  attackSound: {fileID: 8300000, guid: 8c927851c2c9b69459eb22be88fa8b3c, type: 3}
+  attackVolume: 0.1

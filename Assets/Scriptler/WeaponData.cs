@@ -13,6 +13,16 @@ public class WeaponData : ScriptableObject
     public Sprite icon;
     public WeaponBehaviorType behaviorType; // GameDefinitions.cs'den
 
+    // --- YENÝ EKLENEN KISIM: SES AYARLARI ---
+    [Header("Ses Ayarlarý")]
+    [Tooltip("Bu silah ateþlendiðinde çalacak ses dosyasý.")]
+    public AudioClip fireSound;
+
+    [Range(0f, 1f)]
+    [Tooltip("Sesin þiddeti (0 = Sessiz, 1 = Tam Ses).")]
+    public float soundVolume = 0.5f;
+    // ----------------------------------------
+
     [Header("Temel Statlar (Tüm Silahlar Ýçin Ortak)")]
     public float baseDamage = 10f;
     public float cooldown = 1f;
@@ -60,7 +70,7 @@ public class WeaponData : ScriptableObject
     // ... Diðer türler ...
 
 
-    // --- BU LÝSTE SÝZDE EKSÝK GÖRÜNÜYOR ---
+    // --- YÜKSELTME HAVUZU ---
     [Header("Yükseltme Havuzu (Bu Silah Ýçin)")]
     [Tooltip("Bu silah geliþtirildiðinde rastgele seçilebilecek olasý stat geliþtirmeleri.")]
     // Bu liste, GameDefinitions.cs'de tanýmlý olan WeaponStatType enum'unu kullanýr

@@ -23,6 +23,15 @@ public class PlayerExperience : MonoBehaviour
     [SerializeField] private int statsPerEpic = 2;
     [SerializeField] private int statsPerLegendary = 3;
 
+    // --- YENÝ EKLENEN KISIM: SES AYARLARI ---
+    [Header("Ses Ayarlarý")]
+    [Tooltip("Level atlayýnca çalacak ses dosyasý.")]
+    [SerializeField] private AudioClip levelUpSound;
+    [Range(0f, 1f)][SerializeField] private float levelUpVolume = 0.7f;
+
+    private AudioSource audioSource;
+    // ----------------------------------------
+
     // --- Referanslar ---
     private PlayerInventory playerInventory;
     private PlayerWeaponController weaponController;
@@ -33,6 +42,17 @@ public class PlayerExperience : MonoBehaviour
         playerInventory = GetComponent<PlayerInventory>();
         weaponController = GetComponent<PlayerWeaponController>();
         playerStats = GetComponent<PlayerStats>();
+
+        // --- SES BÝLEÞENÝ HAZIRLIÐI ---
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            // Eðer karakterde hoparlör yoksa ekle
+            audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.playOnAwake = false;
+            audioSource.spatialBlend = 0f; // 2D Ses (UI sesi gibi)
+        }
+        // ------------------------------
 
         if (levelUpUI == null)
         {
@@ -64,6 +84,15 @@ public class PlayerExperience : MonoBehaviour
         }
 
         Debug.Log("Level Up Ekraný Tetiklendi!");
+
+        // --- SESÝ ÇAL (YENÝ) ---
+        // Zamaný durdurmadan HEMEN ÖNCE sesi çalýyoruz
+        if (levelUpSound != null && audioSource != null)
+        {
+            // PlayOneShot: Zaman dursa bile (TimeScale=0) ses çalmaya devam eder
+            audioSource.PlayOneShot(levelUpSound, levelUpVolume);
+        }
+        // -----------------------
 
         // Oyunu durdur
         Time.timeScale = 0f;
